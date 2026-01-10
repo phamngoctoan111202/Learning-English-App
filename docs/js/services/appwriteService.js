@@ -74,6 +74,49 @@ class AppwriteService {
 
     // ==================== VOCABULARY OPERATIONS ====================
 
+    buildSentencesFromExamples(examples) {
+        const allSentences = [];
+
+        if (Array.isArray(examples)) {
+            for (const example of examples) {
+                if (!example || !example.sentences) continue;
+
+                const raw = String(example.sentences).trim();
+                if (!raw) continue;
+
+                if (raw.startsWith('[')) {
+                    try {
+                        const parsed = JSON.parse(raw);
+                        if (Array.isArray(parsed)) {
+                            for (const s of parsed) {
+                                const sentence = String(s).trim();
+                                if (sentence.length > 0) {
+                                    allSentences.push(sentence);
+                                }
+                            }
+                            continue;
+                        }
+                    } catch (e) {
+                    }
+                }
+
+                const parts = raw.split(/\n+/);
+                for (const part of parts) {
+                    const sentence = part.trim();
+                    if (sentence.length > 0) {
+                        allSentences.push(sentence);
+                    }
+                }
+            }
+        }
+
+        if (allSentences.length === 0) {
+            return '';
+        }
+
+        return JSON.stringify(allSentences);
+    }
+
     /**
      * List all vocabularies from Appwrite
      */
@@ -110,13 +153,14 @@ class AppwriteService {
      */
     async createVocabulary(vocabulary, examples) {
         const documentId = Appwrite.ID.unique();
-
-        // Get first example for Appwrite (flat structure)
-        const firstExample = examples[0] || { sentences: '', vietnamese: '', grammar: '' };
+        const firstExample = Array.isArray(examples) && examples.length > 0
+            ? examples[0]
+            : { sentences: '', vietnamese: '', grammar: '' };
+        const sentencesJson = this.buildSentencesFromExamples(examples);
 
         const data = {
             word: vocabulary.word,
-            sentences: firstExample.sentences || '',
+            sentences: sentencesJson || firstExample.sentences || '',
             vietnamese: firstExample.vietnamese || '',
             grammar: firstExample.grammar || '',
             createdAt: String(vocabulary.createdAt || Date.now()),
@@ -140,12 +184,14 @@ class AppwriteService {
      * Update vocabulary in Appwrite
      */
     async updateVocabulary(documentId, vocabulary, examples) {
-        // Get first example for Appwrite (flat structure)
-        const firstExample = examples[0] || { sentences: '', vietnamese: '', grammar: '' };
+        const firstExample = Array.isArray(examples) && examples.length > 0
+            ? examples[0]
+            : { sentences: '', vietnamese: '', grammar: '' };
+        const sentencesJson = this.buildSentencesFromExamples(examples);
 
         const data = {
             word: vocabulary.word,
-            sentences: firstExample.sentences || '',
+            sentences: sentencesJson || firstExample.sentences || '',
             vietnamese: firstExample.vietnamese || '',
             grammar: firstExample.grammar || '',
             lastStudiedAt: String(vocabulary.lastStudiedAt || Date.now()),

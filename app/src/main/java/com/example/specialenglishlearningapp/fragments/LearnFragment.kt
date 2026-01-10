@@ -890,11 +890,9 @@ class LearnFragment : Fragment() {
             // Check if ALL unique Vietnamese sentences are completed
             isVocabularyCompleted = (completedVietnamese.size >= totalSentences)
 
-            // Increment words learned counter for each correct example sentence
             lifecycleScope.launch {
                 Logger.d("📚 Sentence completed! Incrementing words learned counter...")
-                LearningProgressManager.addCompletedVocabulary(requireContext(), forceSync = true)
-                // Update daily goal UI immediately
+                LearningProgressManager.addCompletedVocabulary(requireContext())
                 withContext(Dispatchers.Main) {
                     updateDailyGoalUI()
                 }
@@ -1026,16 +1024,13 @@ class LearnFragment : Fragment() {
                 // But keep this for safety (e.g., unicode normalization issues)
                 Logger.d("⚠️ [100% similarity] This shouldn't happen - exact match should be caught earlier!")
 
-                // Add to completed Vietnamese sentences
                 completedVietnamese.add(currentDisplayedExample.vietnamese)
                 isVocabularyCompleted = (completedVietnamese.size >= totalSentences)
                 Logger.d("✅ [100% similarity] Correct! Completed Vietnamese: '${currentDisplayedExample.vietnamese}' (${completedVietnamese.size}/$totalSentences)")
 
-                // Increment words learned counter for each correct example sentence
                 lifecycleScope.launch {
                     Logger.d("📚 [100% similarity] Sentence completed! Incrementing words learned counter...")
-                    LearningProgressManager.addCompletedVocabulary(requireContext(), forceSync = true)
-                    // Update daily goal UI immediately
+                    LearningProgressManager.addCompletedVocabulary(requireContext())
                     withContext(Dispatchers.Main) {
                         updateDailyGoalUI()
                     }

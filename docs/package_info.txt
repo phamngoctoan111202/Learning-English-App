@@ -1,0 +1,956 @@
+Activity Resolver Table:
+  Schemes:
+      fb900553744535968:
+        f2a982e com.eup.heyjapan/com.facebook.CustomTabActivity filter 114ffcf
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "fb900553744535968"
+      http:
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter c7df0ad
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Scheme: "http"
+          Authority: "heyjapan.page.link": -1
+          Authority: "heyjapan.page.link": -1
+          AutoVerify=true
+        3c25fe2 com.eup.heyjapan/.activity.MainActivity filter dc5df73
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Scheme: "http"
+          Authority: "heyjapan.page.link": -1
+          Authority: "heyjapan.page.link": -1
+          AutoVerify=true
+        d475e30 com.eup.heyjapan/.activity.OldMainActivity filter f35eaa9
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Scheme: "http"
+          Authority: "heyjapan.page.link": -1
+          Authority: "heyjapan.page.link": -1
+          AutoVerify=true
+      https:
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter fb5a259
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /upgrade}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter 1a36e1e
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /fortune}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter 75736ff
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /topic-travel}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter b1e4ccc
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /topic-anime}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter 9150b15
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /video-recording}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter e944e2a
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /modulebcc_ads}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter 372441b
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /modulebcc_igus}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter 4969b8
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /modulebcc_disc}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter 9c84391
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /modulebcc_igkr}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter 20122f6
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /modulebcc_yt}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter 36706f7
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /travel_ads}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter 1076964
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /travel_igus}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter 99c87cd
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /travel_disc}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter e947882
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /travel_igkr}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter 87b1b93
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /travel_yt}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter 583b7d0
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /anime_ads}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter 5f6d3c9
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /anime_igus}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter 5159ace
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /anime_disc}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter 8b1ddef
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /anime_igkr}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter b3480fc
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /anime_yt}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter 38fe385
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /test_ads}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter 97495da
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /chatshibi_ads}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter ce86a0b
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /chatshibi_igus}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter ec6b0e8
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /chatshibi_disc}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter ff03301
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /chatshibi_igkr}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter c9635a6
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /chatshibi_yt}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter 4b19be7
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /dubvideo_ads}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter 8c9f394
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /dubvideo_igus}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter eabfe3d
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /dubvideo_disc}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter 6e00632
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /dubvideo_igkr}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter bf20f83
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /dubvideo_yt}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter 91cb500
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /premium_ads}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter e5f4139
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /account_tip_ads}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter f84537e
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /account_tip_igus}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter e3c20df
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /account_tip_disc}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter d18212c
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /account_tip_igkr}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter 169b7f5
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /account_tip_yt}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter c8e298a
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /account_chart_ads}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter 3ebebfb
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /account_chart_igus}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter c7c2418
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /account_chart_disc}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter 66ade71
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /account_chart_igkr}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter 7ad5456
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /account_chart_yt_1}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter 5034cd7
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /alphabetgame_ads}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter 91b69c4
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Authority: "heyjapan.net": -1
+          Path: "PatternMatcher{PREFIX: /shibigame_ads}"
+          AutoVerify=true
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter c7df0ad
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Scheme: "http"
+          Authority: "heyjapan.page.link": -1
+          Authority: "heyjapan.page.link": -1
+          AutoVerify=true
+        3c25fe2 com.eup.heyjapan/.activity.MainActivity filter dc5df73
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Scheme: "http"
+          Authority: "heyjapan.page.link": -1
+          Authority: "heyjapan.page.link": -1
+          AutoVerify=true
+        d475e30 com.eup.heyjapan/.activity.OldMainActivity filter f35eaa9
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "https"
+          Scheme: "http"
+          Authority: "heyjapan.page.link": -1
+          Authority: "heyjapan.page.link": -1
+          AutoVerify=true
+      fbconnect:
+        f2a982e com.eup.heyjapan/com.facebook.CustomTabActivity filter 4fc2d5c
+          Action: "android.intent.action.VIEW"
+          Category: "android.intent.category.DEFAULT"
+          Category: "android.intent.category.BROWSABLE"
+          Scheme: "fbconnect"
+          Authority: "cct.com.eup.heyjapan": -1
+
+  Non-Data Actions:
+      android.intent.action.MAIN:
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter e3203a3
+          Action: "android.intent.action.MAIN"
+          Category: "android.intent.category.LAUNCHER"
+      android.intent.action.VIEW:
+        a54b6d2 com.eup.heyjapan/.activity.splash.SplashActivity filter b7966a0
+          Action: "android.intent.action.VIEW"
+
+Receiver Resolver Table:
+  Schemes:
+      package:
+        ce58b63 com.eup.heyjapan/.view.widget.UpdateHandler filter fc6b360
+          Action: "android.intent.action.PACKAGE_REPLACED"
+          Category: "android.intent.category.DEFAULT"
+          Scheme: "package"
+
+  Non-Data Actions:
+      android.intent.action.BATTERY_OKAY:
+        5db8e78 com.eup.heyjapan/androidx.work.impl.background.systemalarm.ConstraintProxy$BatteryNotLowProxy filter cb46951
+          Action: "android.intent.action.BATTERY_OKAY"
+          Action: "android.intent.action.BATTERY_LOW"
+      android.intent.action.ACTION_POWER_DISCONNECTED:
+        7d934ea com.eup.heyjapan/androidx.work.impl.background.systemalarm.ConstraintProxy$BatteryChargingProxy filter c9703db
+          Action: "android.intent.action.ACTION_POWER_DISCONNECTED"
+          Action: "android.intent.action.ACTION_POWER_CONNECTED"
+      com.eup.heyjapan.AUTO_UPDATE:
+        48bc9eb com.eup.heyjapan/.view.widget.StreakWidget3x2 filter 55f45e1
+          Action: "com.eup.heyjapan.AUTO_UPDATE"
+        de17f06 com.eup.heyjapan/.view.widget.StreakWidget4x2 filter 98ecbf4
+          Action: "com.eup.heyjapan.AUTO_UPDATE"
+      androidx.profileinstaller.action.SAVE_PROFILE:
+        68b85a8 com.eup.heyjapan/androidx.profileinstaller.ProfileInstallReceiver filter d907a7
+          Action: "androidx.profileinstaller.action.SAVE_PROFILE"
+      com.facebook.sdk.ACTION_CURRENT_AUTHENTICATION_TOKEN_CHANGED:
+        20ac9a com.eup.heyjapan/com.facebook.AuthenticationTokenManager$CurrentAuthenticationTokenChangedBroadcastReceiver filter b9c99cb
+          Action: "com.facebook.sdk.ACTION_CURRENT_AUTHENTICATION_TOKEN_CHANGED"
+      android.intent.action.DEVICE_STORAGE_LOW:
+        68db5b6 com.eup.heyjapan/androidx.work.impl.background.systemalarm.ConstraintProxy$StorageNotLowProxy filter 87802b7
+          Action: "android.intent.action.DEVICE_STORAGE_LOW"
+          Action: "android.intent.action.DEVICE_STORAGE_OK"
+      android.net.conn.CONNECTIVITY_CHANGE:
+        70368de com.eup.heyjapan/.utils.video.NetworkChangeReceiver filter 1b7abf
+          Action: "android.net.conn.CONNECTIVITY_CHANGE"
+        c771a24 com.eup.heyjapan/androidx.work.impl.background.systemalarm.ConstraintProxy$NetworkStateProxy filter 485498d
+          Action: "android.net.conn.CONNECTIVITY_CHANGE"
+      com.facebook.sdk.ACTION_CURRENT_ACCESS_TOKEN_CHANGED:
+        55189bc com.eup.heyjapan/com.facebook.CurrentAccessTokenExpirationBroadcastReceiver filter f171d45
+          Action: "com.facebook.sdk.ACTION_CURRENT_ACCESS_TOKEN_CHANGED"
+      android.intent.action.DEVICE_STORAGE_OK:
+        68db5b6 com.eup.heyjapan/androidx.work.impl.background.systemalarm.ConstraintProxy$StorageNotLowProxy filter 87802b7
+          Action: "android.intent.action.DEVICE_STORAGE_LOW"
+          Action: "android.intent.action.DEVICE_STORAGE_OK"
+      androidx.profileinstaller.action.INSTALL_PROFILE:
+        68b85a8 com.eup.heyjapan/androidx.profileinstaller.ProfileInstallReceiver filter 41148c1
+          Action: "androidx.profileinstaller.action.INSTALL_PROFILE"
+      com.google.android.c2dm.intent.RECEIVE:
+        9d3a58c com.eup.heyjapan/com.google.firebase.iid.FirebaseInstanceIdReceiver filter 1d654d5
+          Action: "com.google.android.c2dm.intent.RECEIVE"
+      android.intent.action.BATTERY_LOW:
+        5db8e78 com.eup.heyjapan/androidx.work.impl.background.systemalarm.ConstraintProxy$BatteryNotLowProxy filter cb46951
+          Action: "android.intent.action.BATTERY_OKAY"
+          Action: "android.intent.action.BATTERY_LOW"
+      android.intent.action.TIMEZONE_CHANGED:
+        9377742 com.eup.heyjapan/androidx.work.impl.background.systemalarm.RescheduleReceiver filter 2001353
+          Action: "android.intent.action.TIMEZONE_CHANGED"
+          Action: "android.intent.action.TIME_SET"
+          Action: "android.intent.action.BOOT_COMPLETED"
+      android.intent.action.TIME_SET:
+        9377742 com.eup.heyjapan/androidx.work.impl.background.systemalarm.RescheduleReceiver filter 2001353
+          Action: "android.intent.action.TIMEZONE_CHANGED"
+          Action: "android.intent.action.TIME_SET"
+          Action: "android.intent.action.BOOT_COMPLETED"
+      androidx.profileinstaller.action.SKIP_FILE:
+        68b85a8 com.eup.heyjapan/androidx.profileinstaller.ProfileInstallReceiver filter 5ccf866
+          Action: "androidx.profileinstaller.action.SKIP_FILE"
+      androidx.profileinstaller.action.BENCHMARK_OPERATION:
+        68b85a8 com.eup.heyjapan/androidx.profileinstaller.ProfileInstallReceiver filter ee75454
+          Action: "androidx.profileinstaller.action.BENCHMARK_OPERATION"
+      android.intent.action.BOOT_COMPLETED:
+        6598865 com.eup.heyjapan/.utils.notification.BootReceiver filter ecc093a
+          Action: "android.intent.action.BOOT_COMPLETED"
+        6a95f1d com.eup.heyjapan/.view.widget.BootHandler filter e868592
+          Action: "android.intent.action.BOOT_COMPLETED"
+        9377742 com.eup.heyjapan/androidx.work.impl.background.systemalarm.RescheduleReceiver filter 2001353
+          Action: "android.intent.action.TIMEZONE_CHANGED"
+          Action: "android.intent.action.TIME_SET"
+          Action: "android.intent.action.BOOT_COMPLETED"
+      android.intent.action.ACTION_POWER_CONNECTED:
+        7d934ea com.eup.heyjapan/androidx.work.impl.background.systemalarm.ConstraintProxy$BatteryChargingProxy filter c9703db
+          Action: "android.intent.action.ACTION_POWER_DISCONNECTED"
+          Action: "android.intent.action.ACTION_POWER_CONNECTED"
+      android.appwidget.action.APPWIDGET_UPDATE:
+        48bc9eb com.eup.heyjapan/.view.widget.StreakWidget3x2 filter dccc348
+          Action: "android.appwidget.action.APPWIDGET_UPDATE"
+        de17f06 com.eup.heyjapan/.view.widget.StreakWidget4x2 filter 25b19c7
+          Action: "android.appwidget.action.APPWIDGET_UPDATE"
+      androidx.work.diagnostics.REQUEST_DIAGNOSTICS:
+        ec9c58e com.eup.heyjapan/androidx.work.impl.diagnostics.DiagnosticsReceiver filter fee91af
+          Action: "androidx.work.diagnostics.REQUEST_DIAGNOSTICS"
+      android.intent.action.MY_PACKAGE_REPLACED:
+        ce58b63 com.eup.heyjapan/.view.widget.UpdateHandler filter e81d019
+          Action: "android.intent.action.MY_PACKAGE_REPLACED"
+          Category: "android.intent.category.DEFAULT"
+      androidx.work.impl.background.systemalarm.UpdateProxies:
+        51db490 com.eup.heyjapan/androidx.work.impl.background.systemalarm.ConstraintProxyUpdateReceiver filter 209f189
+          Action: "androidx.work.impl.background.systemalarm.UpdateProxies"
+
+Service Resolver Table:
+  Schemes:
+      appmetrica:
+        aed449f com.eup.heyjapan/io.appmetrica.analytics.internal.AppMetricaService filter 3e8d9ec
+          Action: "io.appmetrica.analytics.IAppMetricaService"
+          Category: "android.intent.category.DEFAULT"
+          Scheme: "appmetrica"
+
+  Non-Data Actions:
+      com.google.android.exoplayer.downloadService.action.RESTART:
+        f847743 com.eup.heyjapan/com.chartboost.sdk.internal.video.repository.exoplayer.VideoRepositoryDownloadService filter 88f61c0
+          Action: "com.google.android.exoplayer.downloadService.action.RESTART"
+          Category: "android.intent.category.DEFAULT"
+      com.google.firebase.MESSAGING_EVENT:
+        128affd com.eup.heyjapan/.google.fcm.MyFirebaseMessagingService filter ea034f2
+          Action: "com.google.firebase.MESSAGING_EVENT"
+        f554ef9 com.eup.heyjapan/com.google.firebase.messaging.FirebaseMessagingService filter 2f8ae3e
+          Action: "com.google.firebase.MESSAGING_EVENT"
+          mPriority=-500, mOrder=0, mHasStaticPartialTypes=false, mHasDynamicPartialTypes=false
+
+Domain verification status:
+  com.eup.heyjapan:
+    ID: b83592c5-e63b-4997-8906-f46e194493d2
+    Signatures: [55:BE:42:F6:05:1F:0C:55:02:29:D8:6C:75:BA:DA:2F:41:DF:67:52:27:9D:F3:D1:C2:F9:62:2D:02:DB:65:4A]
+    Domain verification state:
+      heyjapan.net: verified
+      heyjapan.page.link: verified
+    User all:
+      Verification link handling allowed: true
+      Selection state:
+        Disabled:
+          heyjapan.net
+          heyjapan.page.link
+
+Permissions:
+  Permission [com.eup.heyjapan.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION] (2c60321):
+    sourcePackage=com.eup.heyjapan
+    uid=13226 gids=[] type=0 prot=signature
+    perm=PermissionInfo{fc99346 com.eup.heyjapan.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION}
+    flags=0x0
+
+Registered ContentProviders:
+  com.eup.heyjapan/com.vungle.ads.VungleProvider:
+    Provider{1d73907 com.eup.heyjapan/com.vungle.ads.VungleProvider}
+  com.eup.heyjapan/com.yandex.mobile.ads.core.initializer.MobileAdsInitializeProvider:
+    Provider{e6d9a34 com.eup.heyjapan/com.yandex.mobile.ads.core.initializer.MobileAdsInitializeProvider}
+  com.eup.heyjapan/com.google.android.gms.ads.MobileAdsInitProvider:
+    Provider{1deb05d com.eup.heyjapan/com.google.android.gms.ads.MobileAdsInitProvider}
+  com.eup.heyjapan/androidx.core.content.FileProvider:
+    Provider{a7b9dd2 com.eup.heyjapan/androidx.core.content.FileProvider}
+  com.eup.heyjapan/com.yandex.mobile.ads.features.debugpanel.data.local.DebugPanelFileProvider:
+    Provider{3245ea3 com.eup.heyjapan/com.yandex.mobile.ads.features.debugpanel.data.local.DebugPanelFileProvider}
+  com.eup.heyjapan/com.squareup.picasso.PicassoProvider:
+    Provider{6425a0 com.eup.heyjapan/com.squareup.picasso.PicassoProvider}
+  com.eup.heyjapan/com.google.firebase.provider.FirebaseInitProvider:
+    Provider{7daf559 com.eup.heyjapan/com.google.firebase.provider.FirebaseInitProvider}
+  com.eup.heyjapan/io.appmetrica.analytics.internal.PreloadInfoContentProvider:
+    Provider{ad1c51e com.eup.heyjapan/io.appmetrica.analytics.internal.PreloadInfoContentProvider}
+  com.eup.heyjapan/com.facebook.internal.FacebookInitProvider:
+    Provider{89441ff com.eup.heyjapan/com.facebook.internal.FacebookInitProvider}
+  com.eup.heyjapan/androidx.startup.InitializationProvider:
+    Provider{d75fbcc com.eup.heyjapan/androidx.startup.InitializationProvider}
+
+ContentProvider Authorities:
+  [com.eup.heyjapan.appmetrica.preloadinfo.retail]:
+    Provider{ad1c51e com.eup.heyjapan/io.appmetrica.analytics.internal.PreloadInfoContentProvider}
+      applicationInfo=ApplicationInfo{9bc8e15 com.eup.heyjapan}
+  [com.eup.heyjapan.MobileAdsInitializeProvider]:
+    Provider{e6d9a34 com.eup.heyjapan/com.yandex.mobile.ads.core.initializer.MobileAdsInitializeProvider}
+      applicationInfo=ApplicationInfo{1d1152a com.eup.heyjapan}
+  [com.eup.heyjapan.com.squareup.picasso]:
+    Provider{6425a0 com.eup.heyjapan/com.squareup.picasso.PicassoProvider}
+      applicationInfo=ApplicationInfo{2f4ff1b com.eup.heyjapan}
+  [com.eup.heyjapan.fileprovider]:
+    Provider{a7b9dd2 com.eup.heyjapan/androidx.core.content.FileProvider}
+      applicationInfo=ApplicationInfo{1ed08b8 com.eup.heyjapan}
+  [com.eup.heyjapan.androidx-startup]:
+    Provider{d75fbcc com.eup.heyjapan/androidx.startup.InitializationProvider}
+      applicationInfo=ApplicationInfo{e4f691 com.eup.heyjapan}
+  [com.eup.heyjapan.monetization.ads.inspector.fileprovider]:
+    Provider{3245ea3 com.eup.heyjapan/com.yandex.mobile.ads.features.debugpanel.data.local.DebugPanelFileProvider}
+      applicationInfo=ApplicationInfo{9c359f6 com.eup.heyjapan}
+  [com.eup.heyjapan.mobileadsinitprovider]:
+    Provider{1deb05d com.eup.heyjapan/com.google.android.gms.ads.MobileAdsInitProvider}
+      applicationInfo=ApplicationInfo{7da71f7 com.eup.heyjapan}
+  [com.eup.heyjapan.vungle-provider]:
+    Provider{1d73907 com.eup.heyjapan/com.vungle.ads.VungleProvider}
+      applicationInfo=ApplicationInfo{2c5f864 com.eup.heyjapan}
+  [com.eup.heyjapan.firebaseinitprovider]:
+    Provider{7daf559 com.eup.heyjapan/com.google.firebase.provider.FirebaseInitProvider}
+      applicationInfo=ApplicationInfo{1516acd com.eup.heyjapan}
+  [com.eup.heyjapan.FacebookInitProvider]:
+    Provider{89441ff com.eup.heyjapan/com.facebook.internal.FacebookInitProvider}
+      applicationInfo=ApplicationInfo{5c31f82 com.eup.heyjapan}
+
+Key Set Manager:
+  [com.eup.heyjapan]
+      Signing KeySets: 2677
+
+Packages:
+  Package [com.eup.heyjapan] (83a3693):
+    appId=13226
+    pkg=Package{d788d5d com.eup.heyjapan}
+    codePath=/data/app/~~PeIxZhdfTDkbuNEi47nHKA==/com.eup.heyjapan-XccRgzoTU5JFQQsKzni_vQ==
+    resourcePath=/data/app/~~PeIxZhdfTDkbuNEi47nHKA==/com.eup.heyjapan-XccRgzoTU5JFQQsKzni_vQ==
+    legacyNativeLibraryDir=/data/app/~~PeIxZhdfTDkbuNEi47nHKA==/com.eup.heyjapan-XccRgzoTU5JFQQsKzni_vQ==/lib
+    extractNativeLibs=false
+    primaryCpuAbi=arm64-v8a
+    secondaryCpuAbi=null
+    cpuAbiOverride=null
+    versionCode=467 minSdk=24 targetSdk=36
+    minExtensionVersions=[]
+    versionName=3.2.11
+    hiddenApiEnforcementPolicy=2
+    usesNonSdkApi=false
+    splits=[base, config.arm64_v8a, config.xxxhdpi]
+    apkSigningVersion=3
+    flags=[ HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP LARGE_HEAP ]
+    privateFlags=[ PRIVATE_FLAG_ACTIVITIES_RESIZE_MODE_RESIZEABLE_VIA_SDK_VERSION ALLOW_AUDIO_PLAYBACK_CAPTURE PRIVATE_FLAG_REQUEST_LEGACY_EXTERNAL_STORAGE HAS_DOMAIN_URLS PARTIALLY_DIRECT_BOOT_AWARE PRIVATE_FLAG_ALLOW_NATIVE_HEAP_POINTER_TAGGING ]
+    forceQueryable=false
+    queriesPackages=[com.google.android.googlequicksearchbox, com.facebook.katana, com.instagram.android, com.facebook.lite]
+    queriesIntents=[Intent { act=android.speech.RecognitionService }, Intent { act=android.speech.action.RECOGNIZE_SPEECH }, Intent { act=android.intent.action.SEND dat=content://*/... typ=image/jpeg }, Intent { act=android.intent.action.ACTION_VIEW dat=https:/... }, Intent { act=android.intent.action.VIEW dat=https:/... }, Intent { act=com.attribution.REFERRAL_PROVIDER }, Intent { act=androidx.browser.customtabs.CustomTabsService }, Intent { act=android.intent.action.VIEW cat=[android.intent.category.BROWSABLE] dat=https:/... }, Intent { act=android.intent.action.VIEW cat=[android.intent.category.BROWSABLE] dat=http:/... }, Intent { act=android.intent.action.VIEW dat=market:/... }, Intent { act=com.android.vending.billing.InAppBillingService.BIND }, Intent { act=com.google.android.apps.play.billingtestcompanion.BillingOverrideService.BIND }, Intent { act=android.support.customtabs.action.CustomTabsService }, Intent { act=android.intent.action.INSERT dat=content://*/... typ=vnd.android.cursor.dir/event }, Intent { act=android.intent.action.VIEW dat=sms:xx }, Intent { act=android.intent.action.DIAL }]
+    scannedAsStoppedSystemApp=false
+    supportsScreens=[small, medium, large, xlarge, resizeable, anyDensity]
+    usesOptionalLibraries:
+      androidx.window.extensions
+      androidx.window.sidecar
+    usesLibraryFiles:
+      /system_ext/framework/androidx.window.extensions.jar
+      /system_ext/framework/androidx.window.sidecar.jar
+    timeStamp=2025-12-04 15:30:25
+    lastUpdateTime=2025-12-04 15:30:25
+    installerPackageName=com.android.vending
+    installerPackageUid=10173
+    initiatingPackageName=com.android.vending
+    originatingPackageName=null
+    updateOwnerPackageName=com.android.vending
+    packageSource=0
+    appMetadataFilePath=/data/app/~~PeIxZhdfTDkbuNEi47nHKA==/com.eup.heyjapan-XccRgzoTU5JFQQsKzni_vQ==/app.metadata
+    appMetadataSource=2
+    signatures=PackageSignatures{61c36d0 version:3, signatures:[f477ce69], past signatures:[]}
+    installPermissionsFixed=false
+    pkgFlags=[ HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP LARGE_HEAP ]
+    privatePkgFlags=[ PRIVATE_FLAG_ACTIVITIES_RESIZE_MODE_RESIZEABLE_VIA_SDK_VERSION ALLOW_AUDIO_PLAYBACK_CAPTURE PRIVATE_FLAG_REQUEST_LEGACY_EXTERNAL_STORAGE HAS_DOMAIN_URLS PARTIALLY_DIRECT_BOOT_AWARE PRIVATE_FLAG_ALLOW_NATIVE_HEAP_POINTER_TAGGING ]
+    apexModuleName=null
+    declared permissions:
+      com.eup.heyjapan.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION: prot=signature
+    requested permissions:
+      com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE
+      android.permission.ACCESS_ADSERVICES_TOPICS
+      android.permission.POST_NOTIFICATIONS
+      com.google.android.c2dm.permission.RECEIVE
+      android.permission.ACCESS_FINE_LOCATION
+      android.permission.MODIFY_AUDIO_SETTINGS
+      android.permission.ACCESS_NOTIFICATION_POLICY
+      android.permission.FOREGROUND_SERVICE
+      android.permission.RECEIVE_BOOT_COMPLETED
+      android.permission.ACCESS_ADSERVICES_AD_ID
+      android.permission.INTERNET
+      com.android.vending.BILLING
+      android.permission.ACCESS_ADSERVICES_CUSTOM_AUDIENCE
+      android.permission.READ_EXTERNAL_STORAGE
+      android.permission.ACCESS_COARSE_LOCATION
+      android.permission.READ_PHONE_STATE
+      android.permission.CHANGE_WIFI_STATE
+      android.permission.ACCESS_NETWORK_STATE
+      com.eup.heyjapan.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+      android.permission.BROADCAST_CLOSE_SYSTEM_DIALOGS
+      android.permission.ACCESS_ADSERVICES_ATTRIBUTION
+      android.permission.SCHEDULE_EXACT_ALARM
+      android.permission.WRITE_EXTERNAL_STORAGE
+      android.permission.VIBRATE
+      android.permission.ACCESS_WIFI_STATE
+      android.permission.RECORD_AUDIO
+      android.permission.WAKE_LOCK
+    install permissions:
+      com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE: granted=true
+      android.permission.ACCESS_ADSERVICES_TOPICS: granted=true
+      com.google.android.c2dm.permission.RECEIVE: granted=true
+      android.permission.MODIFY_AUDIO_SETTINGS: granted=true
+      android.permission.ACCESS_NOTIFICATION_POLICY: granted=true
+      android.permission.FOREGROUND_SERVICE: granted=true
+      android.permission.RECEIVE_BOOT_COMPLETED: granted=true
+      android.permission.ACCESS_ADSERVICES_AD_ID: granted=true
+      android.permission.INTERNET: granted=true
+      com.android.vending.BILLING: granted=true
+      android.permission.ACCESS_ADSERVICES_CUSTOM_AUDIENCE: granted=true
+      android.permission.CHANGE_WIFI_STATE: granted=true
+      android.permission.ACCESS_NETWORK_STATE: granted=true
+      com.eup.heyjapan.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION: granted=true
+      android.permission.ACCESS_ADSERVICES_ATTRIBUTION: granted=true
+      android.permission.VIBRATE: granted=true
+      android.permission.ACCESS_WIFI_STATE: granted=true
+      android.permission.WAKE_LOCK: granted=true
+    User 0: ceDataInode=2771808 deDataInode=1313018 installed=true hidden=false vHidden=1 suspended=false distractionFlags=0 stopped=false vStopped=false notLaunched=false enabled=0 instant=false virtual=false quarantined=false
+      installReason=4
+      dataDir=/data/user/0/com.eup.heyjapan
+      firstInstallTime=2025-12-04 15:30:25
+      uninstallReason=0
+      overlay paths:
+        /product/overlay/TransparentNavigationBar/TransparentNavigationBarOverlay.apk
+        /data/resource-cache/com.android.systemui-neutral-DsXG.frro
+        /data/resource-cache/com.android.systemui-accent-6poe.frro
+        /data/resource-cache/com.android.systemui-dynamic-39yK.frro
+      legacy overlay paths:
+        /product/overlay/TransparentNavigationBar/TransparentNavigationBarOverlay.apk
+      lastDisabledCaller: com.android.vending
+      gids=[3003]
+      runtime permissions:
+        android.permission.POST_NOTIFICATIONS: granted=false, flags=[ USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED]
+        android.permission.ACCESS_FINE_LOCATION: granted=false, flags=[ USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED]
+        android.permission.READ_EXTERNAL_STORAGE: granted=false, flags=[ REVOKE_WHEN_REQUESTED|USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED|RESTRICTION_INSTALLER_EXEMPT]
+        android.permission.ACCESS_COARSE_LOCATION: granted=false, flags=[ USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED]
+        android.permission.READ_PHONE_STATE: granted=false, flags=[ USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED]
+        android.permission.WRITE_EXTERNAL_STORAGE: granted=false, flags=[ USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED|RESTRICTION_INSTALLER_EXEMPT]
+        android.permission.RECORD_AUDIO: granted=false, flags=[ USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED]
+      enabledComponents:
+        androidx.work.impl.background.systemjob.SystemJobService
+    User 666: ceDataInode=0 deDataInode=0 installed=false hidden=false vHidden=1 suspended=false distractionFlags=0 stopped=true vStopped=false notLaunched=true enabled=0 instant=false virtual=false quarantined=false
+      installReason=0
+      dataDir=null
+      firstInstallTime=1970-01-01 08:00:00
+      uninstallReason=0
+      gids=[3003]
+      runtime permissions:
+        android.permission.READ_EXTERNAL_STORAGE: granted=false, flags=[ REVOKE_WHEN_REQUESTED|RESTRICTION_UPGRADE_EXEMPT]
+        android.permission.WRITE_EXTERNAL_STORAGE: granted=false, flags=[ RESTRICTION_UPGRADE_EXEMPT]
+    User 999: ceDataInode=0 deDataInode=0 installed=false hidden=false vHidden=1 suspended=false distractionFlags=0 stopped=true vStopped=false notLaunched=true enabled=0 instant=false virtual=false quarantined=false
+      installReason=0
+      dataDir=null
+      firstInstallTime=1970-01-01 08:00:00
+      uninstallReason=0
+      gids=[3003]
+      runtime permissions:
+        android.permission.READ_EXTERNAL_STORAGE: granted=false, flags=[ REVOKE_WHEN_REQUESTED|RESTRICTION_UPGRADE_EXEMPT]
+        android.permission.WRITE_EXTERNAL_STORAGE: granted=false, flags=[ RESTRICTION_UPGRADE_EXEMPT]
+
+Queries:
+  system apps queryable: false
+  queries via forceQueryable:
+  queries via package name:
+    com.eup.migiitoeic:
+      com.eup.heyjapan
+    com.eup.heyjapan:
+      com.google.android.googlequicksearchbox
+  queries via component:
+    [com.vivo.fuelsummary,com.vivo.sps,vendor.qti.qesdk.sysservice,com.vivo.faceui,com.vivo.ai.gptagent,com.vivo.pie,com.vivo.aiengine,com.vivo.assistant,com.vivo.globalanimation,com.android.BBKCrontab,com.vivo.upslide,com.android.bbklog,com.vos.as.vit,com.vivo.gamewatch,com.vivo.smartshot,com.vivo.permissionmanager,com.vivo.hover,com.vivo.faceunlock,com.qualcomm.qti.xrvd.service,com.android.localtransport,com.vivo.car.networking,com.vivo.healthservice,com.iqoo.powersaving,com.vivo.networkstate,com.android.server.telecom,com.android.inputdevices,com.vivo.vdfs,com.vivo.smartmultiwindow,com.vivo.fingerprintui,com.vivo.vibrator4d,com.vivo.appfilter,com.vivo.fingerprintvit,com.vivo.dr,com.vivo.vms,com.vivo.vivokaraoke,com.vivo.daemonService,com.vivo.gamecube,com.vivo.epm,com.android.keychain,com.android.providers.settings,com.vivo.credentialmanager,com.vivo.multinlp,com.vivo.fingerprint,com.bbk.facewake,com.vivo.audiofx,com.bbk.SuperPowerSave,com.wapi.wapicertmanage,com.vivo.nightpearl,com.vivo.pem,com.android.DeviceAsWebcam,com.android.settings,com.vivo.doubleinstance,com.vivo.floatingball,com.vivo.abe,com.vivo.voicewakeup,com.vivo.smartunlock,com.vivo.minscreen,com.vivo.voicerecognition,com.mobile.cos.iroaming,com.vivo.setupwizard,android,com.android.dynsystem,com.vivo.accessibilityenhance,com.android.location.fused,com.vivo.basemanager]:
+      com.eup.heyjapan
+    com.learnlanguagepro.languagelessons.app2024:
+      com.eup.heyjapan
+    com.sohu.inputmethod.sogou.vivo:
+      com.eup.heyjapan
+    com.vivo.browser:
+      com.eup.heyjapan
+    com.vivo.hiboard:
+      com.eup.heyjapan
+    com.vivo.hybrid:
+      com.eup.heyjapan
+    com.vivo.upnpserver:
+      com.eup.heyjapan
+    com.vivo.ai.copilot:
+      com.eup.heyjapan
+    com.vivo.space:
+      com.eup.heyjapan
+    com.vivo.effectengine:
+      com.eup.heyjapan
+    com.kaixinkan.ugc.video:
+      com.eup.heyjapan
+    com.xmonetize.quizzland:
+      com.eup.heyjapan
+    com.mservice.momotransfer:
+      com.eup.heyjapan
+    mobile.acb.com.vn:
+      com.eup.heyjapan
+    com.shopback.app:
+      com.eup.heyjapan
+    com.vui.taptapandroid:
+      com.eup.heyjapan
+    com.zing.zalo:
+      com.eup.heyjapan
+    com.vnid:
+      com.eup.heyjapan
+    com.google.android.youtube:
+      com.eup.heyjapan
+    jp.naver.line.android:
+      com.eup.heyjapan
+    it.jobs.topdev:
+      com.eup.heyjapan
+    com.tencent.mm:
+      com.eup.heyjapan
+    xyz.be.cake:
+      com.eup.heyjapan
+    com.grabtaxi.passenger:
+      com.eup.heyjapan
+    vn.com.vng.zalopay:
+      com.eup.heyjapan
+    com.google.android.gm:
+      com.eup.heyjapan
+    com.documentreader.documentapp.filereader:
+      com.eup.heyjapan
+    app.revanced.android.youtube:
+      com.eup.heyjapan
+    com.facebook.orca:
+      com.eup.heyjapan
+    com.vnpay.bidv:
+      com.eup.heyjapan
+    com.ocb.liobank:
+      com.eup.heyjapan
+    com.vnptit.vnpt_kyso_v2:
+      com.eup.heyjapan
+    com.mazii.dictionary:
+      com.eup.heyjapan
+    com.cellhubs.giaothongvietnam:
+      com.eup.heyjapan
+    com.reddit.frontpage:
+      com.eup.heyjapan
+    in.playsimple.wordsearch:
+      com.eup.heyjapan
+    com.channelnewsasia:
+      com.eup.heyjapan
+    com.mbmobile:
+      com.eup.heyjapan
+    com.moyu.chuanqirensheng_english:
+      com.eup.heyjapan
+    com.wuochoang.lolegacy:
+      com.eup.heyjapan
+    com.Gseeds.Pechka:
+      com.eup.heyjapan
+    com.Gseeds.JekyllAndHyde:
+      com.eup.heyjapan
+    com.facebook.stella:
+      com.eup.heyjapan
+    com.niven.translator:
+      com.eup.heyjapan
+    jp.co.shueisha.mangaplus:
+      com.eup.heyjapan
+    com.hitappsgames.connectwords:
+      com.eup.heyjapan
+    com.eup.heyjapan:
+      com.vttm.vietteldiscovery
+      com.kaixinkan.ugc.video
+      com.atlassian.android.jira.core
+      com.mservice.momotransfer
+      com.shopee.vn
+      com.beeasy.toppay
+      com.shopback.app
+      com.zing.zalo
+      com.linkedin.android
+      com.github.android
+      com.anthropic.claude
+      by.green.tuber
+      com.google.android.apps.maps
+      com.openai.chatgpt
+      jp.naver.line.android
+      com.shopify.mobile
+      com.tencent.mm
+      com.alibaba.wireless
+      com.grabtaxi.passenger
+      com.gsm.customer
+      com.google.android.apps.bard
+      com.google.android.gm
+      com.google.android.googlequicksearchbox
+      com.facebook.orca
+      com.vnpay.bidv
+      com.piggi.noti
+      com.vnptit.vnpt_kyso_v2
+      com.google.android.apps.labs.language.tailwind
+      com.discord
+      com.kuaishou.nebula
+      com.baidu.searchbox
+      com.smile.gifmaker
+      com.reddit.frontpage
+      com.ninegag.android.app
+      com.google.android.apps.docs
+      com.android.chrome
+      com.facebook.stella
+      com.twitter.android
+    com.realsignal.packetcapturepro:
+      com.eup.heyjapan
+  queryable via interaction:
+    User 0:
+      [com.vivo.fuelsummary,com.vivo.sps,vendor.qti.qesdk.sysservice,com.vivo.faceui,com.vivo.ai.gptagent,com.vivo.pie,com.vivo.aiengine,com.vivo.assistant,com.vivo.globalanimation,com.android.BBKCrontab,com.vivo.upslide,com.android.bbklog,com.vos.as.vit,com.vivo.gamewatch,com.vivo.smartshot,com.vivo.permissionmanager,com.vivo.hover,com.vivo.faceunlock,com.qualcomm.qti.xrvd.service,com.android.localtransport,com.vivo.car.networking,com.vivo.healthservice,com.iqoo.powersaving,com.vivo.networkstate,com.android.server.telecom,com.android.inputdevices,com.vivo.vdfs,com.vivo.smartmultiwindow,com.vivo.fingerprintui,com.vivo.vibrator4d,com.vivo.appfilter,com.vivo.fingerprintvit,com.vivo.dr,com.vivo.vms,com.vivo.vivokaraoke,com.vivo.daemonService,com.vivo.gamecube,com.vivo.epm,com.android.keychain,com.android.providers.settings,com.vivo.credentialmanager,com.vivo.multinlp,com.vivo.fingerprint,com.bbk.facewake,com.vivo.audiofx,com.bbk.SuperPowerSave,com.wapi.wapicertmanage,com.vivo.nightpearl,com.vivo.pem,com.android.DeviceAsWebcam,com.android.settings,com.vivo.doubleinstance,com.vivo.floatingball,com.vivo.abe,com.vivo.voicewakeup,com.vivo.smartunlock,com.vivo.minscreen,com.vivo.voicerecognition,com.mobile.cos.iroaming,com.vivo.setupwizard,android,com.android.dynsystem,com.vivo.accessibilityenhance,com.android.location.fused,com.vivo.basemanager]:
+        com.eup.heyjapan
+      com.android.providers.media.module:
+        com.eup.heyjapan
+      com.android.vending:
+        com.eup.heyjapan
+      [com.google.android.gsf,com.google.android.gms]:
+        com.eup.heyjapan
+      com.google.android.webview:
+        com.eup.heyjapan
+      com.android.adservices.api:
+        com.eup.heyjapan
+      com.vng.inputmethod.labankey:
+        com.eup.heyjapan
+      com.eup.heyjapan:
+        [com.vivo.fuelsummary,com.vivo.sps,vendor.qti.qesdk.sysservice,com.vivo.faceui,com.vivo.ai.gptagent,com.vivo.pie,com.vivo.aiengine,com.vivo.assistant,com.vivo.globalanimation,com.android.BBKCrontab,com.vivo.upslide,com.android.bbklog,com.vos.as.vit,com.vivo.gamewatch,com.vivo.smartshot,com.vivo.permissionmanager,com.vivo.hover,com.vivo.faceunlock,com.qualcomm.qti.xrvd.service,com.android.localtransport,com.vivo.car.networking,com.vivo.healthservice,com.iqoo.powersaving,com.vivo.networkstate,com.android.server.telecom,com.android.inputdevices,com.vivo.vdfs,com.vivo.smartmultiwindow,com.vivo.fingerprintui,com.vivo.vibrator4d,com.vivo.appfilter,com.vivo.fingerprintvit,com.vivo.dr,com.vivo.vms,com.vivo.vivokaraoke,com.vivo.daemonService,com.vivo.gamecube,com.vivo.epm,com.android.keychain,com.android.providers.settings,com.vivo.credentialmanager,com.vivo.multinlp,com.vivo.fingerprint,com.bbk.facewake,com.vivo.audiofx,com.bbk.SuperPowerSave,com.wapi.wapicertmanage,com.vivo.nightpearl,com.vivo.pem,com.android.DeviceAsWebcam,com.android.settings,com.vivo.doubleinstance,com.vivo.floatingball,com.vivo.abe,com.vivo.voicewakeup,com.vivo.smartunlock,com.vivo.minscreen,com.vivo.voicerecognition,com.mobile.cos.iroaming,com.vivo.setupwizard,android,com.android.dynsystem,com.vivo.accessibilityenhance,com.android.location.fused,com.vivo.basemanager]
+        com.google.android.webview
+    User 666:
+    User 999:
+  queryable via uses-library:
+
+Dexopt state:
+  [com.eup.heyjapan]
+    path: /data/app/~~PeIxZhdfTDkbuNEi47nHKA==/com.eup.heyjapan-XccRgzoTU5JFQQsKzni_vQ==/base.apk
+      arm64: [status=verify] [reason=install-dm] [primary-abi]
+        [location is /data/app/~~PeIxZhdfTDkbuNEi47nHKA==/com.eup.heyjapan-XccRgzoTU5JFQQsKzni_vQ==/oat/arm64/base.odex]
+    known secondary dex files:
+      /data/user/0/com.eup.heyjapan/app_pccache/5/092940B270D6635C3081F004DD99A26CC95EADE3/pcam.jar (removed)
+        arm64: [status=error] [reason=error] [primary-abi]
+          [location is Failed to create OatFileAssistant: Failed to load class loader context files for '/data/user/0/com.eup.heyjapan/app_pccache/5/092940B270D6635C3081F004DD99A26CC95EADE3/pcam.jar' with context 'PCL[];PCL[/data/data/com.eup.heyjapan/code_cache/.overlay/base.apk/classes6.dex:/data/data/com.eup.heyjapan/code_cache/.overlay/base.apk/classes9.dex:/data/app/~~7JqgX74LfbUGIY6pUsu-yA==/com.eup.heyjapan-D1bZ-FZUKZwDMtKdxpWhtg==/base.apk]{PCL[/system_ext/framework/androidx.window.extensions.jar]#PCL[/system_ext/framework/androidx.window.sidecar.jar]}']
+        class loader context: PCL[];PCL[/data/data/com.eup.heyjapan/code_cache/.overlay/base.apk/classes6.dex:/data/data/com.eup.heyjapan/code_cache/.overlay/base.apk/classes9.dex:/data/app/~~7JqgX74LfbUGIY6pUsu-yA==/com.eup.heyjapan-D1bZ-FZUKZwDMtKdxpWhtg==/base.apk]{PCL[/system_ext/framework/androidx.window.extensions.jar]#PCL[/system_ext/framework/androidx.window.sidecar.jar]}
+      /data/user/0/com.eup.heyjapan/app_pccache/5/1CEDD60EE1DEB4A5D57108096C421D8F03173B2C/pcam.jar
+        arm64: [status=verify] [reason=vdex] [primary-abi]
+          [location is /data/user/0/com.eup.heyjapan/app_pccache/5/1CEDD60EE1DEB4A5D57108096C421D8F03173B2C/oat/arm64/pcam.vdex]
+        class loader context: PCL[];PCL[/data/app/~~PeIxZhdfTDkbuNEi47nHKA==/com.eup.heyjapan-XccRgzoTU5JFQQsKzni_vQ==/base.apk]{PCL[/system_ext/framework/androidx.window.extensions.jar]#PCL[/system_ext/framework/androidx.window.sidecar.jar]}
+      /data/user/0/com.eup.heyjapan/cache/1754603592408.jar (removed)
+        arm64: [status=unknown] [reason=unknown] [primary-abi]
+          [location is error]
+        class loader context: PCL[];PCL[/data/app/~~PeIxZhdfTDkbuNEi47nHKA==/com.eup.heyjapan-XccRgzoTU5JFQQsKzni_vQ==/base.apk]{PCL[/system_ext/framework/androidx.window.extensions.jar]#PCL[/system_ext/framework/androidx.window.sidecar.jar]}
+
+Compiler stats:
+  [com.eup.heyjapan]
+    (No recorded stats)
