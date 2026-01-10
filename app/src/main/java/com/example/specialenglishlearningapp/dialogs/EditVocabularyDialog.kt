@@ -82,6 +82,10 @@ class EditVocabularyDialog(
             else -> radioGroupCategory.check(R.id.radioGeneral)
         }
 
+        // Clear any existing example inputs first to prevent duplicates
+        exampleInputs.clear()
+        examplesContainer.removeAllViews()
+
         // Add existing examples with improved tree structure
         Logger.d("EditVocabularyDialog: Found ${vocabularyWithExamples.examples.size} examples")
         vocabularyWithExamples.examples.forEach { example ->

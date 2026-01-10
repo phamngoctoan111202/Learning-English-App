@@ -50,7 +50,7 @@ class WordQueueAdapter : RecyclerView.Adapter<WordQueueAdapter.WordQueueViewHold
             // Highlight current word with different background
             if (item.isCurrentWord) {
                 cardWordQueue.setCardBackgroundColor(Color.parseColor("#E3F2FD")) // Light Blue
-                textQueueWord.setTextColor(Color.parseColor("#1565C0")) // Dark Blue
+                textQueueWord.setTextColor(Color.WHITE) // White
             } else {
                 cardWordQueue.setCardBackgroundColor(Color.WHITE)
                 textQueueWord.setTextColor(Color.BLACK)
