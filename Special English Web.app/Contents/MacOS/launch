@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# Get the app bundle path
+APP_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd ../.. && pwd )"
+PROJECT_DIR="$( cd "$APP_PATH/.." && pwd )"
+WEB_DIR="$PROJECT_DIR/web"
+
+# Check if web directory exists
+if [ ! -d "$WEB_DIR" ]; then
+    osascript -e 'display dialog "Web directory not found at: '"$WEB_DIR"'" buttons {"OK"} default button 1 with icon stop'
+    exit 1
+fi
+
+# Kill any existing server on port 8080
+lsof -ti:8080 | xargs kill -9 2>/dev/null
+
+# Open Terminal and run server
+osascript <<APPLESCRIPT
+tell application "Terminal"
+    activate
+    do script "cd '$WEB_DIR' && echo '🚀 Special English Learning App' && echo '📂 Serving: $WEB_DIR' && echo '🌐 URL: http://localhost:8080' && echo '' && echo 'Press Ctrl+C to stop the server' && echo '' && sleep 2 && open 'http://localhost:8080' && python3 -m http.server 8080"
+end tell
+APPLESCRIPT
+
+exit 0

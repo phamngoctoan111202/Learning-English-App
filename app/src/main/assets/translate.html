@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Learning Translator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', 'Arial', sans-serif;
+            background-color: #f1f3f4;
+            color: #202124;
+        }
+
+        .header {
+            background-color: #1a73e8;
+            color: white;
+            padding: 16px 24px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 22px;
+            font-weight: 400;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 32px;
+            height: 32px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .translate-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .language-bar {
+            display: flex;
+            align-items: center;
+            padding: 16px 24px;
+            border-bottom: 1px solid #e0e0e0;
+            background-color: #f8f9fa;
+        }
+
+        .language-select {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .language-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1a73e8;
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .language-label:hover {
+            background-color: #e8f0fe;
+        }
+
+        .swap-button {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #5f6368;
+            transition: background-color 0.2s;
+        }
+
+        .swap-button:hover {
+            background-color: #e8f0fe;
+        }
+
+        .translate-body {
+            display: flex;
+            min-height: 300px;
+        }
+
+        .input-section,
+        .output-section {
+            flex: 1;
+            padding: 24px;
+            position: relative;
+        }
+
+        .input-section {
+            border-right: 1px solid #e0e0e0;
+        }
+
+        .text-input {
+            width: 100%;
+            min-height: 200px;
+            border: none;
+            font-size: 18px;
+            font-family: inherit;
+            resize: none;
+            outline: none;
+            color: #202124;
+        }
+
+        .text-input::placeholder {
+            color: #9aa0a6;
+        }
+
+        .output-text {
+            width: 100%;
+            min-height: 200px;
+            font-size: 18px;
+            color: #202124;
+            line-height: 1.6;
+        }
+
+        .output-text.placeholder {
+            color: #9aa0a6;
+        }
+
+        .action-buttons {
+            position: absolute;
+            bottom: 16px;
+            right: 24px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-button {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #5f6368;
+            transition: background-color 0.2s;
+        }
+
+        .icon-button:hover {
+            background-color: #f1f3f4;
+        }
+
+        .icon-button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .char-counter {
+            position: absolute;
+            bottom: 16px;
+            left: 24px;
+            font-size: 12px;
+            color: #5f6368;
+        }
+
+        .translations-section {
+            border-top: 1px solid #e0e0e0;
+            padding: 16px 24px;
+            background-color: #f8f9fa;
+        }
+
+        .translations-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #5f6368;
+            margin-bottom: 12px;
+        }
+
+        .translation-option {
+            background: white;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 1px solid #e0e0e0;
+            transition: all 0.2s;
+        }
+
+        .translation-option:hover {
+            border-color: #1a73e8;
+            box-shadow: 0 1px 3px rgba(26,115,232,0.2);
+        }
+
+        .translation-text {
+            font-size: 16px;
+            color: #202124;
+            margin-bottom: 4px;
+        }
+
+        .translation-meta {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .grammar-tag {
+            font-size: 12px;
+            color: #5f6368;
+            font-style: italic;
+        }
+
+        .category-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            background-color: #e8f0fe;
+            color: #1967d2;
+        }
+
+        .category-badge.toeic {
+            background-color: #fce8e6;
+            color: #c5221f;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #9aa0a6;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .info-banner {
+            background: #e8f0fe;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .info-banner-icon {
+            font-size: 20px;
+        }
+
+        .info-banner-text {
+            font-size: 14px;
+            color: #174ea6;
+            line-height: 1.4;
+        }
+
+        @media (max-width: 768px) {
+            .translate-body {
+                flex-direction: column;
+            }
+
+            .input-section {
+                border-right: none;
+                border-bottom: 1px solid #e0e0e0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>
+            <span class="logo">📚</span>
+            English Learning Translator
+        </h1>
+    </div>
+
+    <div class="container">
+        <div class="info-banner">
+            <span class="info-banner-icon">💡</span>
+            <div class="info-banner-text">
+                <strong>Học tiếng Anh thông minh:</strong> Nhập tiếng Việt để xem các cách diễn đạt tiếng Anh từ bộ từ vựng của bạn.
+                Click vào bất kỳ kết quả nào để nghe phát âm!
+            </div>
+        </div>
+
+        <div class="translate-card">
+            <div class="language-bar">
+                <div class="language-select">
+                    <span class="language-label" id="sourceLanguage">Tiếng Việt</span>
+                </div>
+                <button class="swap-button" id="swapButton" title="Đổi ngôn ngữ">
+                    ⇄
+                </button>
+                <div class="language-select">
+                    <span class="language-label" id="targetLanguage">English</span>
+                </div>
+            </div>
+
+            <div class="translate-body">
+                <div class="input-section">
+                    <textarea
+                        class="text-input"
+                        id="sourceText"
+                        placeholder="Nhập văn bản cần dịch..."
+                        maxlength="5000"
+                    ></textarea>
+                    <div class="char-counter">
+                        <span id="charCount">0</span> / 5000
+                    </div>
+                    <div class="action-buttons">
+                        <button class="icon-button" id="clearButton" title="Xóa" disabled>
+                            ✕
+                        </button>
+                    </div>
+                </div>
+
+                <div class="output-section">
+                    <div class="output-text placeholder" id="targetText">
+                        Kết quả dịch sẽ hiển thị ở đây
+                    </div>
+                    <div class="action-buttons">
+                        <button class="icon-button" id="speakButton" title="Phát âm" disabled>
+                            🔊
+                        </button>
+                        <button class="icon-button" id="copyButton" title="Sao chép" disabled>
+                            📋
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="translations-section" id="translationsSection" style="display: none;">
+                <div class="translations-title">Các cách diễn đạt khác:</div>
+                <div id="translationsList"></div>
+            </div>
+        </div>
+
+        <div class="empty-state" id="emptyState">
+            <div class="empty-state-icon">🌏</div>
+            <div>Nhập văn bản để bắt đầu học tiếng Anh</div>
+        </div>
+    </div>
+
+    <script>
+        // State management
+        let isVietnameseToEnglish = true;
+        let vocabularyData = [];
+        let currentTranslation = '';
+        let translationOptions = [];
+
+        // DOM elements
+        const sourceText = document.getElementById('sourceText');
+        const targetText = document.getElementById('targetText');
+        const sourceLanguage = document.getElementById('sourceLanguage');
+        const targetLanguage = document.getElementById('targetLanguage');
+        const swapButton = document.getElementById('swapButton');
+        const clearButton = document.getElementById('clearButton');
+        const speakButton = document.getElementById('speakButton');
+        const copyButton = document.getElementById('copyButton');
+        const charCount = document.getElementById('charCount');
+        const translationsSection = document.getElementById('translationsSection');
+        const translationsList = document.getElementById('translationsList');
+        const emptyState = document.getElementById('emptyState');
+
+        // Load vocabulary data (this will be populated by Android WebView)
+        function loadVocabularyData(data) {
+            vocabularyData = data;
+            console.log('Loaded vocabulary:', vocabularyData.length, 'items');
+        }
+
+        // Sample data for testing (remove when integrating with Android)
+        function loadSampleData() {
+            vocabularyData = [
+                {
+                    word: "hello",
+                    category: "GENERAL",
+                    examples: [
+                        { sentences: ["Hello", "Hi", "Hey"], vietnamese: "Xin chào", grammar: "Greeting" }
+                    ]
+                },
+                {
+                    word: "thank",
+                    category: "GENERAL",
+                    examples: [
+                        { sentences: ["Thank you", "Thanks"], vietnamese: "Cảm ơn", grammar: "Expression of gratitude" },
+                        { sentences: ["Thank you very much"], vietnamese: "Cảm ơn rất nhiều", grammar: "Formal gratitude" }
+                    ]
+                },
+                {
+                    word: "love",
+                    category: "GENERAL",
+                    examples: [
+                        { sentences: ["I love you"], vietnamese: "Tôi yêu bạn", grammar: "Verb: expressing affection" },
+                        { sentences: ["I love learning English"], vietnamese: "Tôi thích học tiếng Anh", grammar: "Verb + gerund" }
+                    ]
+                },
+                {
+                    word: "study",
+                    category: "TOEIC",
+                    examples: [
+                        { sentences: ["I study English every day"], vietnamese: "Tôi học tiếng Anh mỗi ngày", grammar: "Present simple" }
+                    ]
+                }
+            ];
+        }
+
+        // Initialize with sample data
+        loadSampleData();
+
+        // Event listeners
+        sourceText.addEventListener('input', handleInput);
+        swapButton.addEventListener('click', handleSwap);
+        clearButton.addEventListener('click', handleClear);
+        speakButton.addEventListener('click', handleSpeak);
+        copyButton.addEventListener('click', handleCopy);
+
+        function handleInput() {
+            const text = sourceText.value.trim();
+            charCount.textContent = sourceText.value.length;
+            clearButton.disabled = text.length === 0;
+
+            if (text.length > 0) {
+                emptyState.style.display = 'none';
+                performTranslation(text);
+            } else {
+                clearTranslation();
+                emptyState.style.display = 'block';
+            }
+        }
+
+        function handleSwap() {
+            isVietnameseToEnglish = !isVietnameseToEnglish;
+
+            // Swap language labels
+            const temp = sourceLanguage.textContent;
+            sourceLanguage.textContent = targetLanguage.textContent;
+            targetLanguage.textContent = temp;
+
+            // Swap content
+            const currentInput = sourceText.value;
+            const currentOutput = currentTranslation;
+
+            sourceText.value = '';
+            if (currentOutput && !targetText.classList.contains('placeholder')) {
+                sourceText.value = currentOutput;
+            }
+
+            clearTranslation();
+            handleInput();
+        }
+
+        function handleClear() {
+            sourceText.value = '';
+            clearTranslation();
+            charCount.textContent = '0';
+            clearButton.disabled = true;
+            emptyState.style.display = 'block';
+        }
+
+        function handleSpeak() {
+            if (currentTranslation && window.Android) {
+                window.Android.speak(currentTranslation);
+            } else if ('speechSynthesis' in window) {
+                // Fallback to browser TTS
+                const utterance = new SpeechSynthesisUtterance(currentTranslation);
+                utterance.lang = 'en-US';
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        function handleCopy() {
+            if (currentTranslation) {
+                navigator.clipboard.writeText(currentTranslation).then(() => {
+                    // Show feedback
+                    const originalText = copyButton.innerHTML;
+                    copyButton.innerHTML = '✓';
+                    setTimeout(() => {
+                        copyButton.innerHTML = originalText;
+                    }, 1000);
+                });
+            }
+        }
+
+        function clearTranslation() {
+            targetText.textContent = 'Kết quả dịch sẽ hiển thị ở đây';
+            targetText.classList.add('placeholder');
+            currentTranslation = '';
+            translationOptions = [];
+            speakButton.disabled = true;
+            copyButton.disabled = true;
+            translationsSection.style.display = 'none';
+        }
+
+        function performTranslation(input) {
+            const normalizedInput = input.toLowerCase().trim();
+
+            if (isVietnameseToEnglish) {
+                translateVietnameseToEnglish(normalizedInput);
+            } else {
+                translateEnglishToVietnamese(normalizedInput);
+            }
+        }
+
+        function translateVietnameseToEnglish(vietnamese) {
+            const results = [];
+
+            // Search through vocabulary data
+            vocabularyData.forEach(vocab => {
+                vocab.examples.forEach(example => {
+                    const vietnameseText = (example.vietnamese || '').toLowerCase().trim();
+
+                    if (vietnameseText.includes(vietnamese) || vietnamese.includes(vietnameseText)) {
+                        example.sentences.forEach(sentence => {
+                            results.push({
+                                text: sentence,
+                                grammar: example.grammar || vocab.grammar,
+                                category: vocab.category,
+                                relevance: vietnameseText === vietnamese ? 3 :
+                                          vietnameseText.startsWith(vietnamese) ? 2 : 1
+                            });
+                        });
+                    }
+                });
+            });
+
+            // Sort by relevance
+            results.sort((a, b) => b.relevance - a.relevance);
+
+            displayResults(results);
+        }
+
+        function translateEnglishToVietnamese(english) {
+            const results = [];
+
+            vocabularyData.forEach(vocab => {
+                const wordMatches = vocab.word.toLowerCase().includes(english) ||
+                                   english.includes(vocab.word.toLowerCase());
+
+                vocab.examples.forEach(example => {
+                    if (wordMatches) {
+                        if (example.vietnamese) {
+                            results.push({
+                                text: example.vietnamese,
+                                grammar: example.grammar || vocab.grammar,
+                                category: vocab.category,
+                                relevance: 2
+                            });
+                        }
+                    } else {
+                        const sentenceMatches = example.sentences.some(sentence =>
+                            sentence.toLowerCase().includes(english) ||
+                            english.includes(sentence.toLowerCase())
+                        );
+
+                        if (sentenceMatches && example.vietnamese) {
+                            results.push({
+                                text: example.vietnamese,
+                                grammar: example.grammar || vocab.grammar,
+                                category: vocab.category,
+                                relevance: 1
+                            });
+                        }
+                    }
+                });
+            });
+
+            // Remove duplicates and sort
+            const uniqueResults = Array.from(
+                new Map(results.map(item => [item.text, item])).values()
+            );
+            uniqueResults.sort((a, b) => b.relevance - a.relevance);
+
+            displayResults(uniqueResults);
+        }
+
+        function displayResults(results) {
+            if (results.length === 0) {
+                targetText.textContent = 'Không tìm thấy kết quả phù hợp';
+                targetText.classList.add('placeholder');
+                currentTranslation = '';
+                speakButton.disabled = true;
+                copyButton.disabled = true;
+                translationsSection.style.display = 'none';
+                return;
+            }
+
+            // Display first result as main translation
+            currentTranslation = results[0].text;
+            targetText.textContent = currentTranslation;
+            targetText.classList.remove('placeholder');
+            speakButton.disabled = false;
+            copyButton.disabled = false;
+
+            // Auto-speak if Vietnamese to English
+            if (isVietnameseToEnglish) {
+                handleSpeak();
+            }
+
+            // Display all results as options
+            if (results.length > 1) {
+                translationOptions = results;
+                displayTranslationOptions(results);
+                translationsSection.style.display = 'block';
+            } else {
+                translationsSection.style.display = 'none';
+            }
+        }
+
+        function displayTranslationOptions(options) {
+            translationsList.innerHTML = '';
+
+            options.forEach((option, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'translation-option';
+
+                const textDiv = document.createElement('div');
+                textDiv.className = 'translation-text';
+                textDiv.textContent = option.text;
+
+                const metaDiv = document.createElement('div');
+                metaDiv.className = 'translation-meta';
+
+                if (option.grammar) {
+                    const grammarSpan = document.createElement('span');
+                    grammarSpan.className = 'grammar-tag';
+                    grammarSpan.textContent = option.grammar;
+                    metaDiv.appendChild(grammarSpan);
+                }
+
+                if (option.category) {
+                    const categorySpan = document.createElement('span');
+                    categorySpan.className = `category-badge ${option.category.toLowerCase()}`;
+                    categorySpan.textContent = option.category;
+                    metaDiv.appendChild(categorySpan);
+                }
+
+                optionDiv.appendChild(textDiv);
+                optionDiv.appendChild(metaDiv);
+
+                optionDiv.addEventListener('click', () => {
+                    currentTranslation = option.text;
+                    targetText.textContent = option.text;
+                    if (isVietnameseToEnglish) {
+                        handleSpeak();
+                    }
+                });
+
+                translationsList.appendChild(optionDiv);
+            });
+        }
+
+        // Interface for Android WebView to inject data
+        window.updateVocabulary = function(jsonData) {
+            try {
+                vocabularyData = JSON.parse(jsonData);
+                console.log('Vocabulary data updated:', vocabularyData.length, 'items');
+            } catch (e) {
+                console.error('Failed to parse vocabulary data:', e);
+            }
+        };
+    </script>
+</body>
+</html>

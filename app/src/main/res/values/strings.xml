@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">Học Tiếng Anh</string>
+    <string name="tab_edit">Edit</string>
+    <string name="tab_learn">Learn</string>
+    <string name="add_vocabulary">Thêm từ vựng</string>
+    <string name="edit_vocabulary">Sửa từ vựng</string>
+    <string name="delete_vocabulary">Xóa từ vựng</string>
+    <string name="word_hint">Từ vựng</string>
+    <string name="example_hint">Ví dụ</string>
+    <string name="add_example">Thêm ví dụ</string>
+    <string name="remove_example">Xóa ví dụ</string>
+    <string name="save">Lưu</string>
+    <string name="cancel">Hủy</string>
+    <string name="check">Kiểm tra</string>
+    <string name="next">Từ tiếp theo</string>
+    <string name="skip">Bỏ qua</string>
+    <string name="progress_format">Đã hoàn thành: %d/%d</string>
+    <string name="correct_answer">Chính xác!</string>
+    <string name="wrong_answer">Sai rồi! Hãy thử lại</string>
+    <string name="all_examples_completed">Chúc mừng! Bạn đã hoàn thành tất cả ví dụ cho từ \'%s\'</string>
+    <string name="remaining_examples">Còn %d ví dụ nữa</string>
+    <string name="no_vocabulary">Chưa có từ vựng nào</string>
+    <string name="instructions">Hướng dẫn:\n• Nhập chính xác câu ví dụ cho từ vựng\n• Phải khớp hoàn toàn từng dấu chấm, dấu phẩy\n• Hoàn thành tất cả ví dụ để chuyển sang từ tiếp theo</string>
+    <string name="example_placeholder">Nhập câu ví dụ…</string>
+    <string name="match_percentage">Độ khớp: %1$d%%</string>
+    <string name="sync_data_button_description">Đồng bộ hóa dữ liệu với Appwrite</string>
+    <string name="sync_start">Đang đồng bộ hóa dữ liệu...</string>
+    <string name="sync_success">Đồng bộ hóa thành công!</string>
+    <string name="sync_failed">Đồng bộ hóa thất bại: %s</string>
+</resources>

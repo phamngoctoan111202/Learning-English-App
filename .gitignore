@@ -1,0 +1,29 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Node modules (if npm is used later)
+node_modules/
+
+# Log files
+*.log
+
+# Web metadata (not needed for deployment)
+web/package_info.txt
+
+# Mac system files
+.DS_Store
+.AppleDouble
+.LSOverride

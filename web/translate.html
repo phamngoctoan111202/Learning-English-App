@@ -1,0 +1,1458 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Translator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
+            background-color: #f1f3f4;
+            color: #202124;
+            min-height: 100vh;
+        }
+
+        .header {
+            background-color: #1a73e8;
+            color: white;
+            padding: 16px 24px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .category-badge-header {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-left: auto;
+        }
+
+        .category-toggle-group {
+            display: flex;
+            gap: 8px;
+            margin-left: auto;
+        }
+
+        .category-toggle-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .category-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .category-toggle-btn.active {
+            background: white;
+            color: #4A90E2;
+            border-color: white;
+        }
+
+        .logo {
+            width: 36px;
+            height: 36px;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            font-weight: 400;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+
+        .translate-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04);
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .language-bar {
+            display: flex;
+            align-items: center;
+            padding: 20px 24px;
+            border-bottom: 1px solid #e8eaed;
+            background-color: #fafafa;
+        }
+
+        .language-select {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .language-label {
+            font-size: 15px;
+            font-weight: 500;
+            color: #1a73e8;
+            padding: 10px 20px;
+            border-radius: 24px;
+            background: white;
+        }
+
+        .swap-button {
+            width: 48px;
+            height: 48px;
+            border: 2px solid #e8eaed;
+            background: white;
+            cursor: not-allowed;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #9aa0a6;
+            margin: 0 16px;
+            opacity: 0.5;
+        }
+
+        .translate-body {
+            display: flex;
+            min-height: 400px;
+        }
+
+        .input-section,
+        .output-section {
+            flex: 1;
+            padding: 28px;
+            position: relative;
+        }
+
+        .output-section {
+            border-right: 1px solid #e8eaed;
+            background-color: #fafbfc;
+        }
+
+        .text-input {
+            width: 100%;
+            min-height: 300px;
+            border: none;
+            font-size: 20px;
+            font-family: inherit;
+            resize: none;
+            outline: none;
+            color: #202124;
+            line-height: 1.6;
+            padding: 8px;
+        }
+
+        .text-input::placeholder {
+            color: #9aa0a6;
+        }
+
+        .source-text {
+            width: 100%;
+            min-height: 300px;
+            font-size: 20px;
+            color: #fafbfc;
+            line-height: 1.6;
+            font-weight: 500;
+            padding: 16px;
+            background: #fafbfc;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            user-select: text;
+            cursor: text;
+        }
+
+        .source-text::selection {
+            background: #1a73e8;
+            color: white;
+        }
+
+        .source-text.placeholder {
+            color: #9aa0a6;
+            font-style: italic;
+        }
+
+        .action-buttons {
+            position: absolute;
+            bottom: 20px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-buttons.left {
+            left: 28px;
+        }
+
+        .action-buttons.right {
+            right: 28px;
+        }
+
+        .icon-button {
+            width: 44px;
+            height: 44px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .icon-button:hover:not(:disabled) {
+            background-color: #f1f3f4;
+            transform: scale(1.1);
+        }
+
+        .icon-button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .char-counter {
+            position: absolute;
+            top: 20px;
+            right: 28px;
+            font-size: 12px;
+            color: #70757a;
+        }
+
+        .translate-button {
+            padding: 12px 32px;
+            background: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 24px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .translate-button:hover:not(:disabled) {
+            background: #1557b0;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(26, 115, 232, 0.3);
+        }
+
+        .translate-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .feedback-section {
+            padding: 24px 28px;
+            border-top: 1px solid #e8eaed;
+            display: none;
+            background: #fafbfc;
+        }
+
+        .feedback-section.show {
+            display: block;
+        }
+
+        .translation-result {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid #34a853;
+            margin-bottom: 16px;
+        }
+
+        .translation-result.error {
+            border-left-color: #ea4335;
+        }
+
+        .result-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #5f6368;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .result-content {
+            font-size: 18px;
+            color: #202124;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .result-meta {
+            font-size: 13px;
+            color: #5f6368;
+            font-style: italic;
+        }
+
+        .attempts-info {
+            margin-top: 8px;
+            font-size: 13px;
+            color: #5f6368;
+        }
+
+        .alternatives-section {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .alternatives-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #5f6368;
+            margin-bottom: 12px;
+        }
+
+        .alternative-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .alternative-item:hover {
+            background: #e8f0fe;
+            border-color: #1a73e8;
+        }
+
+        .alternative-text {
+            font-size: 16px;
+            color: #202124;
+            margin-bottom: 4px;
+        }
+
+        .alternative-note {
+            font-size: 12px;
+            color: #5f6368;
+            font-style: italic;
+        }
+
+        .comparison-section {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .comparison-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #5f6368;
+            margin-bottom: 12px;
+        }
+
+        .similarity-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            background: #e8f0fe;
+            color: #1967d2;
+            margin-bottom: 12px;
+        }
+
+        .char-comparison {
+            font-family: 'Courier New', monospace;
+            font-size: 15px;
+            line-height: 2;
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+        }
+
+        .char-comparison > div {
+            margin-bottom: 8px;
+        }
+
+        .char-correct {
+            color: #137333;
+            background: #ceead6;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        .char-wrong {
+            color: #a50e0e;
+            background: #fce8e6;
+            padding: 2px 4px;
+            border-radius: 3px;
+            text-decoration: line-through;
+        }
+
+        .char-missing {
+            color: #b06000;
+            background: #feefc3;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #9aa0a6;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e8eaed;
+            border-top-color: #1a73e8;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .translate-body {
+                flex-direction: column-reverse;
+            }
+
+            .output-section {
+                border-right: none;
+                border-bottom: 1px solid #e8eaed;
+            }
+
+            .text-input,
+            .source-text {
+                font-size: 16px;
+                min-height: 200px;
+            }
+
+            .container {
+                padding: 20px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <span class="logo">🤖</span>
+            <h1>AI Translator</h1>
+            <div class="category-toggle-group">
+                <button class="category-toggle-btn active" data-category="VSTEP">VSTEP</button>
+                <button class="category-toggle-btn" data-category="GENERAL">GENERAL</button>
+                <button class="category-toggle-btn" data-category="TOEIC">TOEIC</button>
+            </div>
+            <div style="color: white; font-size: 14px;" id="progress-display">
+                Loading...
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="translate-card">
+            <div class="language-bar">
+                <div class="language-select">
+                    <span class="language-label">English</span>
+                </div>
+                <button class="swap-button" title="Locked">
+                    ⇄
+                </button>
+                <div class="language-select">
+                    <span class="language-label">Vietnamese</span>
+                </div>
+            </div>
+
+            <div class="translate-body">
+                <div class="input-section">
+                    <div class="char-counter">
+                        <span id="charCount">0</span> characters
+                    </div>
+                    <textarea
+                        class="text-input"
+                        id="inputText"
+                        placeholder="Enter text to translate..."
+                        autofocus
+                    ></textarea>
+                    <div class="action-buttons left">
+                        <button class="translate-button" id="translateButton">
+                            <span>🔄</span>
+                            Translate
+                        </button>
+                    </div>
+                </div>
+
+                <div class="output-section">
+                    <div class="source-text placeholder" id="sourceText">
+                        Waiting for input...
+                    </div>
+                    <div class="action-buttons right">
+                        <button class="icon-button" id="speakButton" title="Listen">
+                            🔊
+                        </button>
+                        <button class="icon-button" id="refreshButton" title="New sentence">
+                            ↻
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feedback-section" id="feedbackSection">
+                <div class="translation-result" id="resultCard">
+                    <div class="result-title" id="resultTitle">Translation Result</div>
+                    <div class="result-content" id="resultContent"></div>
+                    <div class="result-meta" id="resultMeta"></div>
+                </div>
+
+                <div class="alternatives-section" id="alternativesSection" style="display: none;">
+                    <div class="alternatives-title">Alternative translations:</div>
+                    <div id="alternativesList"></div>
+                </div>
+
+                <div class="comparison-section" id="comparisonSection" style="display: none;">
+                    <div class="comparison-title">Analysis:</div>
+                    <div class="similarity-badge" id="similarityBadge">Match: 0%</div>
+                    <div class="char-comparison" id="charComparison"></div>
+                </div>
+
+                <div class="attempts-info" id="attemptsInfo" style="display: none;"></div>
+            </div>
+        </div>
+
+        <div class="loading" id="loadingState">
+            <div class="loading-spinner"></div>
+            <div>Loading vocabulary database...</div>
+        </div>
+    </div>
+
+    <!-- Appwrite SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.0"></script>
+
+    <!-- TTS Service -->
+    <script src="js/services/ttsService.js"></script>
+
+    <!-- Learning Progress Manager -->
+    <script src="js/services/appwriteService.js"></script>
+    <script src="js/services/learningProgressManager.js"></script>
+
+    <script>
+        // ========================================
+        // APPWRITE CONFIGURATION
+        // ========================================
+        const appwriteConfig = {
+            projectId: '68cf65390012ceaa2085',
+            endpoint: 'https://fra.cloud.appwrite.io/v1',
+            databaseId: '68cfb8c900053dca6f90',
+            vocabularyCollectionId: 'vocabularies'
+        };
+
+        const client = new Appwrite.Client();
+        client
+            .setEndpoint(appwriteConfig.endpoint)
+            .setProject(appwriteConfig.projectId);
+
+        const account = new Appwrite.Account(client);
+        const databases = new Appwrite.Databases(client);
+
+        // ========================================
+        // STRING UTILITIES
+        // ========================================
+        const StringComparator = {
+            levenshteinDistance(str1, str2) {
+                const m = str1.length;
+                const n = str2.length;
+                const dp = Array(m + 1).fill(null).map(() => Array(n + 1).fill(0));
+
+                for (let i = 0; i <= m; i++) dp[i][0] = i;
+                for (let j = 0; j <= n; j++) dp[0][j] = j;
+
+                for (let i = 1; i <= m; i++) {
+                    for (let j = 1; j <= n; j++) {
+                        if (str1[i - 1] === str2[j - 1]) {
+                            dp[i][j] = dp[i - 1][j - 1];
+                        } else {
+                            dp[i][j] = 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+                        }
+                    }
+                }
+                return dp[m][n];
+            },
+
+            calculateSimilarity(str1, str2) {
+                if (!str1 && !str2) return 100;
+                if (!str1 || !str2) return 0;
+
+                const s1 = str1.toLowerCase().trim();
+                const s2 = str2.toLowerCase().trim();
+
+                if (s1 === s2) return 100;
+
+                const distance = this.levenshteinDistance(s1, s2);
+                const maxLength = Math.max(s1.length, s2.length);
+
+                if (maxLength === 0) return 100;
+                return Math.round((1 - distance / maxLength) * 100);
+            },
+
+            getDetailedComparison(userAnswer, correctAnswer) {
+                const user = userAnswer.toLowerCase().trim();
+                const correct = correctAnswer.toLowerCase().trim();
+
+                const result = {
+                    userFormatted: [],
+                    correctFormatted: []
+                };
+
+                const m = user.length;
+                const n = correct.length;
+
+                const lcs = Array(m + 1).fill(null).map(() => Array(n + 1).fill(0));
+                for (let i = 1; i <= m; i++) {
+                    for (let j = 1; j <= n; j++) {
+                        if (user[i - 1] === correct[j - 1]) {
+                            lcs[i][j] = lcs[i - 1][j - 1] + 1;
+                        } else {
+                            lcs[i][j] = Math.max(lcs[i - 1][j], lcs[i][j - 1]);
+                        }
+                    }
+                }
+
+                let i = m, j = n;
+                const userChars = [];
+                const correctChars = [];
+
+                while (i > 0 || j > 0) {
+                    if (i > 0 && j > 0 && user[i - 1] === correct[j - 1]) {
+                        userChars.unshift({ char: user[i - 1], type: 'correct' });
+                        correctChars.unshift({ char: correct[j - 1], type: 'correct' });
+                        i--;
+                        j--;
+                    } else if (j > 0 && (i === 0 || lcs[i][j - 1] >= lcs[i - 1][j])) {
+                        userChars.unshift({ char: '_', type: 'missing' });
+                        correctChars.unshift({ char: correct[j - 1], type: 'missing' });
+                        j--;
+                    } else if (i > 0) {
+                        userChars.unshift({ char: user[i - 1], type: 'wrong' });
+                        correctChars.unshift({ char: ' ', type: 'extra' });
+                        i--;
+                    }
+                }
+
+                result.userFormatted = userChars;
+                result.correctFormatted = correctChars;
+
+                return result;
+            },
+
+            generateComparisonHTML(userAnswer, correctAnswer) {
+                const comparison = this.getDetailedComparison(userAnswer, correctAnswer);
+                const similarity = this.calculateSimilarity(userAnswer, correctAnswer);
+
+                let userHTML = '';
+                let correctHTML = '';
+
+                for (const item of comparison.userFormatted) {
+                    const cssClass = `char-${item.type}`;
+                    userHTML += `<span class="${cssClass}">${escapeHtml(item.char)}</span>`;
+                }
+
+                for (const item of comparison.correctFormatted) {
+                    const cssClass = item.type === 'correct' ? 'char-correct' :
+                                    item.type === 'missing' ? 'char-missing' : '';
+                    correctHTML += `<span class="${cssClass}">${escapeHtml(item.char)}</span>`;
+                }
+
+                return { userHTML, correctHTML, similarity };
+            },
+
+            normalize(text) {
+                if (!text) return '';
+                return text.toLowerCase().trim()
+                    .replace(/\s+/g, ' ')
+                    .replace(/['']/g, "'")
+                    .replace(/[""]/g, '"')
+                    .replace(/[.!?]+$/, '')
+                    .trim();
+            }
+        };
+
+        const ContractionHelper = {
+            contractionMap: {
+                "i'm": "i am", "you're": "you are", "he's": "he is", "she's": "she is",
+                "it's": "it is", "we're": "we are", "they're": "they are",
+                "isn't": "is not", "aren't": "are not", "wasn't": "was not",
+                "weren't": "were not", "don't": "do not", "doesn't": "does not",
+                "didn't": "did not", "won't": "will not", "wouldn't": "would not",
+                "can't": "cannot", "couldn't": "could not", "shouldn't": "should not",
+                "haven't": "have not", "hasn't": "has not", "hadn't": "had not",
+                "let's": "let us"
+            },
+
+            expandContractions(text) {
+                if (!text) return '';
+                let expanded = text.toLowerCase();
+                for (const [contraction, expansion] of Object.entries(this.contractionMap)) {
+                    const regex = new RegExp('\\b' + contraction.replace("'", "'") + '\\b', 'gi');
+                    expanded = expanded.replace(regex, expansion);
+                }
+                return expanded;
+            },
+
+            areEquivalent(str1, str2) {
+                const norm1 = StringComparator.normalize(str1);
+                const norm2 = StringComparator.normalize(str2);
+
+                if (norm1 === norm2) return true;
+
+                const expanded1 = this.expandContractions(norm1);
+                const expanded2 = this.expandContractions(norm2);
+
+                return expanded1 === expanded2;
+            }
+        };
+
+        function parseSentences(sentencesStr) {
+            if (!sentencesStr) return [];
+
+            const trimmed = sentencesStr.trim();
+
+            if (trimmed.startsWith('[')) {
+                try {
+                    const parsed = JSON.parse(trimmed);
+                    if (Array.isArray(parsed)) {
+                        return parsed.map(s => String(s).trim()).filter(s => s.length > 0);
+                    }
+                } catch (e) {}
+            }
+
+            return trimmed.split(/\n+/).map(s => s.trim()).filter(s => s.length > 0);
+        }
+
+        function normalizeSentence(sentence) {
+            if (!sentence) return '';
+            return sentence.toLowerCase().trim()
+                .replace(/\s+/g, ' ')
+                .replace(/['']/g, "'")
+                .replace(/[""]/g, '"')
+                .replace(/[.!?]+$/, '')
+                .trim();
+        }
+
+        function matchesAnySentence(userAnswer, sentences) {
+            if (!userAnswer) return false;
+
+            const normalizedAnswer = normalizeSentence(userAnswer);
+
+            for (const sentence of sentences) {
+                const normalizedSentence = normalizeSentence(sentence);
+
+                if (normalizedAnswer === normalizedSentence) {
+                    return true;
+                }
+
+                if (ContractionHelper.areEquivalent(normalizedAnswer, normalizedSentence)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        function findBestMatch(userAnswer, sentences) {
+            if (!userAnswer || !sentences || sentences.length === 0) return null;
+
+            const normalizedAnswer = normalizeSentence(userAnswer);
+
+            for (const sentence of sentences) {
+                const normalizedSentence = normalizeSentence(sentence);
+
+                if (normalizedAnswer === normalizedSentence) {
+                    return { sentence, similarity: 100, isExact: true };
+                }
+
+                if (ContractionHelper.areEquivalent(normalizedAnswer, normalizedSentence)) {
+                    return { sentence, similarity: 100, isExact: true };
+                }
+            }
+
+            let bestMatch = null;
+            let bestSimilarity = -1;
+
+            for (const sentence of sentences) {
+                const normalizedSentence = normalizeSentence(sentence);
+                const similarity = StringComparator.calculateSimilarity(normalizedAnswer, normalizedSentence);
+
+                if (similarity > bestSimilarity) {
+                    bestSimilarity = similarity;
+                    bestMatch = sentence;
+                }
+            }
+
+            return { sentence: bestMatch, similarity: bestSimilarity, isExact: false };
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ========================================
+        // APPLICATION STATE
+        // ========================================
+        let vocabularyData = [];
+        let wordQueue = [];  // 30-word queue
+        let currentQueueIndex = 0;
+        let currentVocab = null;
+        const QUEUE_SIZE = 30;
+        const STORAGE_KEY = 'learning_focus';
+
+        // Read category from localStorage (same as Learn tab)
+        let selectedCategory = localStorage.getItem('learnpage_filter_category') || 'VSTEP';
+
+        // TTS Service is already initialized globally by ttsService.js
+
+        // DOM Elements
+        const inputText = document.getElementById('inputText');
+        const sourceText = document.getElementById('sourceText');
+        const translateButton = document.getElementById('translateButton');
+        const speakButton = document.getElementById('speakButton');
+        const refreshButton = document.getElementById('refreshButton');
+        const charCount = document.getElementById('charCount');
+        const feedbackSection = document.getElementById('feedbackSection');
+        const resultCard = document.getElementById('resultCard');
+        const resultTitle = document.getElementById('resultTitle');
+        const resultContent = document.getElementById('resultContent');
+        const resultMeta = document.getElementById('resultMeta');
+        const alternativesSection = document.getElementById('alternativesSection');
+        const alternativesList = document.getElementById('alternativesList');
+        const comparisonSection = document.getElementById('comparisonSection');
+        const similarityBadge = document.getElementById('similarityBadge');
+        const charComparison = document.getElementById('charComparison');
+        const loadingState = document.getElementById('loadingState');
+        const attemptsInfo = document.getElementById('attemptsInfo');
+
+        // ========================================
+        // HELPER FUNCTIONS FOR QUEUE LOGIC
+        // ========================================
+        function getLast10AttemptsList(vocab) {
+            try {
+                return JSON.parse(vocab.last10Attempts || '[]');
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function calculateEffectiveScore(vocab) {
+            const memoryScore = vocab.memoryScore || 0;
+            const lastStudied = vocab.lastStudiedAt || vocab.createdAt || Date.now();
+            const daysSinceLastStudy = (Date.now() - lastStudied) / (1000 * 60 * 60 * 24);
+
+            // Exponential decay: không bao giờ về 0 hoàn toàn
+            // Day 0: 100%, Day 30: 61%, Day 60: 37%, Day 90: 22%
+            const HALF_LIFE_DAYS = 60;
+            const decayFactor = Math.exp(-daysSinceLastStudy / HALF_LIFE_DAYS);
+
+            return memoryScore * decayFactor;
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function shuffleInterleavedByMemoryScore(vocabs) {
+            if (vocabs.length === 0) return [];
+
+            const sorted = [...vocabs].sort((a, b) => (a.memoryScore || 0) - (b.memoryScore || 0));
+
+            const halfIndex = Math.ceil(sorted.length / 2);
+            const lowScoreGroup = sorted.slice(0, halfIndex);
+            const highScoreGroup = sorted.slice(halfIndex);
+
+            shuffleArray(lowScoreGroup);
+            shuffleArray(highScoreGroup);
+
+            const result = [];
+            const maxLength = Math.max(lowScoreGroup.length, highScoreGroup.length);
+
+            for (let i = 0; i < maxLength; i++) {
+                if (i < highScoreGroup.length) {
+                    result.push(highScoreGroup[i]);
+                }
+                if (i < lowScoreGroup.length) {
+                    result.push(lowScoreGroup[i]);
+                }
+            }
+
+            return result;
+        }
+
+        function getMixedQueueVocabularies(allVocabs, queueSize = 30, category = null) {
+            const vocabsWithScore = allVocabs
+                .map(v => ({
+                    ...v,
+                    effectiveScore: calculateEffectiveScore(v),
+                    daysSinceLastStudy: (Date.now() - (v.lastStudiedAt || v.createdAt || Date.now())) / (1000 * 60 * 60 * 24)
+                }))
+                .filter(v => !category || (v.category || 'GENERAL') === category);
+
+            const NEW_WORDS = vocabsWithScore.filter(v => {
+                const last10 = getLast10AttemptsList(v);
+                const correctCount = last10.filter(x => x === true).length;
+                return last10.length < 10 || correctCount < 7;
+            });
+
+            const REVIEW_WORDS = vocabsWithScore.filter(v => {
+                const last10 = getLast10AttemptsList(v);
+                const correctCount = last10.filter(x => x === true).length;
+                return last10.length >= 10 && correctCount >= 7 && v.daysSinceLastStudy > 1;
+            });
+
+            const reviewSize = Math.min(Math.floor(queueSize * 0.3), REVIEW_WORDS.length);
+            const newSize = Math.min(queueSize - reviewSize, NEW_WORDS.length);
+
+            const selectedNew = NEW_WORDS
+                .sort((a, b) => a.effectiveScore - b.effectiveScore)
+                .slice(0, newSize);
+
+            const selectedReview = REVIEW_WORDS
+                .map(v => ({
+                    ...v,
+                    reviewPriority: v.daysSinceLastStudy * (1 - v.memoryScore)
+                }))
+                .sort((a, b) => b.reviewPriority - a.reviewPriority)
+                .slice(0, reviewSize);
+
+            console.log(`📊 [Mixed Queue] New: ${selectedNew.length}, Review: ${selectedReview.length}`);
+
+            return [...selectedNew, ...selectedReview];
+        }
+
+        // ========================================
+        // PROGRESS DISPLAY
+        // ========================================
+        function updateProgressDisplay() {
+            const summary = learningProgressManager.getSummary();
+            const display = document.getElementById('progress-display');
+            if (display) {
+                display.textContent = `📊 ${summary.wordsLearned}/${summary.goal} words (${summary.progressPercentage}%) | ⏱️ ${summary.elapsedTime}`;
+            }
+        }
+
+        // Update progress every 10 seconds
+        setInterval(() => {
+            updateProgressDisplay();
+        }, 10000);
+
+        // ========================================
+        // APPWRITE DATA LOADING
+        // ========================================
+        async function initializeApp() {
+            try {
+                // Initialize learning progress manager first
+                console.log('🔄 Initializing learning progress manager...');
+                await learningProgressManager.initialize();
+                console.log('✅ Learning progress manager initialized');
+
+                // Initial progress display
+                updateProgressDisplay();
+
+                // Login anonymously
+                try {
+                    await account.get();
+                    console.log('Already logged in');
+                } catch {
+                    await account.createAnonymousSession();
+                    console.log('Logged in anonymously');
+                }
+
+                // Load vocabulary from Appwrite
+                const response = await databases.listDocuments(
+                    appwriteConfig.databaseId,
+                    appwriteConfig.vocabularyCollectionId,
+                    [Appwrite.Query.limit(1000)]
+                );
+
+                vocabularyData = response.documents.map(doc => ({
+                    id: doc.$id,
+                    word: doc.word,
+                    sentences: parseSentences(doc.sentences),
+                    vietnamese: doc.vietnamese,
+                    grammar: doc.grammar,
+                    category: doc.category || 'GENERAL',
+                    memoryScore: parseFloat(doc.memoryScore) || 0,
+                    totalAttempts: parseInt(doc.totalAttempts) || 0,
+                    correctAttempts: parseInt(doc.correctAttempts) || 0,
+                    last10Attempts: doc.last10Attempts || '[]',
+                    lastStudiedAt: doc.lastStudiedAt ? new Date(doc.lastStudiedAt).getTime() : null,
+                    createdAt: doc.createdAt ? new Date(doc.createdAt).getTime() : Date.now()
+                })).filter(v => v.sentences.length > 0 && v.vietnamese);
+
+                console.log('✅ Loaded', vocabularyData.length, 'vocabulary items from Appwrite');
+
+                // Try to load queue from localStorage first
+                await loadWordQueue();
+
+                loadingState.style.display = 'none';
+                loadNextFromQueue();
+
+            } catch (error) {
+                console.error('Failed to load data:', error);
+                loadingState.innerHTML = '<div style="color: #ea4335;">Failed to load. Please refresh the page.</div>';
+            }
+        }
+
+        async function loadWordQueue() {
+            // Try to load from localStorage first
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                try {
+                    const savedIds = JSON.parse(saved);
+                    // Validate and load, filtering by current category
+                    const validWords = [];
+                    for (const id of savedIds) {
+                        const vocab = vocabularyData.find(v => v.id === id);
+                        // Check both existence AND category match
+                        if (vocab && (vocab.category || 'GENERAL') === selectedCategory) {
+                            validWords.push(vocab);
+                        }
+                    }
+
+                    if (validWords.length > 0) {
+                        wordQueue = validWords;
+                        // Fill remaining slots if needed
+                        if (wordQueue.length < QUEUE_SIZE) {
+                            const needed = QUEUE_SIZE - wordQueue.length;
+                            const existingIds = new Set(wordQueue.map(v => v.id));
+                            const mixedQueue = getMixedQueueVocabularies(
+                                vocabularyData.filter(v => !existingIds.has(v.id)),
+                                needed,
+                                selectedCategory
+                            );
+                            const shuffled = shuffleInterleavedByMemoryScore(mixedQueue);
+                            wordQueue.push(...shuffled);
+                        }
+                        currentQueueIndex = 0;
+                        console.log(`📦 Loaded ${validWords.length} words from localStorage (${selectedCategory})`);
+
+                        // Save updated queue
+                        const queueIds = wordQueue.map(v => v.id);
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(queueIds));
+                        return;
+                    }
+                } catch (e) {
+                    console.warn('Failed to parse saved queue:', e);
+                }
+            }
+
+            // If no saved queue or invalid, build new one
+            buildWordQueue();
+        }
+
+        function buildWordQueue() {
+            const mixedQueue = getMixedQueueVocabularies(vocabularyData, QUEUE_SIZE, selectedCategory);
+            wordQueue = shuffleInterleavedByMemoryScore(mixedQueue);
+            currentQueueIndex = 0;
+
+            console.log(`📚 Built queue with ${wordQueue.length} words (${selectedCategory} category)`);
+            console.log('Queue words:', wordQueue.map(v => v.word).join(', '));
+
+            // Save queue to localStorage (same as Learn tab)
+            const queueIds = wordQueue.map(v => v.id);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(queueIds));
+        }
+
+        // ========================================
+        // CORE FUNCTIONS
+        // ========================================
+        function loadNextFromQueue() {
+            if (wordQueue.length === 0) {
+                sourceText.textContent = 'No VSTEP words available';
+                sourceText.classList.add('placeholder');
+                return;
+            }
+
+            if (currentQueueIndex >= wordQueue.length) {
+                currentQueueIndex = 0;
+                console.log('🔄 Queue cycled back to start');
+            }
+
+            currentVocab = wordQueue[currentQueueIndex];
+
+            // Display Vietnamese + Word (both hidden with same color as background)
+            sourceText.textContent = `${currentVocab.vietnamese}\n\n(${currentVocab.word})`;
+            sourceText.classList.remove('placeholder');
+
+            inputText.value = '';
+            feedbackSection.classList.remove('show');
+            inputText.focus();
+
+            console.log(`📖 [${currentQueueIndex + 1}/${wordQueue.length}] Loaded:`, currentVocab.word, '-', currentVocab.vietnamese);
+        }
+
+        function translateText() {
+            const userInput = inputText.value.trim();
+
+            if (!userInput) {
+                alert('Please enter some text first!');
+                return;
+            }
+
+            if (!currentVocab) {
+                alert('No source text available. Click refresh.');
+                return;
+            }
+
+            const isCorrect = matchesAnySentence(userInput, currentVocab.sentences);
+
+            if (isCorrect) {
+                showSuccessResult();
+            } else {
+                showErrorResult(userInput);
+            }
+
+            feedbackSection.classList.add('show');
+
+            // Only disable button if correct (will auto-advance)
+            // If wrong, keep button enabled so user can try again
+            if (isCorrect) {
+                translateButton.disabled = true;
+            }
+        }
+
+        async function showSuccessResult() {
+            resultCard.classList.remove('error');
+            resultTitle.textContent = 'Translation Successful';
+            resultContent.textContent = inputText.value.trim();
+            resultMeta.textContent = currentVocab.grammar || '';
+
+            // Update attempts info text (tính theo example, không theo sentence)
+            const exampleCount = 1;
+            const requiredAttempts = 10 * exampleCount;
+            const requiredCorrect = 7 * exampleCount;
+            const totalAttempts = currentVocab.totalAttempts || 0;
+            const correctAttempts = currentVocab.correctAttempts || 0;
+
+            if (attemptsInfo) {
+                attemptsInfo.style.display = 'block';
+                attemptsInfo.textContent =
+                    `Tra từ: ${totalAttempts}/${requiredAttempts} lượt, đúng: ${correctAttempts}/${requiredCorrect} (cần 7/10 cho mỗi câu ví dụ)`;
+            }
+
+            // Show alternatives
+            if (currentVocab.sentences.length > 1) {
+                alternativesSection.style.display = 'block';
+                alternativesList.innerHTML = currentVocab.sentences.map(s =>
+                    `<div class="alternative-item">
+                        <div class="alternative-text">${escapeHtml(s)}</div>
+                    </div>`
+                ).join('');
+            } else {
+                alternativesSection.style.display = 'none';
+            }
+
+            comparisonSection.style.display = 'none';
+
+            // Update vocabulary statistics (correct attempts, memory score, etc.)
+            console.log('📊 [Translate] Updating vocabulary stats...');
+            const wasMasteredBefore = (function () {
+                const exampleCount = 1;
+                const requiredAttempts = 10 * exampleCount;
+                const requiredCorrect = 7 * exampleCount;
+
+                const totalAttempts = currentVocab.totalAttempts || 0;
+                const correctAttempts = currentVocab.correctAttempts || 0;
+
+                if (totalAttempts < requiredAttempts) return false;
+                return correctAttempts >= requiredCorrect;
+            })();
+
+            await updateVocabularyStats(currentVocab, true);
+
+            console.log('📚 [Translate] Adding memory attempt for correct example...');
+            console.log('   Before:', learningProgressManager.wordsLearned);
+            await learningProgressManager.addCompletedWord();
+            console.log('   After:', learningProgressManager.wordsLearned);
+            console.log('✅ [Translate] Memory attempt counted');
+
+            // Update progress display immediately
+            console.log('🔄 [Translate] Updating progress display...');
+            updateProgressDisplay();
+            console.log('✅ [Translate] Progress display updated');
+
+            // Auto-reload only when word is mastered
+            const exampleCountForNext = 1;
+            const requiredAttemptsForNext = 10 * exampleCountForNext;
+            const requiredCorrectForNext = 7 * exampleCountForNext;
+            const totalAttemptsForNext = currentVocab.totalAttempts || 0;
+            const correctAttemptsForNext = currentVocab.correctAttempts || 0;
+
+            const isMasteredForNext = totalAttemptsForNext >= requiredAttemptsForNext &&
+                correctAttemptsForNext >= requiredCorrectForNext;
+
+            if (isMasteredForNext) {
+                setTimeout(() => {
+                    currentQueueIndex++;
+                    loadNextFromQueue();
+                    translateButton.disabled = false;
+                }, 2000);
+            } else {
+                translateButton.disabled = false;
+            }
+        }
+
+        async function showErrorResult(userInput) {
+            resultCard.classList.add('error');
+            resultTitle.textContent = 'Suggestions';
+
+            const bestMatch = findBestMatch(userInput, currentVocab.sentences);
+
+            if (bestMatch) {
+                resultContent.textContent = `Suggested: ${bestMatch.sentence}`;
+                resultMeta.textContent = currentVocab.grammar || '';
+
+                // Show alternatives
+                alternativesSection.style.display = 'block';
+                alternativesList.innerHTML = currentVocab.sentences.map(s =>
+                    `<div class="alternative-item" onclick="selectAlternative('${escapeHtml(s).replace(/'/g, "\\'")}')">
+                        <div class="alternative-text">${escapeHtml(s)}</div>
+                    </div>`
+                ).join('');
+
+                // Show comparison
+                comparisonSection.style.display = 'block';
+                const comparison = StringComparator.generateComparisonHTML(userInput, bestMatch.sentence);
+                similarityBadge.textContent = `Match: ${comparison.similarity}%`;
+                charComparison.innerHTML = `
+                    <div><strong>Input:</strong> ${comparison.userHTML}</div>
+                    <div><strong>Suggested:</strong> ${comparison.correctHTML}</div>
+                `;
+            }
+
+            // Update statistics for incorrect answer (only vocabulary stats, NOT wordsLearned)
+            console.log('❌ [Translate] Incorrect answer, updating vocabulary stats only...');
+            await updateVocabularyStats(currentVocab, false);
+
+            // Update attempts info text after incorrect attempt
+            const exampleCount = currentVocab.sentences.length || 1;
+            const requiredAttempts = 10 * exampleCount;
+            const requiredCorrect = 7 * exampleCount;
+            const totalAttempts = currentVocab.totalAttempts || 0;
+            const correctAttempts = currentVocab.correctAttempts || 0;
+
+            if (attemptsInfo) {
+                attemptsInfo.style.display = 'block';
+                attemptsInfo.textContent =
+                    `Tra từ: ${totalAttempts}/${requiredAttempts} lượt, đúng: ${correctAttempts}/${requiredCorrect} (cần 7/10 cho mỗi câu ví dụ)`;
+            }
+        }
+
+        function selectAlternative(text) {
+            inputText.value = text;
+            feedbackSection.classList.remove('show');
+            translateButton.disabled = false;
+        }
+
+        async function updateVocabularyStats(vocab, isCorrect) {
+            try {
+                // Update local stats
+                vocab.totalAttempts = (vocab.totalAttempts || 0) + 1;
+                if (isCorrect) {
+                    vocab.correctAttempts = (vocab.correctAttempts || 0) + 1;
+                }
+
+                // Update last10Attempts (keep in memory only, don't sync to Appwrite)
+                const last10 = getLast10AttemptsList(vocab);
+                last10.push(isCorrect);
+                if (last10.length > 10) {
+                    last10.shift();
+                }
+                vocab.last10Attempts = JSON.stringify(last10);
+
+                // Calculate memory score (percentage of correct in last 10)
+                const correctCount = last10.filter(x => x === true).length;
+                vocab.memoryScore = last10.length > 0 ? (correctCount / last10.length) : 0;
+
+                // Update lastStudiedAt
+                vocab.lastStudiedAt = Date.now();
+
+                console.log(`📊 Updated stats for "${vocab.word}": ${vocab.correctAttempts}/${vocab.totalAttempts} (${Math.round(vocab.memoryScore * 100)}%)`);
+
+                // Sync to Appwrite (only fields that exist in collection)
+                await databases.updateDocument(
+                    appwriteConfig.databaseId,
+                    appwriteConfig.vocabularyCollectionId,
+                    vocab.id,
+                    {
+                        totalAttempts: vocab.totalAttempts.toString(),
+                        correctAttempts: vocab.correctAttempts.toString(),
+                        memoryScore: vocab.memoryScore.toString(),
+                        lastStudiedAt: new Date(vocab.lastStudiedAt).toISOString()
+                    }
+                );
+
+                console.log('✅ Synced to Appwrite');
+
+                // Update vocabularyData array
+                const index = vocabularyData.findIndex(v => v.id === vocab.id);
+                if (index !== -1) {
+                    vocabularyData[index] = vocab;
+                }
+
+                // Check if word should be replaced in queue (7/10 mastered)
+                if (last10.length >= 10 && correctCount >= 7) {
+                    console.log(`🎓 Word "${vocab.word}" mastered! (${correctCount}/10)`);
+                }
+
+            } catch (error) {
+                console.error('Failed to update stats:', error);
+            }
+        }
+
+        function speakVietnamese() {
+            if (!currentVocab) return;
+
+            const text = currentVocab.vietnamese;
+            if ('speechSynthesis' in window && text) {
+                speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'vi-VN';
+                utterance.rate = 0.85;
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        function handleInputKeyup(e) {
+            const value = inputText.value;
+
+            // Speak last word on space (using TTS Service like Learn tab)
+            if (e.key === ' ' && value.endsWith(' ')) {
+                const words = value.trim().split(/\s+/);
+                if (words.length > 0) {
+                    const lastWord = words[words.length - 1];
+                    if (lastWord) {
+                        ttsService.speakWord(lastWord);
+                    }
+                }
+            }
+
+            // Speak sentence on period (using TTS Service like Learn tab)
+            if (e.key === '.' && value.endsWith('.')) {
+                const sentence = value.trim();
+                if (sentence) {
+                    ttsService.speakSentence(sentence);
+                }
+            }
+        }
+
+        // ========================================
+        // EVENT LISTENERS
+        // ========================================
+        inputText.addEventListener('input', () => {
+            charCount.textContent = inputText.value.length;
+        });
+
+        inputText.addEventListener('keyup', handleInputKeyup);
+
+        inputText.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                translateText();
+            }
+        });
+
+        translateButton.addEventListener('click', translateText);
+        speakButton.addEventListener('click', speakVietnamese);
+        refreshButton.addEventListener('click', () => {
+            buildWordQueue();
+            currentQueueIndex = 0;
+            loadNextFromQueue();
+            translateButton.disabled = false;
+        });
+
+        // Category toggle buttons
+        document.querySelectorAll('.category-toggle-btn').forEach(btn => {
+            btn.addEventListener('click', async function() {
+                const newCategory = this.dataset.category;
+
+                // Don't reload if same category
+                if (newCategory === selectedCategory) return;
+
+                // Update active state
+                document.querySelectorAll('.category-toggle-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+
+                // Update selected category
+                selectedCategory = newCategory;
+
+                // Save to localStorage (sync with Learn tab)
+                localStorage.setItem('learnpage_filter_category', newCategory);
+
+                // Show loading state
+                sourceText.textContent = `Loading ${newCategory} vocabulary...`;
+                sourceText.classList.add('placeholder');
+
+                // Reload vocabulary data
+                await initializeApp();
+            });
+        });
+
+        // Set initial active button based on selectedCategory
+        function updateActiveButton() {
+            document.querySelectorAll('.category-toggle-btn').forEach(btn => {
+                if (btn.dataset.category === selectedCategory) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+
+        // ========================================
+        // INITIALIZATION
+        // ========================================
+        updateActiveButton();
+        initializeApp();
+    </script>
+</body>
+</html>

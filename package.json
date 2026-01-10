@@ -1,0 +1,17 @@
+{
+  "name": "special-english-learning-web",
+  "version": "1.0.0",
+  "description": "Special English Learning Web Interface with Appwrite",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "appwrite": "^8.1.0"
+  },
+  "devDependencies": {
+    "vite": "^4.4.5"
+  }
+}

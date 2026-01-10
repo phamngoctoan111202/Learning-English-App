@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Special English Learning App</title>
+    <link rel="stylesheet" href="css/styles.css?v=1.1">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Main Content -->
+        <main id="main-content" class="main-content">
+            <!-- Pages will be loaded here -->
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <button class="nav-item" data-page="edit">
+                <i class="fas fa-edit"></i>
+                <span>Edit</span>
+            </button>
+            <button class="nav-item active" data-page="learn">
+                <i class="fas fa-graduation-cap"></i>
+                <span>Learn</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Add Vocabulary Dialog -->
+    <div id="add-vocab-dialog" class="dialog-overlay hidden">
+        <div class="dialog">
+            <div class="dialog-header">
+                <h2>Add Vocabulary</h2>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="dialog-content">
+                <div class="input-group">
+                    <label>Word</label>
+                    <div class="input-with-btn">
+                        <input type="text" id="vocab-word" placeholder="Enter English word">
+                        <button class="speak-btn" data-target="vocab-word">
+                            <i class="fas fa-volume-up"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Category</label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="vocab-category" value="GENERAL" checked>
+                            <span>General</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="vocab-category" value="TOEIC">
+                            <span>TOEIC</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="vocab-category" value="VSTEP">
+                            <span>VSTEP</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="examples-container">
+                    <label>Example sentences</label>
+                    <div id="examples-list">
+                        <!-- Dynamic example fields -->
+                    </div>
+                    <button id="add-example-btn" class="secondary-btn">
+                        <i class="fas fa-plus"></i> Add Example
+                    </button>
+                </div>
+            </div>
+            <div class="dialog-actions">
+                <button class="cancel-btn">Cancel</button>
+                <button class="save-btn">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Vocabulary Dialog -->
+    <div id="edit-vocab-dialog" class="dialog-overlay hidden">
+        <div class="dialog">
+            <div class="dialog-header">
+                <h2>Edit Vocabulary</h2>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="dialog-content">
+                <div class="input-group">
+                    <label>Word</label>
+                    <div class="input-with-btn">
+                        <input type="text" id="edit-vocab-word" placeholder="Enter English word">
+                        <button class="speak-btn" data-target="edit-vocab-word">
+                            <i class="fas fa-volume-up"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Category</label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="edit-vocab-category" value="GENERAL" checked>
+                            <span>General</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="edit-vocab-category" value="TOEIC">
+                            <span>TOEIC</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="edit-vocab-category" value="VSTEP">
+                            <span>VSTEP</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="examples-container">
+                    <label>Example sentences</label>
+                    <div id="edit-examples-list">
+                        <!-- Dynamic example fields -->
+                    </div>
+                    <button id="edit-add-example-btn" class="secondary-btn">
+                        <i class="fas fa-plus"></i> Add Example
+                    </button>
+                </div>
+            </div>
+            <div class="dialog-actions">
+                <button class="delete-btn">Delete</button>
+                <button class="cancel-btn">Cancel</button>
+                <button class="save-btn">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden"></div>
+
+    <!-- Appwrite SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.0"></script>
+
+    <!-- Scripts - v1.1 fixes: removed duplicate addCompletedVocabulary() call in handleWordMastered() -->
+    <script src="js/utils/contractionHelper.js?v=1.1"></script>
+    <script src="js/utils/stringComparator.js?v=1.1"></script>
+    <script src="js/utils/exampleUtils.js?v=1.1"></script>
+    <script src="js/services/database.js?v=1.1"></script>
+    <script src="js/services/appwriteService.js?v=1.1"></script>
+    <script src="js/services/syncManager.js?v=1.1"></script>
+    <script src="js/services/learningProgressManager.js?v=1.1"></script>
+    <script src="js/services/ttsService.js?v=1.1"></script>
+    <script src="js/pages/editPage.js?v=1.1"></script>
+    <script src="js/pages/learnPage.js?v=1.1"></script>
+    <script src="js/app.js?v=1.1"></script>
+</body>
+</html>

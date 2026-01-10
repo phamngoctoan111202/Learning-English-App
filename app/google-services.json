@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "982518078509",
+    "project_id": "learning-english-app-1cf98",
+    "storage_bucket": "learning-english-app-1cf98.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:982518078509:android:24af593edbcea193ffaca4",
+        "android_client_info": {
+          "package_name": "com.example.specialenglishlearningapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAVVBLhFzCWrlQKYwnk5fz0zDJl_h98YpA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

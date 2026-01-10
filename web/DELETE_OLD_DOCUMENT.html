@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Delete Old Learning Progress Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@15.0.0"></script>
+</head>
+<body>
+    <h1>🗑️ Delete Old Learning Progress Document</h1>
+    <p>This will delete the old document that has invalid "userId" field.</p>
+    <button onclick="deleteDocument()" style="padding: 10px 20px; font-size: 16px; cursor: pointer;">
+        Delete Old Document
+    </button>
+    <pre id="output" style="background: #f5f5f5; padding: 20px; margin-top: 20px;"></pre>
+
+    <script>
+        const APPWRITE_ENDPOINT = 'https://fra.cloud.appwrite.io/v1';
+        const PROJECT_ID = '68cfb8c7003bbb5ce3b8';
+        const DATABASE_ID = '68cfb8c900053dca6f90';
+        const COLLECTION_ID = 'learning_progress';
+        const DOCUMENT_ID = 'user_learning_progress';
+
+        const client = new Appwrite.Client()
+            .setEndpoint(APPWRITE_ENDPOINT)
+            .setProject(PROJECT_ID);
+
+        const account = new Appwrite.Account(client);
+        const databases = new Appwrite.Databases(client);
+
+        async function deleteDocument() {
+            const output = document.getElementById('output');
+            output.textContent = '🔄 Processing...\n\n';
+
+            try {
+                // Login anonymously
+                output.textContent += '1. Logging in anonymously...\n';
+                await account.createAnonymousSession();
+                output.textContent += '✅ Logged in\n\n';
+
+                // Try to get current document
+                output.textContent += '2. Checking current document...\n';
+                try {
+                    const currentDoc = await databases.getDocument(
+                        DATABASE_ID,
+                        COLLECTION_ID,
+                        DOCUMENT_ID
+                    );
+                    output.textContent += '✅ Document found:\n';
+                    output.textContent += JSON.stringify(currentDoc.data, null, 2) + '\n\n';
+
+                    // Delete the document
+                    output.textContent += '3. Deleting document...\n';
+                    await databases.deleteDocument(
+                        DATABASE_ID,
+                        COLLECTION_ID,
+                        DOCUMENT_ID
+                    );
+                    output.textContent += '✅ Document deleted successfully!\n\n';
+                    output.textContent += '✅ SUCCESS! Now reload your app and it will create a new clean document.\n';
+                } catch (error) {
+                    if (error.code === 404) {
+                        output.textContent += '⚠️ Document not found (already deleted or never existed)\n';
+                        output.textContent += '✅ You can proceed - reload your app to create a new document.\n';
+                    } else {
+                        throw error;
+                    }
+                }
+
+            } catch (error) {
+                output.textContent += '\n❌ ERROR:\n';
+                output.textContent += error.message + '\n\n';
+                output.textContent += 'Full error:\n' + JSON.stringify(error, null, 2);
+            }
+        }
+    </script>
+</body>
+</html>
