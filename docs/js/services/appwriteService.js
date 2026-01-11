@@ -114,7 +114,18 @@ class AppwriteService {
             return '';
         }
 
-        return JSON.stringify(allSentences);
+        const MAX_LENGTH = 950;
+        const result = [];
+        for (const sentence of allSentences) {
+            const candidate = [...result, sentence];
+            const json = JSON.stringify(candidate);
+            if (json.length > MAX_LENGTH) {
+                break;
+            }
+            result.push(sentence);
+        }
+
+        return JSON.stringify(result);
     }
 
     /**
