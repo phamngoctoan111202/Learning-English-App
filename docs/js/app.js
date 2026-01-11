@@ -60,6 +60,8 @@ const App = {
         // Cleanup current page
         if (this.currentPage === 'learn') {
             LearnPage.cleanup?.();
+        } else if (this.currentPage === 'review') {
+            ReviewPage.cleanup?.();
         }
 
         // Update navigation UI
@@ -76,6 +78,9 @@ const App = {
                 break;
             case 'learn':
                 LearnPage.render();
+                break;
+            case 'review':
+                ReviewPage.render();
                 break;
             default:
                 LearnPage.render();

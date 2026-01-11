@@ -447,6 +447,166 @@
             to { transform: rotate(360deg); }
         }
 
+        .mode-tabs {
+            display: flex;
+            border-top: 1px solid #e8eaed;
+            border-bottom: 1px solid #e8eaed;
+            background-color: #fafafa;
+            padding: 0 24px;
+        }
+
+        .mode-tab {
+            flex: 1;
+            padding: 12px 0;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #5f6368;
+            border-bottom: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .mode-tab span.icon {
+            font-size: 16px;
+        }
+
+        .mode-tab.active {
+            color: #1a73e8;
+            border-bottom-color: #1a73e8;
+            background-color: #ffffff;
+        }
+
+        .mode-panel {
+            display: none;
+        }
+
+        .mode-panel.active {
+            display: block;
+        }
+
+        .paragraph-config {
+            padding: 24px 28px 28px 28px;
+        }
+
+        .paragraph-config h2 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: #202124;
+        }
+
+        .paragraph-config p {
+            font-size: 14px;
+            color: #5f6368;
+            margin-bottom: 16px;
+        }
+
+        .paragraph-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .paragraph-field {
+            min-width: 220px;
+        }
+
+        .paragraph-field label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #5f6368;
+            margin-bottom: 6px;
+        }
+
+        .paragraph-field select {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #dadce0;
+            font-size: 14px;
+        }
+
+        .paragraph-category-label {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: #e8f0fe;
+            color: #1967d2;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .paragraph-words {
+            margin-top: 8px;
+            margin-bottom: 16px;
+        }
+
+        .paragraph-words-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            color: #5f6368;
+            margin-bottom: 8px;
+        }
+
+        .paragraph-words-list {
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #e8eaed;
+            background: #fafbfc;
+            min-height: 48px;
+        }
+
+        .paragraph-word-chip {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: #e8f0fe;
+            color: #1a73e8;
+            font-size: 13px;
+            margin: 2px;
+        }
+
+        .paragraph-empty {
+            font-size: 13px;
+            color: #9aa0a6;
+        }
+
+        .paragraph-prompt {
+            margin-top: 8px;
+        }
+
+        .paragraph-prompt label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #5f6368;
+            margin-bottom: 6px;
+        }
+
+        .paragraph-prompt-text {
+            width: 100%;
+            min-height: 120px;
+            border-radius: 8px;
+            border: 1px solid #dadce0;
+            padding: 12px;
+            font-size: 14px;
+            resize: vertical;
+            font-family: inherit;
+            margin-bottom: 12px;
+        }
+
+        .paragraph-generate-button {
+            margin-top: 0;
+        }
+
         @media (max-width: 768px) {
             .translate-body {
                 flex-direction: column-reverse;
@@ -499,59 +659,121 @@
                 </div>
             </div>
 
-            <div class="translate-body">
-                <div class="input-section">
-                    <div class="char-counter">
-                        <span id="charCount">0</span> characters
+            <div class="mode-tabs">
+                <button class="mode-tab active" data-mode="sentence">
+                    <span class="icon">📝</span>
+                    <span>Luyện câu</span>
+                </button>
+                <button class="mode-tab" data-mode="paragraph">
+                    <span class="icon">📄</span>
+                    <span>Đoạn văn ôn từ</span>
+                </button>
+            </div>
+
+            <div id="sentence-mode" class="mode-panel active">
+                <div class="translate-body">
+                    <div class="input-section">
+                        <div class="char-counter">
+                            <span id="charCount">0</span> characters
+                        </div>
+                        <textarea
+                            class="text-input"
+                            id="inputText"
+                            placeholder="Enter text to translate..."
+                            autofocus
+                        ></textarea>
+                        <div class="action-buttons left">
+                            <button class="translate-button" id="translateButton">
+                                <span>🔄</span>
+                                Translate
+                            </button>
+                        </div>
                     </div>
-                    <textarea
-                        class="text-input"
-                        id="inputText"
-                        placeholder="Enter text to translate..."
-                        autofocus
-                    ></textarea>
-                    <div class="action-buttons left">
-                        <button class="translate-button" id="translateButton">
-                            <span>🔄</span>
-                            Translate
-                        </button>
+
+                    <div class="output-section">
+                        <div class="source-text placeholder" id="sourceText">
+                            Waiting for input...
+                        </div>
+                        <div class="action-buttons right">
+                            <button class="icon-button" id="speakButton" title="Listen">
+                                🔊
+                            </button>
+                            <button class="icon-button" id="refreshButton" title="New sentence">
+                                ↻
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <div class="output-section">
-                    <div class="source-text placeholder" id="sourceText">
-                        Waiting for input...
+                <div class="feedback-section" id="feedbackSection">
+                    <div class="translation-result" id="resultCard">
+                        <div class="result-title" id="resultTitle">Translation Result</div>
+                        <div class="result-content" id="resultContent"></div>
+                        <div class="result-meta" id="resultMeta"></div>
                     </div>
-                    <div class="action-buttons right">
-                        <button class="icon-button" id="speakButton" title="Listen">
-                            🔊
-                        </button>
-                        <button class="icon-button" id="refreshButton" title="New sentence">
-                            ↻
-                        </button>
+
+                    <div class="alternatives-section" id="alternativesSection" style="display: none;">
+                        <div class="alternatives-title">Alternative translations:</div>
+                        <div id="alternativesList"></div>
                     </div>
+
+                    <div class="comparison-section" id="comparisonSection" style="display: none;">
+                        <div class="comparison-title">Analysis:</div>
+                        <div class="similarity-badge" id="similarityBadge">Match: 0%</div>
+                        <div class="char-comparison" id="charComparison"></div>
+                    </div>
+
+                    <div class="attempts-info" id="attemptsInfo" style="display: none;"></div>
                 </div>
             </div>
 
-            <div class="feedback-section" id="feedbackSection">
-                <div class="translation-result" id="resultCard">
-                    <div class="result-title" id="resultTitle">Translation Result</div>
-                    <div class="result-content" id="resultContent"></div>
-                    <div class="result-meta" id="resultMeta"></div>
-                </div>
+            <div id="paragraph-mode" class="mode-panel">
+                <div class="paragraph-config">
+                    <h2>Đoạn văn ôn lại các từ đã học</h2>
+                    <p>
+                        Lấy tất cả các từ đã master (độ nhớ 7/10 trở lên)
+                        theo nhóm từ hiện tại (VSTEP, GENERAL, TOEIC, SPEAKING),
+                        rồi tạo sẵn một prompt để bạn copy sang AI và viết lại đoạn văn tiếng Anh.
+                    </p>
 
-                <div class="alternatives-section" id="alternativesSection" style="display: none;">
-                    <div class="alternatives-title">Alternative translations:</div>
-                    <div id="alternativesList"></div>
-                </div>
+                    <div class="paragraph-controls">
+                        <div class="paragraph-field">
+                            <label>Nhóm từ vựng đang chọn</label>
+                            <span class="paragraph-category-label" id="paragraphCategoryLabel">VSTEP</span>
+                        </div>
+                        <div class="paragraph-field">
+                            <label for="paragraphLength">Độ dài đoạn văn (số câu)</label>
+                            <select id="paragraphLength">
+                                <option value="3">Ngắn · khoảng 3 câu</option>
+                                <option value="5" selected>Vừa · khoảng 5 câu</option>
+                                <option value="8">Dài · khoảng 8 câu</option>
+                            </select>
+                        </div>
+                    </div>
 
-                <div class="comparison-section" id="comparisonSection" style="display: none;">
-                    <div class="comparison-title">Analysis:</div>
-                    <div class="similarity-badge" id="similarityBadge">Match: 0%</div>
-                    <div class="char-comparison" id="charComparison"></div>
-                </div>
+                    <div class="paragraph-words">
+                        <div class="paragraph-words-header">
+                            <span>Danh sách từ đã master (≥ 7/10):</span>
+                            <span id="paragraphWordsCount"></span>
+                        </div>
+                        <div class="paragraph-words-list" id="paragraphWordsList">
+                            <div class="paragraph-empty">
+                                Đang tải dữ liệu từ vựng...
+                            </div>
+                        </div>
+                    </div>
 
-                <div class="attempts-info" id="attemptsInfo" style="display: none;"></div>
+                    <div class="paragraph-prompt">
+                        <label for="paragraphPrompt">Prompt để tạo đoạn văn (copy sang ChatGPT, Claude...)</label>
+                        <textarea id="paragraphPrompt" class="paragraph-prompt-text" readonly>
+Chọn nhóm từ vựng và bấm "Tạo prompt" để sinh đoạn hướng dẫn.
+                        </textarea>
+                        <button class="translate-button paragraph-generate-button" id="generateParagraphPromptButton">
+                            <span>✨</span>
+                            Tạo prompt
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -842,6 +1064,7 @@
         let currentVocab = null;
         const QUEUE_SIZE = 30;
         const STORAGE_KEY = 'learning_focus';
+        let currentMode = 'sentence';
 
         // Read category from localStorage (same as Learn tab)
         let selectedCategory = localStorage.getItem('learnpage_filter_category') || 'VSTEP';
@@ -867,6 +1090,14 @@
         const charComparison = document.getElementById('charComparison');
         const loadingState = document.getElementById('loadingState');
         const attemptsInfo = document.getElementById('attemptsInfo');
+        const sentenceModePanel = document.getElementById('sentence-mode');
+        const paragraphModePanel = document.getElementById('paragraph-mode');
+        const paragraphCategoryLabel = document.getElementById('paragraphCategoryLabel');
+        const paragraphWordsList = document.getElementById('paragraphWordsList');
+        const paragraphWordsCount = document.getElementById('paragraphWordsCount');
+        const paragraphLengthSelect = document.getElementById('paragraphLength');
+        const paragraphPromptTextarea = document.getElementById('paragraphPrompt');
+        const paragraphGenerateButton = document.getElementById('generateParagraphPromptButton');
 
         // ========================================
         // HELPER FUNCTIONS FOR QUEUE LOGIC
@@ -968,6 +1199,102 @@
             return [...selectedNew, ...selectedReview];
         }
 
+        function getMasteredVocabulariesByCategory(category) {
+            if (!Array.isArray(vocabularyData) || vocabularyData.length === 0) {
+                return [];
+            }
+
+            const sameCategory = vocabularyData.filter(v => (v.category || 'GENERAL') === category);
+
+            return sameCategory.filter(vocab => {
+                const last10 = getLast10AttemptsList(vocab);
+                const correctCount = last10.filter(x => x === true).length;
+                if (last10.length < 10) return false;
+                return correctCount >= 7;
+            });
+        }
+
+        function updateParagraphModeWords() {
+            if (!paragraphWordsList || !paragraphWordsCount || !paragraphPromptTextarea) {
+                return;
+            }
+
+            if (paragraphCategoryLabel) {
+                paragraphCategoryLabel.textContent = selectedCategory;
+            }
+
+            const mastered = getMasteredVocabulariesByCategory(selectedCategory);
+
+            if (mastered.length === 0) {
+                paragraphWordsList.innerHTML = '<div class="paragraph-empty">Chưa có từ nào đạt 7/10 trong nhóm này.</div>';
+                paragraphWordsCount.textContent = '(0 từ)';
+                paragraphPromptTextarea.value =
+                    'Chưa có từ nào đạt đủ 10 lượt và 7 lượt đúng trong nhóm ' +
+                    selectedCategory +
+                    ' để tạo đoạn văn. Hãy tiếp tục luyện các từ trong mục Luyện câu.';
+                return;
+            }
+
+            const words = mastered
+                .map(v => v.word)
+                .filter(Boolean)
+                .sort((a, b) => a.localeCompare(b));
+
+            paragraphWordsList.innerHTML = words
+                .map(w => `<span class="paragraph-word-chip">${escapeHtml(w)}</span>`)
+                .join(' ');
+            paragraphWordsCount.textContent = `(${words.length} từ)`;
+        }
+
+        function generateParagraphPrompt() {
+            if (!paragraphPromptTextarea) return;
+
+            const mastered = getMasteredVocabulariesByCategory(selectedCategory);
+            if (mastered.length === 0) {
+                paragraphPromptTextarea.value =
+                    'Chưa có từ nào đạt 7/10 trong nhóm này để tạo prompt. ' +
+                    'Hãy luyện thêm trong tab Luyện câu.';
+                return;
+            }
+
+            const words = mastered
+                .map(v => v.word)
+                .filter(Boolean)
+                .sort((a, b) => a.localeCompare(b));
+
+            const lengthValue = paragraphLengthSelect
+                ? parseInt(paragraphLengthSelect.value || '5', 10)
+                : 5;
+
+            const categoryLabel = (() => {
+                switch (selectedCategory) {
+                    case 'VSTEP':
+                        return 'VSTEP';
+                    case 'TOEIC':
+                        return 'TOEIC';
+                    case 'GENERAL':
+                        return 'general English';
+                    case 'SPEAKING':
+                        return 'speaking practice';
+                    default:
+                        return selectedCategory;
+                }
+            })();
+
+            const wordsListText = words.join(', ');
+
+            const promptText =
+                'You are an English teacher helping a learner review previously mastered vocabulary ' +
+                'for the ' + categoryLabel + ' exam.\n' +
+                'Write one coherent English paragraph of about ' + lengthValue + ' sentences.\n' +
+                'The paragraph must naturally use all of the following words at least once: ' +
+                wordsListText + '.\n' +
+                'Use clear, everyday language suitable for an intermediate learner.\n' +
+                'Only output the English paragraph, nothing else.';
+
+            paragraphPromptTextarea.value = promptText;
+        }
+
         // ========================================
         // PROGRESS DISPLAY
         // ========================================
@@ -1032,6 +1359,9 @@
 
                 // Try to load queue from localStorage first
                 await loadWordQueue();
+
+                // Update paragraph mode words list (if UI is available)
+                updateParagraphModeWords();
 
                 loadingState.style.display = 'none';
                 loadNextFromQueue();
@@ -1386,6 +1716,47 @@
         }
 
         // ========================================
+        // MODE SWITCHING (SENTENCE / PARAGRAPH)
+        // ========================================
+        document.querySelectorAll('.mode-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const newMode = tab.dataset.mode;
+                if (!newMode || newMode === currentMode) return;
+
+                currentMode = newMode;
+
+                document.querySelectorAll('.mode-tab').forEach(b => {
+                    b.classList.toggle('active', b === tab);
+                });
+
+                if (sentenceModePanel && paragraphModePanel) {
+                    if (currentMode === 'sentence') {
+                        sentenceModePanel.classList.add('active');
+                        paragraphModePanel.classList.remove('active');
+                    } else {
+                        sentenceModePanel.classList.remove('active');
+                        paragraphModePanel.classList.add('active');
+                        updateParagraphModeWords();
+                    }
+                }
+            });
+        });
+
+        if (paragraphGenerateButton) {
+            paragraphGenerateButton.addEventListener('click', () => {
+                generateParagraphPrompt();
+            });
+        }
+
+        if (paragraphLengthSelect) {
+            paragraphLengthSelect.addEventListener('change', () => {
+                if (currentMode === 'paragraph') {
+                    generateParagraphPrompt();
+                }
+            });
+        }
+
+        // ========================================
         // EVENT LISTENERS
         // ========================================
         inputText.addEventListener('input', () => {
@@ -1427,6 +1798,9 @@
 
                 // Save to localStorage (sync with Learn tab)
                 localStorage.setItem('learnpage_filter_category', newCategory);
+
+                // Update paragraph mode label immediately
+                updateParagraphModeWords();
 
                 // Show loading state
                 sourceText.textContent = `Loading ${newCategory} vocabulary...`;
