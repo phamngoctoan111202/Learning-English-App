@@ -109,6 +109,7 @@ class EditFragment : Fragment() {
                 R.id.radioFilterGeneral -> "GENERAL"
                 R.id.radioFilterToeic -> "TOEIC"
                 R.id.radioFilterVstep -> "VSTEP"
+                R.id.radioFilterSpeaking -> "SPEAKING"
                 else -> null // All
             }
             Logger.d("Category filter changed: $category")

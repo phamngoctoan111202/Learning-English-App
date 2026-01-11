@@ -64,6 +64,10 @@ const LearnPage = {
                             <input type="radio" name="learn-category-filter" value="VSTEP" ${savedCategory === 'VSTEP' ? 'checked' : ''}>
                             <span>VSTEP</span>
                         </label>
+                        <label class="filter-radio">
+                            <input type="radio" name="learn-category-filter" value="SPEAKING" ${savedCategory === 'SPEAKING' ? 'checked' : ''}>
+                            <span>SPEAKING</span>
+                        </label>
                     </div>
                 </div>
 
@@ -1048,13 +1052,7 @@ const LearnPage = {
      * Show settings dialog
      */
     showSettings() {
-        if (confirm('Reset learning session?\n\nThis will start a new session with fresh goals.')) {
-            learningProgressManager.resetProgress();
-            this.createNewQueue();
-            this.currentIndex = 0;
-            this.loadCurrentWord();
-            App.showToast('Session reset', 'success');
-        }
+        alert('Session reset is disabled.\n\nGoals must never be reset.');
     },
 
     /**

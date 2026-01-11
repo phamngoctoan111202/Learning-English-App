@@ -275,6 +275,7 @@ class AddVocabularyDialog(
         val category = when (selectedCategoryId) {
             R.id.radioToeic -> "TOEIC"
             R.id.radioVstep -> "VSTEP"
+            R.id.radioSpeaking -> "SPEAKING"
             else -> "GENERAL"
         }
 

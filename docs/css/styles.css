@@ -260,6 +260,11 @@ body {
     color: var(--white);
 }
 
+.category-badge-speaking {
+    background: #2196F3;
+    color: var(--white);
+}
+
 .vocab-stats {
     font-size: 13px;
     color: var(--text-secondary);

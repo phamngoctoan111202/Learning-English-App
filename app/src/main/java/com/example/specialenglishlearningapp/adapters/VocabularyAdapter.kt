@@ -49,12 +49,14 @@ class VocabularyAdapter(
             categoryText.text = when (category) {
                 "TOEIC" -> "TOEIC"
                 "VSTEP" -> "VSTEP"
+                "SPEAKING" -> "SPEAKING"
                 else -> "General"
             }
             categoryText.setBackgroundResource(
                 when (category) {
                     "TOEIC" -> R.drawable.bg_category_toeic
                     "VSTEP" -> R.drawable.bg_category_vstep
+                    "SPEAKING" -> R.drawable.bg_category_speaking
                     else -> R.drawable.bg_category_general
                 }
             )

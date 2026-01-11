@@ -79,6 +79,7 @@ class EditVocabularyDialog(
         when (currentCategory) {
             "TOEIC" -> radioGroupCategory.check(R.id.radioToeic)
             "VSTEP" -> radioGroupCategory.check(R.id.radioVstep)
+            "SPEAKING" -> radioGroupCategory.check(R.id.radioSpeaking)
             else -> radioGroupCategory.check(R.id.radioGeneral)
         }
 
@@ -223,6 +224,8 @@ class EditVocabularyDialog(
         val selectedCategoryId = radioGroupCategory.checkedRadioButtonId
         val category = when (selectedCategoryId) {
             R.id.radioToeic -> "TOEIC"
+            R.id.radioVstep -> "VSTEP"
+            R.id.radioSpeaking -> "SPEAKING"
             else -> "GENERAL"
         }
 

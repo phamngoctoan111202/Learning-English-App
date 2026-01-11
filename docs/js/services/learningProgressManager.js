@@ -227,15 +227,7 @@ class LearningProgressManager {
      * Reset progress (start new session)
      */
     async resetProgress() {
-        console.log('🔄 [Progress] Resetting...');
-
-        this.startTime = Date.now();
-        this.wordsLearned = 0;
-
-        this.saveToLocalStorage();
-        await this.syncToAppwrite();
-
-        console.log('✅ [Progress] Reset complete');
+        console.warn('⛔ [Progress] resetProgress is disabled - startTime must never change');
     }
 
     /**

@@ -37,6 +37,10 @@ const EditPage = {
                         <input type="radio" name="category-filter" value="VSTEP" ${savedCategory === 'VSTEP' ? 'checked' : ''}>
                         <span>VSTEP</span>
                     </label>
+                    <label class="filter-radio">
+                        <input type="radio" name="category-filter" value="SPEAKING" ${savedCategory === 'SPEAKING' ? 'checked' : ''}>
+                        <span>SPEAKING</span>
+                    </label>
                 </div>
             </div>
             <div class="vocabulary-list" id="vocabulary-list">
@@ -168,13 +172,17 @@ const EditPage = {
                     ? 'category-badge-toeic'
                     : category === 'VSTEP'
                         ? 'category-badge-vstep'
-                        : 'category-badge-general';
+                        : category === 'SPEAKING'
+                            ? 'category-badge-speaking'
+                            : 'category-badge-general';
             const categoryLabel =
                 category === 'TOEIC'
                     ? 'TOEIC'
                     : category === 'VSTEP'
                         ? 'VSTEP'
-                        : 'General';
+                        : category === 'SPEAKING'
+                            ? 'SPEAKING'
+                            : 'General';
 
             return `
                 <div class="vocab-item" data-id="${vocabulary.id}">

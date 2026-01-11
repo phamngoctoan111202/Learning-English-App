@@ -175,6 +175,7 @@ class LearnFragment : Fragment() {
             val category = when (checkedId) {
                 R.id.radioToeic -> "TOEIC"
                 R.id.radioVstep -> "VSTEP"
+                R.id.radioSpeaking -> "SPEAKING"
                 else -> "GENERAL"
             }
             onCategoryChanged(category)
