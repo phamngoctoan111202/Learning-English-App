@@ -564,9 +564,6 @@ class SyncManager(context: Context, private val database: AppDatabase) {
         }
     }
 
-    /**
-     * Immediately sync a single vocabulary item to Appwrite server after add/update
-     */
     suspend fun syncSingleVocabularyToServer(vocabularyId: Long): Result<Unit> = withContext(Dispatchers.IO) {
         try {
             Logger.d("🔄 Syncing single vocabulary to server: ID=$vocabularyId")
@@ -607,7 +604,6 @@ class SyncManager(context: Context, private val database: AppDatabase) {
             )
 
             if (vocab.appwriteDocumentId != null) {
-                // Update existing document
                 Logger.d("  → Updating existing document: ${vocab.appwriteDocumentId}")
                 databases.updateDocument(
                     databaseId = databaseId,
@@ -616,18 +612,38 @@ class SyncManager(context: Context, private val database: AppDatabase) {
                     data = data
                 )
             } else {
-                // Create new document
-                Logger.d("  → Creating new document")
-                val document = databases.createDocument(
+                Logger.d("  → No Appwrite ID, checking for existing document by word: ${vocab.word}")
+                val existingDocs = databases.listDocuments(
                     databaseId = databaseId,
                     collectionId = vocabularyCollectionId,
-                    documentId = ID.unique(),
-                    data = data
+                    queries = listOf(Query.equal("word", vocab.word))
                 )
 
-                // Update local vocabulary with appwrite document ID
-                vocabularyDao.updateVocabulary(vocab.copy(appwriteDocumentId = document.id))
-                Logger.d("  → Linked local vocabulary to Appwrite document: ${document.id}")
+                val targetDocumentId = if (existingDocs.total > 0 && existingDocs.documents.isNotEmpty()) {
+                    val existingDocId = existingDocs.documents.first().id
+                    Logger.d("  → Found existing document for word '${vocab.word}', reusing ID: $existingDocId")
+                    databases.updateDocument(
+                        databaseId = databaseId,
+                        collectionId = vocabularyCollectionId,
+                        documentId = existingDocId,
+                        data = data
+                    )
+                    vocabularyDao.updateVocabulary(vocab.copy(appwriteDocumentId = existingDocId))
+                    existingDocId
+                } else {
+                    Logger.d("  → Creating new document")
+                    val document = databases.createDocument(
+                        databaseId = databaseId,
+                        collectionId = vocabularyCollectionId,
+                        documentId = ID.unique(),
+                        data = data
+                    )
+                    vocabularyDao.updateVocabulary(vocab.copy(appwriteDocumentId = document.id))
+                    Logger.d("  → Linked local vocabulary to Appwrite document: ${document.id}")
+                    document.id
+                }
+
+                Logger.d("  → Synced vocabulary '${vocab.word}' with Appwrite ID: $targetDocumentId")
             }
 
             Logger.d("✅ Single vocabulary synced successfully")

@@ -12,6 +12,7 @@ import com.example.specialenglishlearningapp.data.VocabularyWithExamples
 import com.example.specialenglishlearningapp.utils.Logger
 import com.example.specialenglishlearningapp.utils.SyncManager
 import com.example.specialenglishlearningapp.utils.LearningProgressManager
+import com.example.specialenglishlearningapp.utils.ExampleUtils
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
@@ -153,15 +154,19 @@ class EditViewModel(application: Application) : AndroidViewModel(application) {
                     grammar = vocabularyGrammar
                 )
             )
-            examplesCombined.forEach { combined ->
+            val normalizedExamples = examplesCombined.mapNotNull { combined ->
                 val parts = combined.split("||")
-                val en = parts.getOrNull(0)?.trim().orEmpty()
+                val enJson = parts.getOrNull(0)?.trim().orEmpty()
                 val vi = parts.getOrNull(1)?.trim().orEmpty()
                 val grammar = parts.getOrNull(2)?.trim().orEmpty()
+                val enList = ExampleUtils.jsonToSentences(enJson).map { it.trim() }.filter { it.isNotEmpty() }.distinct()
+                if (enList.isEmpty()) null else Triple(ExampleUtils.sentencesToJson(enList), vi, grammar)
+            }.distinct()
+            normalizedExamples.forEach { (sentencesJson, vi, grammar) ->
                 database.exampleDao().insertExample(
                     Example(
                         vocabularyId = vid,
-                        sentences = en,
+                        sentences = sentencesJson,
                         vietnamese = vi.ifEmpty { null },
                         grammar = grammar.ifEmpty { null }
                     )
@@ -199,15 +204,19 @@ class EditViewModel(application: Application) : AndroidViewModel(application) {
             
             database.vocabularyDao().updateVocabulary(vocabToUpdate)
             database.exampleDao().deleteExamplesByVocabularyId(vocabularyId)
-            examplesCombined.forEach { combined ->
+            val normalizedExamples = examplesCombined.mapNotNull { combined ->
                 val parts = combined.split("||")
-                val en = parts.getOrNull(0)?.trim().orEmpty()
+                val enJson = parts.getOrNull(0)?.trim().orEmpty()
                 val vi = parts.getOrNull(1)?.trim().orEmpty()
                 val grammar = parts.getOrNull(2)?.trim().orEmpty()
+                val enList = ExampleUtils.jsonToSentences(enJson).map { it.trim() }.filter { it.isNotEmpty() }.distinct()
+                if (enList.isEmpty()) null else Triple(ExampleUtils.sentencesToJson(enList), vi, grammar)
+            }.distinct()
+            normalizedExamples.forEach { (sentencesJson, vi, grammar) ->
                 database.exampleDao().insertExample(
                     Example(
                         vocabularyId = vocabularyId,
-                        sentences = en,
+                        sentences = sentencesJson,
                         vietnamese = vi.ifEmpty { null },
                         grammar = grammar.ifEmpty { null }
                     )
@@ -275,5 +284,4 @@ class EditViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 }
-
 
