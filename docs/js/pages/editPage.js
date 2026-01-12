@@ -535,7 +535,7 @@ const EditPage = {
         exampleItem.innerHTML = `
             <label>Example ${index}</label>
             <textarea class="example-sentences" placeholder="English sentences (one per line)">${this.escapeHtml(sentences)}</textarea>
-            <input type="text" class="example-vietnamese" placeholder="Vietnamese translation" value="${this.escapeHtml(vietnamese)}">
+            <textarea class="example-vietnamese" placeholder="Vietnamese translation" rows="2">${this.escapeHtml(vietnamese)}</textarea>
             <textarea class="example-grammar" placeholder="Grammar explanation (optional)" rows="3">${this.escapeHtml(grammar)}</textarea>
             <button class="remove-example-btn" type="button">
                 <i class="fas fa-times"></i> Remove
