@@ -15,12 +15,11 @@ class SyncManager {
      */
     async syncData() {
         if (this.isSyncing) {
-            console.log('[EDIT_FLOW] Sync already in progress');
             return;
         }
 
         this.isSyncing = true;
-        console.log('[EDIT_FLOW] Starting data sync...');
+        console.log('[EDIT_FLOW] Starting background sync...');
 
         try {
             // Ensure logged in
@@ -34,8 +33,6 @@ class SyncManager {
 
             // Sync from client to server
             await this.syncClientToServer();
-
-            console.log('[EDIT_FLOW] Sync completed successfully');
         } catch (error) {
             console.error('[EDIT_FLOW] Sync failed:', error);
         } finally {
@@ -189,10 +186,9 @@ class SyncManager {
      */
     async syncVocabularyToServer(vocabulary, examples) {
         try {
-            console.log('[EDIT_FLOW] syncVocabularyToServer:', { vocabulary, examples });
             if (vocabulary.appwriteDocumentId) {
                 // Update existing document
-                console.log('[EDIT_FLOW] Updating existing document:', vocabulary.appwriteDocumentId);
+                console.log('[EDIT_FLOW] Updating existing document on server:', vocabulary.appwriteDocumentId);
                 await appwriteService.updateVocabulary(
                     vocabulary.appwriteDocumentId,
                     vocabulary,
@@ -227,7 +223,6 @@ class SyncManager {
                 return;
             }
 
-            console.log('[EDIT_FLOW] Syncing vocabulary to server:', vocabWithExamples);
             await appwriteService.loginAnonymously();
             await this.syncVocabularyToServer(
                 vocabWithExamples.vocabulary,

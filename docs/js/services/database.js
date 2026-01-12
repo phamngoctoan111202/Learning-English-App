@@ -410,7 +410,6 @@ class Database {
      */
     async insertExample(example) {
         return new Promise((resolve, reject) => {
-            console.log('[EDIT_FLOW] [DB] insertExample - raw input:', example);
             const transaction = this.db.transaction(['examples'], 'readwrite');
             const store = transaction.objectStore('examples');
 
@@ -424,7 +423,6 @@ class Database {
                 delete exampleData.id;
             }
 
-            console.log('[EDIT_FLOW] [DB] insertExample - final data:', exampleData);
             const request = store.add(exampleData);
 
             request.onsuccess = () => resolve(request.result);

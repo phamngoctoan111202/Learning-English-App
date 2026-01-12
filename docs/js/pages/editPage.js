@@ -450,7 +450,7 @@ const EditPage = {
         }
 
         const examples = this.collectExamples('edit-examples-list');
-        console.log('[EDIT_FLOW] Collected examples:', examples);
+        console.log('[EDIT_FLOW] Collected examples count:', examples.length);
 
         if (examples.length === 0) {
             App.showToast('Please add at least one example', 'error');
@@ -469,14 +469,13 @@ const EditPage = {
             existing.word = word;
             existing.category = category;
             existing.lastStudiedAt = Date.now();
-            console.log('[EDIT_FLOW] Updating vocabulary:', existing);
             await db.updateVocabulary(existing);
 
             // Delete old examples and insert new ones
-            console.log('[EDIT_FLOW] Deleting old examples for ID:', this.currentEditId);
+            console.log('[EDIT_FLOW] Deleting old examples...');
             await db.deleteExamplesByVocabularyId(this.currentEditId);
 
-            console.log('[EDIT_FLOW] Inserting new examples:', examples.length);
+            console.log('[EDIT_FLOW] Inserting new examples...');
             for (const example of examples) {
                 const newExample = {
                     vocabularyId: this.currentEditId,
@@ -485,7 +484,6 @@ const EditPage = {
                     grammar: example.grammar,
                     createdAt: Date.now()
                 };
-                console.log('[EDIT_FLOW] Inserting example:', newExample);
                 await db.insertExample(newExample);
             }
 
