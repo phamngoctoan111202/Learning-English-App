@@ -437,6 +437,8 @@ const EditPage = {
     async saveEditedVocabulary() {
         if (!this.currentEditId) return;
 
+        console.log('[EDIT_FLOW] Starting saveEditedVocabulary for ID:', this.currentEditId);
+
         const word = document.getElementById('edit-vocab-word').value.trim();
 
         // Get selected category
@@ -448,6 +450,7 @@ const EditPage = {
         }
 
         const examples = this.collectExamples('edit-examples-list');
+        console.log('[EDIT_FLOW] Collected examples:', examples);
 
         if (examples.length === 0) {
             App.showToast('Please add at least one example', 'error');
@@ -466,29 +469,36 @@ const EditPage = {
             existing.word = word;
             existing.category = category;
             existing.lastStudiedAt = Date.now();
+            console.log('[EDIT_FLOW] Updating vocabulary:', existing);
             await db.updateVocabulary(existing);
 
             // Delete old examples and insert new ones
+            console.log('[EDIT_FLOW] Deleting old examples for ID:', this.currentEditId);
             await db.deleteExamplesByVocabularyId(this.currentEditId);
 
+            console.log('[EDIT_FLOW] Inserting new examples:', examples.length);
             for (const example of examples) {
-                await db.insertExample({
+                const newExample = {
                     vocabularyId: this.currentEditId,
                     sentences: example.sentences,
                     vietnamese: example.vietnamese,
                     grammar: example.grammar,
                     createdAt: Date.now()
-                });
+                };
+                console.log('[EDIT_FLOW] Inserting example:', newExample);
+                await db.insertExample(newExample);
             }
 
             // Sync to server - wait for sync to complete
+            console.log('[EDIT_FLOW] Syncing to server...');
             await syncManager.syncSingleVocabulary(this.currentEditId);
+            console.log('[EDIT_FLOW] Sync completed');
 
             this.hideEditDialog();
             App.showToast('Vocabulary updated successfully', 'success');
             await this.loadVocabularies();
         } catch (error) {
-            console.error('Error updating vocabulary:', error);
+            console.error('[EDIT_FLOW] Error updating vocabulary:', error);
             App.showToast('Failed to update vocabulary', 'error');
         }
     },

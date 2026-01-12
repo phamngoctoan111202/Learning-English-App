@@ -410,7 +410,7 @@ class Database {
      */
     async insertExample(example) {
         return new Promise((resolve, reject) => {
-            console.log('📝 [DB] insertExample - raw input:', example);
+            console.log('[EDIT_FLOW] [DB] insertExample - raw input:', example);
             const transaction = this.db.transaction(['examples'], 'readwrite');
             const store = transaction.objectStore('examples');
 
@@ -424,7 +424,7 @@ class Database {
                 delete exampleData.id;
             }
 
-            console.log('📝 [DB] insertExample - final data:', exampleData);
+            console.log('[EDIT_FLOW] [DB] insertExample - final data:', exampleData);
             const request = store.add(exampleData);
 
             request.onsuccess = () => resolve(request.result);
@@ -465,16 +465,21 @@ class Database {
      */
     async deleteExamplesByVocabularyId(vocabularyId) {
         return new Promise((resolve, reject) => {
+            console.log('[EDIT_FLOW] [DB] deleteExamplesByVocabularyId for ID:', vocabularyId);
             const transaction = this.db.transaction(['examples'], 'readwrite');
             const store = transaction.objectStore('examples');
             const index = store.index('vocabularyId');
             const request = index.openCursor(IDBKeyRange.only(vocabularyId));
 
+            let deleteCount = 0;
             request.onsuccess = (event) => {
                 const cursor = event.target.result;
                 if (cursor) {
                     cursor.delete();
+                    deleteCount++;
                     cursor.continue();
+                } else {
+                    console.log('[EDIT_FLOW] [DB] Deleted', deleteCount, 'examples');
                 }
             };
 

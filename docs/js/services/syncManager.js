@@ -15,12 +15,12 @@ class SyncManager {
      */
     async syncData() {
         if (this.isSyncing) {
-            console.log('Sync already in progress');
+            console.log('[EDIT_FLOW] Sync already in progress');
             return;
         }
 
         this.isSyncing = true;
-        console.log('Starting data sync...');
+        console.log('[EDIT_FLOW] Starting data sync...');
 
         try {
             // Ensure logged in
@@ -35,9 +35,9 @@ class SyncManager {
             // Sync from client to server
             await this.syncClientToServer();
 
-            console.log('Sync completed successfully');
+            console.log('[EDIT_FLOW] Sync completed successfully');
         } catch (error) {
-            console.error('Sync failed:', error);
+            console.error('[EDIT_FLOW] Sync failed:', error);
         } finally {
             this.isSyncing = false;
         }
@@ -153,6 +153,7 @@ class SyncManager {
         );
 
         if (!exists && sentences) {
+            console.log('[EDIT_FLOW] Syncing example from server (inserting new):', { vocabularyId, sentences });
             await db.insertExample({
                 vocabularyId,
                 sentences: sentences,
@@ -160,6 +161,8 @@ class SyncManager {
                 grammar: grammar || '',
                 createdAt: Date.now()
             });
+        } else {
+            console.log('[EDIT_FLOW] Example already exists, skipping:', { vocabularyId, sentences });
         }
     }
 
@@ -186,8 +189,10 @@ class SyncManager {
      */
     async syncVocabularyToServer(vocabulary, examples) {
         try {
+            console.log('[EDIT_FLOW] syncVocabularyToServer:', { vocabulary, examples });
             if (vocabulary.appwriteDocumentId) {
                 // Update existing document
+                console.log('[EDIT_FLOW] Updating existing document:', vocabulary.appwriteDocumentId);
                 await appwriteService.updateVocabulary(
                     vocabulary.appwriteDocumentId,
                     vocabulary,
@@ -195,6 +200,7 @@ class SyncManager {
                 );
             } else {
                 // Create new document
+                console.log('[EDIT_FLOW] Creating new document on server');
                 const response = await appwriteService.createVocabulary(vocabulary, examples);
 
                 // Update local with appwriteDocumentId
@@ -205,7 +211,7 @@ class SyncManager {
             // Sync updated word list to extension storage
             await appwriteService.syncWordsToExtension();
         } catch (error) {
-            console.error('Error syncing vocabulary to server:', vocabulary.word, error);
+            console.error('[EDIT_FLOW] Error syncing vocabulary to server:', vocabulary.word, error);
         }
     }
 
@@ -214,16 +220,21 @@ class SyncManager {
      */
     async syncSingleVocabulary(vocabularyId) {
         try {
+            console.log('[EDIT_FLOW] syncSingleVocabulary called for ID:', vocabularyId);
             const vocabWithExamples = await db.getVocabularyWithExamples(vocabularyId);
-            if (!vocabWithExamples) return;
+            if (!vocabWithExamples) {
+                console.log('[EDIT_FLOW] Vocabulary not found for sync');
+                return;
+            }
 
+            console.log('[EDIT_FLOW] Syncing vocabulary to server:', vocabWithExamples);
             await appwriteService.loginAnonymously();
             await this.syncVocabularyToServer(
                 vocabWithExamples.vocabulary,
                 vocabWithExamples.examples
             );
         } catch (error) {
-            console.error('Error syncing single vocabulary:', error);
+            console.error('[EDIT_FLOW] Error syncing single vocabulary:', error);
         }
     }
 
