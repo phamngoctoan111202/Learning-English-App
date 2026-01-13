@@ -74,7 +74,15 @@ class AppwriteService {
 
     // ==================== VOCABULARY OPERATIONS ====================
 
+    normalizeSentence(sentence) {
+        return String(sentence || '')
+            .replace(/\r/g, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
     buildSentencesFromExamples(examples) {
+        const seen = new Set();
         const allSentences = [];
 
         if (Array.isArray(examples)) {
@@ -89,8 +97,10 @@ class AppwriteService {
                         const parsed = JSON.parse(raw);
                         if (Array.isArray(parsed)) {
                             for (const s of parsed) {
-                                const sentence = String(s).trim();
-                                if (sentence.length > 0) {
+                                const sentence = this.normalizeSentence(s);
+                                const key = sentence.toLowerCase();
+                                if (sentence.length > 0 && !seen.has(key)) {
+                                    seen.add(key);
                                     allSentences.push(sentence);
                                 }
                             }
@@ -102,8 +112,10 @@ class AppwriteService {
 
                 const parts = raw.split(/\n+/);
                 for (const part of parts) {
-                    const sentence = part.trim();
-                    if (sentence.length > 0) {
+                    const sentence = this.normalizeSentence(part);
+                    const key = sentence.toLowerCase();
+                    if (sentence.length > 0 && !seen.has(key)) {
+                        seen.add(key);
                         allSentences.push(sentence);
                     }
                 }
@@ -131,14 +143,17 @@ class AppwriteService {
     /**
      * List all vocabularies from Appwrite
      */
-    async listVocabularies() {
+    async listVocabularies(queries = []) {
         try {
+            const finalQueries = [
+                Appwrite.Query.limit(1000),
+                ...queries
+            ];
+
             const response = await this.databases.listDocuments(
                 this.databaseId,
                 this.vocabularyCollectionId,
-                [
-                    Appwrite.Query.limit(1000)
-                ]
+                finalQueries
             );
             return response.documents || [];
         } catch (error) {
@@ -170,7 +185,7 @@ class AppwriteService {
         const sentencesJson = this.buildSentencesFromExamples(examples);
 
         const data = {
-            word: vocabulary.word,
+            word: String(vocabulary.word || '').trim(),
             sentences: sentencesJson || firstExample.sentences || '',
             vietnamese: firstExample.vietnamese || '',
             grammar: firstExample.grammar || '',
@@ -201,7 +216,7 @@ class AppwriteService {
         const sentencesJson = this.buildSentencesFromExamples(examples);
 
         const data = {
-            word: vocabulary.word,
+            word: String(vocabulary.word || '').trim(),
             sentences: sentencesJson || firstExample.sentences || '',
             vietnamese: firstExample.vietnamese || '',
             grammar: firstExample.grammar || '',

@@ -10,16 +10,60 @@ class SyncManager {
         this.isSyncing = false;
     }
 
+    normalizeWord(word) {
+        return String(word || '').trim().toLowerCase();
+    }
+
+    normalizeSentence(sentence) {
+        return String(sentence || '')
+            .replace(/\r/g, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    parseSentencesToList(sentences) {
+        const raw = String(sentences || '').trim();
+        if (!raw) return [];
+
+        if (raw.startsWith('[')) {
+            try {
+                const parsed = JSON.parse(raw);
+                if (Array.isArray(parsed)) {
+                    return parsed.map(s => this.normalizeSentence(s)).filter(Boolean);
+                }
+            } catch (e) {
+            }
+        }
+
+        const parts = raw.split(/\n+/).map(s => this.normalizeSentence(s)).filter(Boolean);
+        if (parts.length > 0) return parts;
+        return [this.normalizeSentence(raw)].filter(Boolean);
+    }
+
+    buildCanonicalSentencesJson(sentences) {
+        const list = this.parseSentencesToList(sentences);
+        const seen = new Set();
+        const result = [];
+        for (const s of list) {
+            const key = s.toLowerCase();
+            if (seen.has(key)) continue;
+            seen.add(key);
+            result.push(s);
+        }
+        return result.length > 0 ? JSON.stringify(result) : '';
+    }
+
     /**
      * Full bidirectional sync
      */
     async syncData() {
         if (this.isSyncing) {
+            console.log('Sync already in progress');
             return;
         }
 
         this.isSyncing = true;
-        console.log('[EDIT_FLOW] Starting background sync...');
+        console.log('Starting data sync...');
 
         try {
             // Ensure logged in
@@ -28,13 +72,15 @@ class SyncManager {
             // Clean up duplicates first
             await db.cleanupDuplicates();
 
-            // Sync from server to client
+            // Push local changes first to avoid server overwriting recent edits
+            await this.syncClientToServer();
+
+            // Then pull from server to update new/remote data
             await this.syncServerToClient();
 
-            // Sync from client to server
-            await this.syncClientToServer();
+            console.log('Sync completed successfully');
         } catch (error) {
-            console.error('[EDIT_FLOW] Sync failed:', error);
+            console.error('Sync failed:', error);
         } finally {
             this.isSyncing = false;
         }
@@ -50,8 +96,22 @@ class SyncManager {
             const serverVocabs = await appwriteService.listVocabularies();
             console.log(`Found ${serverVocabs.length} vocabularies on server`);
 
+            const localVocabs = await db.getAllVocabularies();
+            const byAppwriteId = new Map();
+            const byWord = new Map();
+
+            for (const v of localVocabs) {
+                if (v.appwriteDocumentId) {
+                    byAppwriteId.set(v.appwriteDocumentId, v);
+                }
+                const key = this.normalizeWord(v.word);
+                if (!byWord.has(key)) {
+                    byWord.set(key, v);
+                }
+            }
+
             for (const serverVocab of serverVocabs) {
-                await this.mergeVocabularyFromServer(serverVocab);
+                await this.mergeVocabularyFromServer(serverVocab, { byAppwriteId, byWord });
             }
         } catch (error) {
             console.error('Server to client sync failed:', error);
@@ -62,17 +122,24 @@ class SyncManager {
      * Merge a single vocabulary from server
      * Server schema: word, sentences, vietnamese, createdAt, lastStudiedAt, etc.
      */
-    async mergeVocabularyFromServer(serverVocab) {
+    async mergeVocabularyFromServer(serverVocab, indexes = null) {
         try {
-            // Find local vocabulary with matching appwriteDocumentId
-            const localVocabs = await db.getAllVocabularies();
-            let localVocab = localVocabs.find(v => v.appwriteDocumentId === serverVocab.$id);
+            const serverWord = String(serverVocab.word || '').trim();
+            const serverWordKey = this.normalizeWord(serverWord);
+            const serverAppwriteId = serverVocab.$id;
 
-            // Also check by word if not found by documentId
+            let localVocab = null;
+            if (indexes?.byAppwriteId && serverAppwriteId) {
+                localVocab = indexes.byAppwriteId.get(serverAppwriteId) || null;
+            }
+            if (!localVocab && indexes?.byWord) {
+                localVocab = indexes.byWord.get(serverWordKey) || null;
+            }
             if (!localVocab) {
-                localVocab = localVocabs.find(v =>
-                    v.word.toLowerCase().trim() === serverVocab.word.toLowerCase().trim()
-                );
+                const localVocabs = await db.getAllVocabularies();
+                localVocab = localVocabs.find(v => v.appwriteDocumentId === serverAppwriteId)
+                    || localVocabs.find(v => this.normalizeWord(v.word) === serverWordKey)
+                    || null;
             }
 
             // Parse server values (they are stored as strings)
@@ -83,16 +150,22 @@ class SyncManager {
             const serverCreatedAt = parseInt(serverVocab.createdAt) || Date.now();
 
             if (localVocab) {
-                // Merge with max values (same logic as Android)
+                const localLastStudiedAt = parseInt(localVocab.lastStudiedAt) || 0;
+                const shouldApplyServerContent = serverLastStudiedAt > localLastStudiedAt;
+
+                // Merge with max values
                 const mergedTotalAttempts = Math.max(localVocab.totalAttempts || 0, serverTotalAttempts);
                 const mergedCorrectAttempts = Math.max(localVocab.correctAttempts || 0, serverCorrectAttempts);
                 const mergedLastStudiedAt = Math.max(localVocab.lastStudiedAt || 0, serverLastStudiedAt);
                 const mergedMemoryScore = Math.max(localVocab.memoryScore || 0, serverMemoryScore);
 
-                // Update local with merged data
-                localVocab.word = serverVocab.word;
-                localVocab.appwriteDocumentId = serverVocab.$id;
-                localVocab.category = serverVocab.category || localVocab.category || 'GENERAL';
+                localVocab.appwriteDocumentId = serverAppwriteId;
+
+                if (shouldApplyServerContent) {
+                    localVocab.word = serverWord;
+                    localVocab.category = serverVocab.category || localVocab.category || 'GENERAL';
+                }
+
                 localVocab.totalAttempts = mergedTotalAttempts;
                 localVocab.correctAttempts = mergedCorrectAttempts;
                 localVocab.memoryScore = mergedMemoryScore;
@@ -100,14 +173,19 @@ class SyncManager {
 
                 await db.updateVocabulary(localVocab);
 
-                // Sync example from server (flat structure: sentences, vietnamese, grammar)
-                if (serverVocab.sentences) {
-                    await this.syncExampleFromServer(localVocab.id, serverVocab.sentences, serverVocab.vietnamese, serverVocab.grammar);
+                // Replace local examples with server data ONLY if server is newer
+                if (shouldApplyServerContent && serverVocab.sentences) {
+                    await this.replaceExamplesFromServer(
+                        localVocab.id,
+                        serverVocab.sentences,
+                        serverVocab.vietnamese,
+                        serverVocab.grammar
+                    );
                 }
             } else {
                 // Create new local vocabulary
                 const newVocab = {
-                    word: serverVocab.word,
+                    word: serverWord,
                     createdAt: serverCreatedAt,
                     lastStudiedAt: serverLastStudiedAt,
                     priorityScore: parseInt(serverVocab.priorityScore) || 0,
@@ -116,20 +194,18 @@ class SyncManager {
                     correctAttempts: serverCorrectAttempts,
                     memoryScore: serverMemoryScore,
                     last10Attempts: '[]',
-                    appwriteDocumentId: serverVocab.$id
+                    appwriteDocumentId: serverAppwriteId
                 };
 
                 const newId = await db.insertVocabulary(newVocab);
 
-                // Create example from server data (flat structure)
                 if (serverVocab.sentences) {
-                    await db.insertExample({
-                        vocabularyId: newId,
-                        sentences: serverVocab.sentences,
-                        vietnamese: serverVocab.vietnamese || '',
-                        grammar: serverVocab.grammar || '',
-                        createdAt: Date.now()
-                    });
+                    await this.replaceExamplesFromServer(
+                        newId,
+                        serverVocab.sentences,
+                        serverVocab.vietnamese,
+                        serverVocab.grammar
+                    );
                 }
             }
         } catch (error) {
@@ -138,29 +214,20 @@ class SyncManager {
     }
 
     /**
-     * Sync example from server (flat structure)
+     * Replace local examples with server data (flat structure)
      */
-    async syncExampleFromServer(vocabularyId, sentences, vietnamese, grammar) {
-        // Check if example already exists
-        const existingExamples = await db.getExamplesByVocabularyId(vocabularyId);
+    async replaceExamplesFromServer(vocabularyId, sentences, vietnamese, grammar) {
+        await db.deleteExamplesByVocabularyId(vocabularyId);
+        const canonicalSentences = this.buildCanonicalSentencesJson(sentences);
+        if (!canonicalSentences) return;
 
-        // Check if this exact example already exists
-        const exists = existingExamples.some(ex =>
-            ex.sentences.toLowerCase() === sentences.toLowerCase()
-        );
-
-        if (!exists && sentences) {
-            console.log('[EDIT_FLOW] Syncing example from server (inserting new):', { vocabularyId, sentences });
-            await db.insertExample({
-                vocabularyId,
-                sentences: sentences,
-                vietnamese: vietnamese || '',
-                grammar: grammar || '',
-                createdAt: Date.now()
-            });
-        } else {
-            console.log('[EDIT_FLOW] Example already exists, skipping:', { vocabularyId, sentences });
-        }
+        await db.insertExample({
+            vocabularyId,
+            sentences: canonicalSentences,
+            vietnamese: vietnamese || '',
+            grammar: grammar || '',
+            createdAt: Date.now()
+        });
     }
 
     /**
@@ -188,26 +255,46 @@ class SyncManager {
         try {
             if (vocabulary.appwriteDocumentId) {
                 // Update existing document
-                console.log('[EDIT_FLOW] Updating existing document on server:', vocabulary.appwriteDocumentId);
                 await appwriteService.updateVocabulary(
                     vocabulary.appwriteDocumentId,
                     vocabulary,
                     examples
                 );
             } else {
-                // Create new document
-                console.log('[EDIT_FLOW] Creating new document on server');
-                const response = await appwriteService.createVocabulary(vocabulary, examples);
+                // Check if document already exists on server by word
+                // This prevents duplicate documents when editing locally before first sync
+                const existingDocs = await appwriteService.listVocabularies([
+                    Appwrite.Query.equal('word', vocabulary.word)
+                ]);
 
-                // Update local with appwriteDocumentId
-                vocabulary.appwriteDocumentId = response.$id;
-                await db.updateVocabulary(vocabulary);
+                if (existingDocs.length > 0) {
+                    const existingDoc = existingDocs[0];
+                    console.log(`Found existing document for word "${vocabulary.word}": ${existingDoc.$id}`);
+
+                    // Link local vocabulary to existing document
+                    vocabulary.appwriteDocumentId = existingDoc.$id;
+                    await db.updateVocabulary(vocabulary);
+
+                    // Update the existing document with new data
+                    await appwriteService.updateVocabulary(
+                        existingDoc.$id,
+                        vocabulary,
+                        examples
+                    );
+                } else {
+                    // Create new document
+                    const response = await appwriteService.createVocabulary(vocabulary, examples);
+
+                    // Update local with appwriteDocumentId
+                    vocabulary.appwriteDocumentId = response.$id;
+                    await db.updateVocabulary(vocabulary);
+                }
             }
 
             // Sync updated word list to extension storage
             await appwriteService.syncWordsToExtension();
         } catch (error) {
-            console.error('[EDIT_FLOW] Error syncing vocabulary to server:', vocabulary.word, error);
+            console.error('Error syncing vocabulary to server:', vocabulary.word, error);
         }
     }
 
@@ -216,12 +303,8 @@ class SyncManager {
      */
     async syncSingleVocabulary(vocabularyId) {
         try {
-            console.log('[EDIT_FLOW] syncSingleVocabulary called for ID:', vocabularyId);
             const vocabWithExamples = await db.getVocabularyWithExamples(vocabularyId);
-            if (!vocabWithExamples) {
-                console.log('[EDIT_FLOW] Vocabulary not found for sync');
-                return;
-            }
+            if (!vocabWithExamples) return;
 
             await appwriteService.loginAnonymously();
             await this.syncVocabularyToServer(
@@ -229,7 +312,7 @@ class SyncManager {
                 vocabWithExamples.examples
             );
         } catch (error) {
-            console.error('[EDIT_FLOW] Error syncing single vocabulary:', error);
+            console.error('Error syncing single vocabulary:', error);
         }
     }
 

@@ -437,8 +437,6 @@ const EditPage = {
     async saveEditedVocabulary() {
         if (!this.currentEditId) return;
 
-        console.log('[EDIT_FLOW] Starting saveEditedVocabulary for ID:', this.currentEditId);
-
         const word = document.getElementById('edit-vocab-word').value.trim();
 
         // Get selected category
@@ -450,7 +448,6 @@ const EditPage = {
         }
 
         const examples = this.collectExamples('edit-examples-list');
-        console.log('[EDIT_FLOW] Collected examples count:', examples.length);
 
         if (examples.length === 0) {
             App.showToast('Please add at least one example', 'error');
@@ -472,31 +469,26 @@ const EditPage = {
             await db.updateVocabulary(existing);
 
             // Delete old examples and insert new ones
-            console.log('[EDIT_FLOW] Deleting old examples...');
             await db.deleteExamplesByVocabularyId(this.currentEditId);
 
-            console.log('[EDIT_FLOW] Inserting new examples...');
             for (const example of examples) {
-                const newExample = {
+                await db.insertExample({
                     vocabularyId: this.currentEditId,
                     sentences: example.sentences,
                     vietnamese: example.vietnamese,
                     grammar: example.grammar,
                     createdAt: Date.now()
-                };
-                await db.insertExample(newExample);
+                });
             }
 
             // Sync to server - wait for sync to complete
-            console.log('[EDIT_FLOW] Syncing to server...');
             await syncManager.syncSingleVocabulary(this.currentEditId);
-            console.log('[EDIT_FLOW] Sync completed');
 
             this.hideEditDialog();
             App.showToast('Vocabulary updated successfully', 'success');
             await this.loadVocabularies();
         } catch (error) {
-            console.error('[EDIT_FLOW] Error updating vocabulary:', error);
+            console.error('Error updating vocabulary:', error);
             App.showToast('Failed to update vocabulary', 'error');
         }
     },

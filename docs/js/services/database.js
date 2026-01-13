@@ -463,21 +463,16 @@ class Database {
      */
     async deleteExamplesByVocabularyId(vocabularyId) {
         return new Promise((resolve, reject) => {
-            console.log('[EDIT_FLOW] [DB] deleteExamplesByVocabularyId for ID:', vocabularyId);
             const transaction = this.db.transaction(['examples'], 'readwrite');
             const store = transaction.objectStore('examples');
             const index = store.index('vocabularyId');
             const request = index.openCursor(IDBKeyRange.only(vocabularyId));
 
-            let deleteCount = 0;
             request.onsuccess = (event) => {
                 const cursor = event.target.result;
                 if (cursor) {
                     cursor.delete();
-                    deleteCount++;
                     cursor.continue();
-                } else {
-                    console.log('[EDIT_FLOW] [DB] Deleted', deleteCount, 'examples');
                 }
             };
 
