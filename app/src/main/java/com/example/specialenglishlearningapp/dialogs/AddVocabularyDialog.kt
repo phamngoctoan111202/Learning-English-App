@@ -276,6 +276,7 @@ class AddVocabularyDialog(
             R.id.radioToeic -> "TOEIC"
             R.id.radioVstep -> "VSTEP"
             R.id.radioSpeaking -> "SPEAKING"
+            R.id.radioWriting -> "WRITING"
             else -> "GENERAL"
         }
 

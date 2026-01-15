@@ -80,6 +80,7 @@ class EditVocabularyDialog(
             "TOEIC" -> radioGroupCategory.check(R.id.radioToeic)
             "VSTEP" -> radioGroupCategory.check(R.id.radioVstep)
             "SPEAKING" -> radioGroupCategory.check(R.id.radioSpeaking)
+            "WRITING" -> radioGroupCategory.check(R.id.radioWriting)
             else -> radioGroupCategory.check(R.id.radioGeneral)
         }
 
@@ -226,6 +227,7 @@ class EditVocabularyDialog(
             R.id.radioToeic -> "TOEIC"
             R.id.radioVstep -> "VSTEP"
             R.id.radioSpeaking -> "SPEAKING"
+            R.id.radioWriting -> "WRITING"
             else -> "GENERAL"
         }
 

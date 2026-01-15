@@ -638,6 +638,8 @@
                 <button class="category-toggle-btn active" data-category="VSTEP">VSTEP</button>
                 <button class="category-toggle-btn" data-category="GENERAL">GENERAL</button>
                 <button class="category-toggle-btn" data-category="TOEIC">TOEIC</button>
+                <button class="category-toggle-btn" data-category="SPEAKING">SPEAKING</button>
+                <button class="category-toggle-btn" data-category="WRITING">WRITING</button>
             </div>
             <div style="color: white; font-size: 14px;" id="progress-display">
                 Loading...
@@ -732,7 +734,7 @@
                     <h2>Đoạn văn ôn lại các từ đã học</h2>
                     <p>
                         Lấy tất cả các từ đã master (độ nhớ 7/10 trở lên)
-                        theo nhóm từ hiện tại (VSTEP, GENERAL, TOEIC, SPEAKING),
+                        theo nhóm từ hiện tại (VSTEP, GENERAL, TOEIC, SPEAKING, WRITING),
                         rồi tạo sẵn một prompt để bạn copy sang AI và viết lại đoạn văn tiếng Anh.
                     </p>
 
@@ -1276,6 +1278,8 @@ Chọn nhóm từ vựng và bấm "Tạo prompt" để sinh đoạn hướng d�
                         return 'general English';
                     case 'SPEAKING':
                         return 'speaking practice';
+                    case 'WRITING':
+                        return 'writing practice';
                     default:
                         return selectedCategory;
                 }

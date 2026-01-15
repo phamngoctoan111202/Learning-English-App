@@ -31,7 +31,7 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:layout_marginBottom="8dp"
-                    android:tint="@android:color/white"
+                    app:tint="@android:color/white"
                     app:srcCompat="@drawable/ic_book" />
 
                 <TextView
@@ -170,6 +170,13 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="SPEAKING" />
+
+                    <RadioButton
+                        android:id="@+id/radioWriting"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="WRITING" />
 
                 </RadioGroup>
 

@@ -68,6 +68,10 @@ const LearnPage = {
                             <input type="radio" name="learn-category-filter" value="SPEAKING" ${savedCategory === 'SPEAKING' ? 'checked' : ''}>
                             <span>SPEAKING</span>
                         </label>
+                        <label class="filter-radio">
+                            <input type="radio" name="learn-category-filter" value="WRITING" ${savedCategory === 'WRITING' ? 'checked' : ''}>
+                            <span>WRITING</span>
+                        </label>
                     </div>
                 </div>
 

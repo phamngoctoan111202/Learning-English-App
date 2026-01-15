@@ -4,7 +4,8 @@ enum class VocabularyCategory(val displayName: String) {
     GENERAL("General"),
     TOEIC("TOEIC"),
     VSTEP("VSTEP"),
-    SPEAKING("Speaking");
+    SPEAKING("Speaking"),
+    WRITING("Writing");
 
     companion object {
         fun fromString(value: String?): VocabularyCategory {
@@ -12,6 +13,7 @@ enum class VocabularyCategory(val displayName: String) {
                 "TOEIC" -> TOEIC
                 "VSTEP" -> VSTEP
                 "SPEAKING" -> SPEAKING
+                "WRITING" -> WRITING
                 else -> GENERAL
             }
         }

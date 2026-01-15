@@ -50,6 +50,7 @@ class VocabularyAdapter(
                 "TOEIC" -> "TOEIC"
                 "VSTEP" -> "VSTEP"
                 "SPEAKING" -> "SPEAKING"
+                "WRITING" -> "WRITING"
                 else -> "General"
             }
             categoryText.setBackgroundResource(
@@ -57,6 +58,7 @@ class VocabularyAdapter(
                     "TOEIC" -> R.drawable.bg_category_toeic
                     "VSTEP" -> R.drawable.bg_category_vstep
                     "SPEAKING" -> R.drawable.bg_category_speaking
+                    "WRITING" -> R.drawable.bg_category_general
                     else -> R.drawable.bg_category_general
                 }
             )

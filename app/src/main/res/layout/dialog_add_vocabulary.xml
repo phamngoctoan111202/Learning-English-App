@@ -94,6 +94,13 @@
             android:layout_weight="1"
             android:text="SPEAKING" />
 
+        <RadioButton
+            android:id="@+id/radioWriting"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="WRITING" />
+
     </RadioGroup>
 
     <TextView

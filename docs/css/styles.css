@@ -265,6 +265,11 @@ body {
     color: var(--white);
 }
 
+.category-badge-writing {
+    background: #607D8B;
+    color: var(--white);
+}
+
 .vocab-stats {
     font-size: 13px;
     color: var(--text-secondary);
