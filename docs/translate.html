@@ -791,8 +791,11 @@ Chọn nhóm từ vựng và bấm "Tạo prompt" để sinh đoạn hướng d�
     <!-- TTS Service -->
     <script src="js/services/ttsService.js"></script>
 
+    <script src="js/services/database.js"></script>
+
     <!-- Learning Progress Manager -->
     <script src="js/services/appwriteService.js"></script>
+    <script src="js/services/syncManager.js"></script>
     <script src="js/services/learningProgressManager.js"></script>
 
     <script>
@@ -1318,6 +1321,29 @@ Chọn nhóm từ vựng và bấm "Tạo prompt" để sinh đoạn hướng d�
         // ========================================
         // APPWRITE DATA LOADING
         // ========================================
+        function buildVocabularyDataFromIndexedDb(vocabsWithExamples) {
+            return (vocabsWithExamples || [])
+                .filter(item => item && item.vocabulary && item.vocabulary.appwriteDocumentId)
+                .map(({ vocabulary, examples }) => {
+                    const firstExample = Array.isArray(examples) && examples.length > 0 ? examples[0] : {};
+                    return {
+                        id: vocabulary.appwriteDocumentId,
+                        word: vocabulary.word,
+                        sentences: parseSentences(firstExample.sentences),
+                        vietnamese: firstExample.vietnamese || '',
+                        grammar: firstExample.grammar || '',
+                        category: vocabulary.category || 'GENERAL',
+                        memoryScore: parseFloat(vocabulary.memoryScore) || 0,
+                        totalAttempts: parseInt(vocabulary.totalAttempts) || 0,
+                        correctAttempts: parseInt(vocabulary.correctAttempts) || 0,
+                        last10Attempts: vocabulary.last10Attempts || '[]',
+                        lastStudiedAt: parseInt(vocabulary.lastStudiedAt) || null,
+                        createdAt: parseInt(vocabulary.createdAt) || Date.now()
+                    };
+                })
+                .filter(v => v.sentences.length > 0 && v.vietnamese);
+        }
+
         async function initializeApp() {
             try {
                 // Initialize learning progress manager first
@@ -1328,38 +1354,24 @@ Chọn nhóm từ vựng và bấm "Tạo prompt" để sinh đoạn hướng d�
                 // Initial progress display
                 updateProgressDisplay();
 
-                // Login anonymously
-                try {
-                    await account.get();
-                    console.log('Already logged in');
-                } catch {
-                    await account.createAnonymousSession();
-                    console.log('Logged in anonymously');
+                await db.init();
+                await appwriteService.loginAnonymously();
+
+                const cached = buildVocabularyDataFromIndexedDb(await db.getAllVocabulariesWithExamples());
+                if (cached.length > 0) {
+                    vocabularyData = cached;
+                    console.log('✅ Loaded', vocabularyData.length, 'vocabulary items from IndexedDB');
+                    syncManager.syncServerToClient();
+                } else {
+                    console.log('📡 No cached vocabulary found, syncing from server...');
+                    await syncManager.syncServerToClient();
+                    vocabularyData = buildVocabularyDataFromIndexedDb(await db.getAllVocabulariesWithExamples());
+                    console.log('✅ Loaded', vocabularyData.length, 'vocabulary items after sync');
                 }
 
-                // Load vocabulary from Appwrite
-                const response = await databases.listDocuments(
-                    appwriteConfig.databaseId,
-                    appwriteConfig.vocabularyCollectionId,
-                    [Appwrite.Query.limit(1000)]
-                );
-
-                vocabularyData = response.documents.map(doc => ({
-                    id: doc.$id,
-                    word: doc.word,
-                    sentences: parseSentences(doc.sentences),
-                    vietnamese: doc.vietnamese,
-                    grammar: doc.grammar,
-                    category: doc.category || 'GENERAL',
-                    memoryScore: parseFloat(doc.memoryScore) || 0,
-                    totalAttempts: parseInt(doc.totalAttempts) || 0,
-                    correctAttempts: parseInt(doc.correctAttempts) || 0,
-                    last10Attempts: doc.last10Attempts || '[]',
-                    lastStudiedAt: doc.lastStudiedAt ? new Date(doc.lastStudiedAt).getTime() : null,
-                    createdAt: doc.createdAt ? new Date(doc.createdAt).getTime() : Date.now()
-                })).filter(v => v.sentences.length > 0 && v.vietnamese);
-
-                console.log('✅ Loaded', vocabularyData.length, 'vocabulary items from Appwrite');
+                if (vocabularyData.length === 0) {
+                    throw new Error('No vocabulary data available');
+                }
 
                 // Try to load queue from localStorage first
                 await loadWordQueue();
@@ -1652,20 +1664,32 @@ Chọn nhóm từ vựng và bấm "Tạo prompt" để sinh đoạn hướng d�
 
                 console.log(`📊 Updated stats for "${vocab.word}": ${vocab.correctAttempts}/${vocab.totalAttempts} (${Math.round(vocab.memoryScore * 100)}%)`);
 
-                // Sync to Appwrite (only fields that exist in collection)
-                await databases.updateDocument(
-                    appwriteConfig.databaseId,
-                    appwriteConfig.vocabularyCollectionId,
-                    vocab.id,
-                    {
-                        totalAttempts: vocab.totalAttempts.toString(),
-                        correctAttempts: vocab.correctAttempts.toString(),
-                        memoryScore: vocab.memoryScore.toString(),
-                        lastStudiedAt: new Date(vocab.lastStudiedAt).toISOString()
-                    }
-                );
+                const localVocab = await db.getVocabularyByAppwriteDocumentId(vocab.id);
+                if (localVocab) {
+                    localVocab.totalAttempts = vocab.totalAttempts || 0;
+                    localVocab.correctAttempts = vocab.correctAttempts || 0;
+                    localVocab.memoryScore = vocab.memoryScore || 0;
+                    localVocab.lastStudiedAt = vocab.lastStudiedAt || Date.now();
+                    localVocab.last10Attempts = vocab.last10Attempts || '[]';
+                    await db.updateVocabulary(localVocab);
+                }
 
-                console.log('✅ Synced to Appwrite');
+                try {
+                    await appwriteService.databases.updateDocument(
+                        appwriteService.databaseId,
+                        appwriteService.vocabularyCollectionId,
+                        vocab.id,
+                        {
+                            totalAttempts: String(vocab.totalAttempts || 0),
+                            correctAttempts: String(vocab.correctAttempts || 0),
+                            memoryScore: String(vocab.memoryScore || 0),
+                            lastStudiedAt: String(vocab.lastStudiedAt || Date.now())
+                        }
+                    );
+                    console.log('✅ Synced to Appwrite');
+                } catch (error) {
+                    console.warn('Failed to sync stats to Appwrite:', error);
+                }
 
                 // Update vocabularyData array
                 const index = vocabularyData.findIndex(v => v.id === vocab.id);

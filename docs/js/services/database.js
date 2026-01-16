@@ -94,6 +94,21 @@ class Database {
     }
 
     /**
+     * Get vocabulary by Appwrite document ID
+     */
+    async getVocabularyByAppwriteDocumentId(appwriteDocumentId) {
+        return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction(['vocabularies'], 'readonly');
+            const store = transaction.objectStore('vocabularies');
+            const index = store.index('appwriteDocumentId');
+            const request = index.get(appwriteDocumentId);
+
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+    /**
      * Insert vocabulary
      */
     async insertVocabulary(vocabulary) {
