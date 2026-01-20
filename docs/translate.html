@@ -175,6 +175,13 @@
             color: #9aa0a6;
         }
 
+        .text-input:disabled {
+            background-color: #f1f3f4;
+            color: #5f6368;
+            cursor: default;
+            border-radius: 8px;
+        }
+
         .source-text {
             width: 100%;
             min-height: 300px;
@@ -1470,6 +1477,9 @@ Chọn nhóm từ vựng và bấm "Tạo prompt" để sinh đoạn hướng d�
             sourceText.classList.remove('placeholder');
 
             inputText.value = '';
+            inputText.disabled = false;
+            charCount.textContent = '0';
+            translateButton.disabled = false;
             feedbackSection.classList.remove('show');
             inputText.focus();
 
@@ -1492,18 +1502,15 @@ Chọn nhóm từ vựng và bấm "Tạo prompt" để sinh đoạn hướng d�
             const isCorrect = matchesAnySentence(userInput, currentVocab.sentences);
 
             if (isCorrect) {
+                inputText.disabled = true;
+                inputText.blur();
+                translateButton.disabled = true;
                 showSuccessResult();
             } else {
                 showErrorResult(userInput);
             }
 
             feedbackSection.classList.add('show');
-
-            // Only disable button if correct (will auto-advance)
-            // If wrong, keep button enabled so user can try again
-            if (isCorrect) {
-                translateButton.disabled = true;
-            }
         }
 
         async function showSuccessResult() {
@@ -1580,10 +1587,15 @@ Chọn nhóm từ vựng và bấm "Tạo prompt" để sinh đoạn hướng d�
                 setTimeout(() => {
                     currentQueueIndex++;
                     loadNextFromQueue();
-                    translateButton.disabled = false;
                 }, 2000);
             } else {
-                translateButton.disabled = false;
+                setTimeout(() => {
+                    inputText.value = '';
+                    inputText.disabled = false;
+                    charCount.textContent = '0';
+                    translateButton.disabled = false;
+                    inputText.focus();
+                }, 1200);
             }
         }
 
@@ -1635,8 +1647,10 @@ Chọn nhóm từ vựng và bấm "Tạo prompt" để sinh đoạn hướng d�
 
         function selectAlternative(text) {
             inputText.value = text;
+            inputText.disabled = false;
             feedbackSection.classList.remove('show');
             translateButton.disabled = false;
+            inputText.focus();
         }
 
         async function updateVocabularyStats(vocab, isCorrect) {
