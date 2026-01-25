@@ -284,12 +284,16 @@ class SyncManager(context: Context, private val database: AppDatabase) {
         val serverCorrectAttempts = (serverData["correctAttempts"] as String?)?.toIntOrNull() ?: 0
         val serverLastStudiedAt = (serverData["lastStudiedAt"] as String?)?.toLongOrNull() ?: 0L
         val serverMemoryScore = (serverData["memoryScore"] as String?)?.toFloatOrNull() ?: 0.0f
+        val serverLast10Attempts = (serverData["last10Attempts"] as String?) ?: "[]"
 
         // Take maximum values
         val mergedTotalAttempts = maxOf(localVocab.totalAttempts, serverTotalAttempts)
         val mergedCorrectAttempts = maxOf(localVocab.correctAttempts, serverCorrectAttempts)
         val mergedLastStudiedAt = maxOf(localVocab.lastStudiedAt, serverLastStudiedAt)
         val mergedMemoryScore = maxOf(localVocab.memoryScore, serverMemoryScore)
+
+        // Merge last10Attempts: use the one with more data, or server if local is empty
+        val mergedLast10Attempts = mergeLast10Attempts(localVocab.last10Attempts, serverLast10Attempts, serverLastStudiedAt > localVocab.lastStudiedAt)
 
         Logger.d("Merging: local(total=${localVocab.totalAttempts}, correct=${localVocab.correctAttempts}) + server(total=$serverTotalAttempts, correct=$serverCorrectAttempts) = merged(total=$mergedTotalAttempts, correct=$mergedCorrectAttempts)")
 
@@ -299,6 +303,7 @@ class SyncManager(context: Context, private val database: AppDatabase) {
             correctAttempts = mergedCorrectAttempts,
             lastStudiedAt = mergedLastStudiedAt,
             memoryScore = mergedMemoryScore,
+            last10Attempts = mergedLast10Attempts,
             appwriteDocumentId = appwriteIdToSet
         )
         vocabularyDao.updateVocabulary(updatedVocab)
@@ -323,7 +328,8 @@ class SyncManager(context: Context, private val database: AppDatabase) {
             category = (data["category"] as String?) ?: "GENERAL",
             totalAttempts = (data["totalAttempts"] as String?)?.toIntOrNull() ?: 0,
             correctAttempts = (data["correctAttempts"] as String?)?.toIntOrNull() ?: 0,
-            memoryScore = (data["memoryScore"] as String?)?.toFloatOrNull() ?: 0.0f
+            memoryScore = (data["memoryScore"] as String?)?.toFloatOrNull() ?: 0.0f,
+            last10Attempts = (data["last10Attempts"] as String?) ?: "[]"
         )
 
         // Insert new vocabulary
@@ -378,7 +384,8 @@ class SyncManager(context: Context, private val database: AppDatabase) {
                     "category" to roomVocab.category,
                     "totalAttempts" to roomVocab.totalAttempts.toString(),
                     "correctAttempts" to roomVocab.correctAttempts.toString(),
-                    "memoryScore" to roomVocab.memoryScore.toString()
+                    "memoryScore" to roomVocab.memoryScore.toString(),
+                    "last10Attempts" to roomVocab.last10Attempts
                 )
 
                 // Add example data if available
@@ -445,7 +452,8 @@ class SyncManager(context: Context, private val database: AppDatabase) {
                             "category" to roomVocab.category,
                             "totalAttempts" to mergedTotalAttempts.toString(),
                             "correctAttempts" to mergedCorrectAttempts.toString(),
-                            "memoryScore" to mergedMemoryScore.toString()
+                            "memoryScore" to mergedMemoryScore.toString(),
+                            "last10Attempts" to roomVocab.last10Attempts
                         )
 
                         // Add example data if available
@@ -539,6 +547,33 @@ class SyncManager(context: Context, private val database: AppDatabase) {
         } catch (e: Exception) {
             Logger.e("Failed to delete vocabulary: ${e.message}", e)
             Result.failure(e)
+        }
+    }
+
+    /**
+     * Merge last10Attempts from local and server
+     * Strategy: Use the one that has more attempts, or server if lastStudied is newer
+     */
+    private fun mergeLast10Attempts(localLast10: String, serverLast10: String, serverIsNewer: Boolean): String {
+        try {
+            val localList = org.json.JSONArray(localLast10)
+            val serverList = org.json.JSONArray(serverLast10)
+
+            // If one is empty, use the other
+            if (localList.length() == 0 && serverList.length() > 0) return serverLast10
+            if (serverList.length() == 0 && localList.length() > 0) return localLast10
+
+            // If server has more or equal attempts AND is newer, use server
+            if (serverList.length() >= localList.length() && serverIsNewer) {
+                return serverLast10
+            }
+
+            // Otherwise use the one with more attempts
+            return if (serverList.length() > localList.length()) serverLast10 else localLast10
+        } catch (e: Exception) {
+            Logger.w("Error merging last10Attempts: ${e.message}")
+            // Return whichever is not empty
+            return if (localLast10 != "[]") localLast10 else serverLast10
         }
     }
 

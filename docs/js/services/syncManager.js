@@ -149,6 +149,9 @@ class SyncManager {
             const serverLastStudiedAt = parseInt(serverVocab.lastStudiedAt) || 0;
             const serverCreatedAt = parseInt(serverVocab.createdAt) || Date.now();
 
+            // Parse server last10Attempts
+            const serverLast10Attempts = serverVocab.last10Attempts || '[]';
+
             if (localVocab) {
                 const localLastStudiedAt = parseInt(localVocab.lastStudiedAt) || 0;
                 const shouldApplyServerContent = serverLastStudiedAt > localLastStudiedAt;
@@ -158,6 +161,13 @@ class SyncManager {
                 const mergedCorrectAttempts = Math.max(localVocab.correctAttempts || 0, serverCorrectAttempts);
                 const mergedLastStudiedAt = Math.max(localVocab.lastStudiedAt || 0, serverLastStudiedAt);
                 const mergedMemoryScore = Math.max(localVocab.memoryScore || 0, serverMemoryScore);
+
+                // Merge last10Attempts
+                const mergedLast10Attempts = this.mergeLast10Attempts(
+                    localVocab.last10Attempts || '[]',
+                    serverLast10Attempts,
+                    shouldApplyServerContent
+                );
 
                 localVocab.appwriteDocumentId = serverAppwriteId;
 
@@ -170,6 +180,7 @@ class SyncManager {
                 localVocab.correctAttempts = mergedCorrectAttempts;
                 localVocab.memoryScore = mergedMemoryScore;
                 localVocab.lastStudiedAt = mergedLastStudiedAt;
+                localVocab.last10Attempts = mergedLast10Attempts;
 
                 await db.updateVocabulary(localVocab);
 
@@ -193,7 +204,7 @@ class SyncManager {
                     totalAttempts: serverTotalAttempts,
                     correctAttempts: serverCorrectAttempts,
                     memoryScore: serverMemoryScore,
-                    last10Attempts: '[]',
+                    last10Attempts: serverLast10Attempts,
                     appwriteDocumentId: serverAppwriteId
                 };
 
@@ -313,6 +324,33 @@ class SyncManager {
             );
         } catch (error) {
             console.error('Error syncing single vocabulary:', error);
+        }
+    }
+
+    /**
+     * Merge last10Attempts from local and server
+     * Strategy: Use the one that has more attempts, or server if lastStudied is newer
+     */
+    mergeLast10Attempts(localLast10, serverLast10, serverIsNewer) {
+        try {
+            const localList = JSON.parse(localLast10 || '[]');
+            const serverList = JSON.parse(serverLast10 || '[]');
+
+            // If one is empty, use the other
+            if (localList.length === 0 && serverList.length > 0) return serverLast10;
+            if (serverList.length === 0 && localList.length > 0) return localLast10;
+
+            // If server has more or equal attempts AND is newer, use server
+            if (serverList.length >= localList.length && serverIsNewer) {
+                return serverLast10;
+            }
+
+            // Otherwise use the one with more attempts
+            return serverList.length > localList.length ? serverLast10 : localLast10;
+        } catch (e) {
+            console.warn('Error merging last10Attempts:', e);
+            // Return whichever is not empty
+            return localLast10 !== '[]' ? localLast10 : serverLast10;
         }
     }
 

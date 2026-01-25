@@ -65,6 +65,9 @@ dependencies {
     // OkHttp for networking
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
+    // FlexboxLayout for word chips
+    implementation("com.google.android.flexbox:flexbox:3.0.0")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

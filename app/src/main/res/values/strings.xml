@@ -2,6 +2,7 @@
     <string name="app_name">Học Tiếng Anh</string>
     <string name="tab_edit">Edit</string>
     <string name="tab_learn">Learn</string>
+    <string name="tab_review">Review</string>
     <string name="add_vocabulary">Thêm từ vựng</string>
     <string name="edit_vocabulary">Sửa từ vựng</string>
     <string name="delete_vocabulary">Xóa từ vựng</string>

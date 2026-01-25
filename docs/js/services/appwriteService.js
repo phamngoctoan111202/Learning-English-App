@@ -13,6 +13,7 @@
  * - totalAttempts: string
  * - correctAttempts: string
  * - memoryScore: string
+ * - last10Attempts: string (JSON array of booleans for tracking mastery)
  */
 class AppwriteService {
     constructor() {
@@ -195,7 +196,8 @@ class AppwriteService {
             category: vocabulary.category || 'GENERAL',
             totalAttempts: String(vocabulary.totalAttempts || 0),
             correctAttempts: String(vocabulary.correctAttempts || 0),
-            memoryScore: String(vocabulary.memoryScore || 0)
+            memoryScore: String(vocabulary.memoryScore || 0),
+            last10Attempts: vocabulary.last10Attempts || '[]'
         };
 
         return this.databases.createDocument(
@@ -225,7 +227,8 @@ class AppwriteService {
             category: vocabulary.category || 'GENERAL',
             totalAttempts: String(vocabulary.totalAttempts || 0),
             correctAttempts: String(vocabulary.correctAttempts || 0),
-            memoryScore: String(vocabulary.memoryScore || 0)
+            memoryScore: String(vocabulary.memoryScore || 0),
+            last10Attempts: vocabulary.last10Attempts || '[]'
         };
 
         return this.databases.updateDocument(

@@ -7,6 +7,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.specialenglishlearningapp.databinding.ActivityMainBinding
 import com.example.specialenglishlearningapp.fragments.EditFragment
 import com.example.specialenglishlearningapp.fragments.LearnFragment
+import com.example.specialenglishlearningapp.fragments.ReviewFragment
 import com.example.specialenglishlearningapp.utils.Logger
 import com.example.specialenglishlearningapp.utils.LearningProgressManager
 import com.example.specialenglishlearningapp.utils.SyncManager
@@ -78,6 +79,11 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_learn -> {
                     Logger.d("Learn tab selected")
                     replaceFragment(LearnFragment())
+                    true
+                }
+                R.id.nav_review -> {
+                    Logger.d("Review tab selected")
+                    replaceFragment(ReviewFragment())
                     true
                 }
                 else -> false

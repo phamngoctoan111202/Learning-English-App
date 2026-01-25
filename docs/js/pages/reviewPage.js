@@ -187,11 +187,15 @@ const ReviewPage = {
             ' exam.\n' +
             'Write one coherent English paragraph of about ' +
             lengthValue +
-            ' sentences.\n' +
-            'The paragraph must naturally use all of the following words at least once: ' +
+            ' sentences that tells a connected story or describes a related scenario.\n\n' +
+            'CRITICAL REQUIREMENTS:\n' +
+            '1. You MUST use ALL of these words at least once: ' +
             wordsListText +
-            '.\n' +
-            'Use clear, everyday language suitable for an intermediate learner.\n' +
+            '\n' +
+            '2. Try to use as MANY of these words as possible MULTIPLE TIMES if it fits naturally.\n' +
+            '3. The paragraph must tell a coherent story - all sentences should connect logically.\n' +
+            '4. Use clear, everyday language suitable for an intermediate learner.\n' +
+            '5. Bold or highlight each target vocabulary word when used (e.g., **word**).\n\n' +
             'Only output the English paragraph, nothing else.';
 
         promptTextarea.value = promptText;
