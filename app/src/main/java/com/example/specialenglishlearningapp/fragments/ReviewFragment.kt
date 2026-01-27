@@ -137,8 +137,9 @@ class ReviewFragment : Fragment() {
                 val allVocabs = database.vocabularyDao().getVocabulariesByCategory(selectedCategory).first()
 
                 // Filter mastered words (70%+ accuracy with at least 10 total attempts)
+                // memoryScore is stored as ratio (0.0 - 1.0), so 70% = 0.7
                 masteredVocabs = allVocabs.filter { vocab ->
-                    vocab.totalAttempts >= 10 && vocab.memoryScore >= 70f
+                    vocab.totalAttempts >= 10 && vocab.memoryScore >= 0.7f
                 }
 
                 renderWords()

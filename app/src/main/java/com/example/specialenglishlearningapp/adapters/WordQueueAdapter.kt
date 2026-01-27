@@ -56,11 +56,11 @@ class WordQueueAdapter : RecyclerView.Adapter<WordQueueAdapter.WordQueueViewHold
                 textQueueWord.setTextColor(Color.BLACK)
             }
 
-            // Color code by memory score
+            // Color code by memory score (memoryScore is 0.0 - 1.0 ratio)
             val scoreColor = when {
-                item.memoryScore >= 70f -> Color.parseColor("#4CAF50") // Green: Good
-                item.memoryScore >= 50f -> Color.parseColor("#FF9800") // Orange: Medium
-                item.memoryScore >= 30f -> Color.parseColor("#F44336") // Red: Low
+                item.memoryScore >= 0.7f -> Color.parseColor("#4CAF50") // Green: Good (70%+)
+                item.memoryScore >= 0.5f -> Color.parseColor("#FF9800") // Orange: Medium (50%+)
+                item.memoryScore >= 0.3f -> Color.parseColor("#F44336") // Red: Low (30%+)
                 else -> Color.parseColor("#9E9E9E") // Gray: Very low/Not started
             }
             textMemoryScore.setTextColor(scoreColor)

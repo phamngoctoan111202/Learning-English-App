@@ -59,7 +59,8 @@ data class Vocabulary(
      * Check if vocabulary has passed (70%+ accuracy with at least 10 total attempts)
      */
     fun hasPassed(): Boolean {
-        return totalAttempts >= 10 && memoryScore >= 70f
+        // memoryScore is stored as ratio (0.0 - 1.0), so 70% = 0.7
+        return totalAttempts >= 10 && memoryScore >= 0.7f
     }
 
     /**
