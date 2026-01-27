@@ -201,8 +201,7 @@ const EditPage = {
                         </div>
                         <div class="vocab-stats">
                             ${examples.length} example(s) |
-                            Memory: ${Math.round((vocabulary.memoryScore || 0) * 100)}% |
-                            Last 10: ${Database.getLast10CorrectCount(vocabulary)}/10
+                            Memory: ${vocabulary.correctAttempts || 0}/${vocabulary.totalAttempts || 0}
                         </div>
                     </div>
                     <div class="vocab-actions">

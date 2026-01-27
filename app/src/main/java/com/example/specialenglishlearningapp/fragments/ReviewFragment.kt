@@ -136,11 +136,9 @@ class ReviewFragment : Fragment() {
                 val database = AppDatabase.getDatabase(requireContext())
                 val allVocabs = database.vocabularyDao().getVocabulariesByCategory(selectedCategory).first()
 
-                // Filter mastered words (7+ correct in last 10 attempts, with at least 10 attempts)
+                // Filter mastered words (70%+ accuracy with at least 10 total attempts)
                 masteredVocabs = allVocabs.filter { vocab ->
-                    val attempts = vocab.getLast10AttemptsList()
-                    val correctCount = attempts.count { it }
-                    attempts.size >= 10 && correctCount >= 7
+                    vocab.totalAttempts >= 10 && vocab.memoryScore >= 70f
                 }
 
                 renderWords()

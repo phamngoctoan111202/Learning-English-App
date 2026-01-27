@@ -114,11 +114,12 @@ const ReviewPage = {
         const allVocabs = await db.getAllVocabularies();
         const filtered = allVocabs.filter(v => (v.category || 'GENERAL') === this.selectedCategory);
 
+        // Filter mastered words (70%+ accuracy with at least 10 total attempts)
         return filtered.filter(vocab => {
-            const last10 = Database.getLast10AttemptsList(vocab);
-            const correctCount = last10.filter(x => x === true).length;
-            if (last10.length < 10) return false;
-            return correctCount >= 7;
+            const totalAttempts = vocab.totalAttempts || 0;
+            const correctAttempts = vocab.correctAttempts || 0;
+            const memoryScore = totalAttempts > 0 ? (correctAttempts / totalAttempts) * 100 : 0;
+            return totalAttempts >= 10 && memoryScore >= 70;
         });
     },
 

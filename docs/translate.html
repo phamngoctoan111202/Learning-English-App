@@ -1179,16 +1179,19 @@ Chọn nhóm từ vựng và bấm "Tạo prompt" để sinh đoạn hướng d�
                 }))
                 .filter(v => !category || (v.category || 'GENERAL') === category);
 
+            // Filter using totalAttempts/correctAttempts (lifetime) instead of last10
             const NEW_WORDS = vocabsWithScore.filter(v => {
-                const last10 = getLast10AttemptsList(v);
-                const correctCount = last10.filter(x => x === true).length;
-                return last10.length < 10 || correctCount < 7;
+                const totalAttempts = v.totalAttempts || 0;
+                const correctAttempts = v.correctAttempts || 0;
+                const memoryScore = totalAttempts > 0 ? (correctAttempts / totalAttempts) * 100 : 0;
+                return totalAttempts < 10 || memoryScore < 70;
             });
 
             const REVIEW_WORDS = vocabsWithScore.filter(v => {
-                const last10 = getLast10AttemptsList(v);
-                const correctCount = last10.filter(x => x === true).length;
-                return last10.length >= 10 && correctCount >= 7 && v.daysSinceLastStudy > 1;
+                const totalAttempts = v.totalAttempts || 0;
+                const correctAttempts = v.correctAttempts || 0;
+                const memoryScore = totalAttempts > 0 ? (correctAttempts / totalAttempts) * 100 : 0;
+                return totalAttempts >= 10 && memoryScore >= 70 && v.daysSinceLastStudy > 1;
             });
 
             const reviewSize = Math.min(Math.floor(queueSize * 0.3), REVIEW_WORDS.length);
@@ -1218,11 +1221,12 @@ Chọn nhóm từ vựng và bấm "Tạo prompt" để sinh đoạn hướng d�
 
             const sameCategory = vocabularyData.filter(v => (v.category || 'GENERAL') === category);
 
+            // Filter mastered words (70%+ accuracy with at least 10 total attempts)
             return sameCategory.filter(vocab => {
-                const last10 = getLast10AttemptsList(vocab);
-                const correctCount = last10.filter(x => x === true).length;
-                if (last10.length < 10) return false;
-                return correctCount >= 7;
+                const totalAttempts = vocab.totalAttempts || 0;
+                const correctAttempts = vocab.correctAttempts || 0;
+                const memoryScore = totalAttempts > 0 ? (correctAttempts / totalAttempts) * 100 : 0;
+                return totalAttempts >= 10 && memoryScore >= 70;
             });
         }
 
@@ -1669,9 +1673,8 @@ Chọn nhóm từ vựng và bấm "Tạo prompt" để sinh đoạn hướng d�
                 }
                 vocab.last10Attempts = JSON.stringify(last10);
 
-                // Calculate memory score (percentage of correct in last 10)
-                const correctCount = last10.filter(x => x === true).length;
-                vocab.memoryScore = last10.length > 0 ? (correctCount / last10.length) : 0;
+                // Calculate memory score (percentage of correct in total attempts)
+                vocab.memoryScore = vocab.totalAttempts > 0 ? (vocab.correctAttempts / vocab.totalAttempts) : 0;
 
                 // Update lastStudiedAt
                 vocab.lastStudiedAt = Date.now();
@@ -1711,9 +1714,10 @@ Chọn nhóm từ vựng và bấm "Tạo prompt" để sinh đoạn hướng d�
                     vocabularyData[index] = vocab;
                 }
 
-                // Check if word should be replaced in queue (7/10 mastered)
-                if (last10.length >= 10 && correctCount >= 7) {
-                    console.log(`🎓 Word "${vocab.word}" mastered! (${correctCount}/10)`);
+                // Check if word should be replaced in queue (70%+ accuracy with at least 10 attempts)
+                const memoryPercent = vocab.totalAttempts > 0 ? (vocab.correctAttempts / vocab.totalAttempts) * 100 : 0;
+                if (vocab.totalAttempts >= 10 && memoryPercent >= 70) {
+                    console.log(`🎓 Word "${vocab.word}" mastered! (${vocab.correctAttempts}/${vocab.totalAttempts} = ${Math.round(memoryPercent)}%)`);
                 }
 
             } catch (error) {

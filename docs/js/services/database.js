@@ -562,31 +562,16 @@ class Database {
         return (list.filter(x => x === true).length / list.length) * 100;
     }
 
+    /**
+     * Check if vocabulary has passed (70%+ accuracy with at least 10 total attempts)
+     */
     static hasPassed(vocab, numExamples = 1) {
         const totalAttempts = vocab.totalAttempts || 0;
         const correctAttempts = vocab.correctAttempts || 0;
-        const requiredAttempts = 10;
-        const requiredCorrect = 7;
+        const memoryScore = totalAttempts > 0 ? (correctAttempts / totalAttempts) * 100 : 0;
 
-        if (numExamples <= 1) {
-            if (totalAttempts < requiredAttempts) return false;
-            return correctAttempts >= requiredCorrect;
-        }
-
-        let exampleStats = {};
-        try {
-            exampleStats = JSON.parse(vocab.exampleStats || '{}');
-        } catch (e) {
-            exampleStats = {};
-        }
-
-        for (let i = 0; i < numExamples; i++) {
-            const stats = exampleStats[String(i)] || { totalAttempts: 0, correctAttempts: 0 };
-            if (stats.totalAttempts < requiredAttempts) return false;
-            if (stats.correctAttempts < requiredCorrect) return false;
-        }
-
-        return true;
+        // 70%+ accuracy with at least 10 attempts
+        return totalAttempts >= 10 && memoryScore >= 70;
     }
 
     /**

@@ -56,11 +56,10 @@ data class Vocabulary(
     }
 
     /**
-     * Check if vocabulary has passed (7 or more correct in last 10 attempts)
+     * Check if vocabulary has passed (70%+ accuracy with at least 10 total attempts)
      */
     fun hasPassed(): Boolean {
-        val attempts = getLast10AttemptsList()
-        return attempts.size >= 10 && getLast10CorrectCount() >= 7
+        return totalAttempts >= 10 && memoryScore >= 70f
     }
 
     /**

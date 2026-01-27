@@ -119,16 +119,11 @@ class LearnFragment : Fragment() {
         val queueWordsList = learningQueue.mapIndexed { index, vocabWithExamples ->
             val vocab = vocabWithExamples.vocabulary
 
-            // Use last 10 attempts for display
-            val last10Count = vocab.getLast10CorrectCount()
-            val last10Total = vocab.getLast10AttemptsList().size
-            val last10Percentage = vocab.getLast10Percentage()
-
             WordQueueItem(
                 word = vocab.word,
-                memoryScore = last10Percentage, // Use last 10 attempts percentage
-                correctAttempts = last10Count,   // Use last 10 correct count
-                totalAttempts = last10Total,     // Use last 10 total attempts
+                memoryScore = vocab.memoryScore,
+                correctAttempts = vocab.correctAttempts,
+                totalAttempts = vocab.totalAttempts,
                 isCurrentWord = index == currentIndex
             )
         }
@@ -779,13 +774,11 @@ class LearnFragment : Fragment() {
 
         // Display sentence completion progress (track by unique Vietnamese sentences)
         val vocab = vocabulary.vocabulary
-        val last10Count = vocab.getLast10CorrectCount()
-        val last10Total = vocab.getLast10AttemptsList().size
 
         val progressText = if (isVocabularyCompleted) {
-            "✅ Hoàn thành: $totalSentences/$totalSentences câu | 10 lần gần nhất: $last10Count/$last10Total đúng"
+            "✅ Hoàn thành: $totalSentences/$totalSentences câu | Độ nhớ: ${vocab.correctAttempts}/${vocab.totalAttempts} đúng"
         } else {
-            "${completedVietnamese.size}/$totalSentences câu | 10 lần gần nhất: $last10Count/$last10Total đúng"
+            "${completedVietnamese.size}/$totalSentences câu | Độ nhớ: ${vocab.correctAttempts}/${vocab.totalAttempts} đúng"
         }
         binding.textProgress.text = progressText
 
@@ -934,32 +927,27 @@ class LearnFragment : Fragment() {
                         currentVocabulary = updatedVocabulary
                     }
 
-                    // Calculate stats from last 10 attempts
-                    val last10Percentage = updatedVocabulary?.vocabulary?.getLast10Percentage() ?: 0f
-                    val last10Count = updatedVocabulary?.vocabulary?.getLast10CorrectCount() ?: 0
-                    val last10Total = updatedVocabulary?.vocabulary?.getLast10AttemptsList()?.size ?: 0
-
-                    Logger.d("Updated learning stats: total=$newTotalAttempts, correct=$newCorrectAttempts, last10=$last10Count/$last10Total (${String.format("%.1f", last10Percentage)}%)")
+                    Logger.d("Updated learning stats: total=$newTotalAttempts, correct=$newCorrectAttempts, memoryScore=${String.format("%.1f", newMemoryScore)}%")
 
                     // Update progress text
                     val progressText = if (isVocabularyCompleted) {
-                        "✅ Hoàn thành: $totalSentences/$totalSentences câu | 10 lần gần nhất: $last10Count/$last10Total đúng"
+                        "✅ Hoàn thành: $totalSentences/$totalSentences câu | Độ nhớ: $newCorrectAttempts/$newTotalAttempts đúng"
                     } else {
-                        "${completedVietnamese.size}/$totalSentences câu | 10 lần gần nhất: $last10Count/$last10Total đúng"
+                        "${completedVietnamese.size}/$totalSentences câu | Độ nhớ: $newCorrectAttempts/$newTotalAttempts đúng"
                     }
                     binding.textProgress.text = progressText
 
-                    // Check if ALL sentences are done AND >= 7/10 correct in last 10 attempts
+                    // Check if ALL sentences are done AND >= 70% accuracy with at least 10 attempts
                     if (isVocabularyCompleted && updatedVocabulary?.vocabulary?.hasPassed() == true) {
-                        Logger.d("✅ Word '${currentStats.word}' COMPLETED all sentences with 7+/10 correct (${String.format("%.1f", last10Percentage)}%), REPLACING...")
+                        Logger.d("✅ Word '${currentStats.word}' COMPLETED all sentences with 70%+ accuracy (${String.format("%.1f", newMemoryScore)}%), REPLACING...")
                         // Replace word in queue (wordsLearned already incremented per sentence)
                         lifecycleScope.launch {
                             replaceWordInQueue(currentStats.id)
                         }
-                    } else if (isVocabularyCompleted && last10Total < 10) {
-                        Logger.d("⏳ Word '${currentStats.word}' completed all sentences but only $last10Total/10 attempts, need more practice")
+                    } else if (isVocabularyCompleted && newTotalAttempts < 10) {
+                        Logger.d("⏳ Word '${currentStats.word}' completed all sentences but only $newTotalAttempts/10 attempts, need more practice")
                     } else if (isVocabularyCompleted) {
-                        Logger.d("⏳ Word '${currentStats.word}' completed all sentences but <7/10 correct ($last10Count/$last10Total), keeping in queue")
+                        Logger.d("⏳ Word '${currentStats.word}' completed all sentences but <70% accuracy ($newCorrectAttempts/$newTotalAttempts), keeping in queue")
                     }
 
                     // Update word queue UI to reflect new memory score
@@ -1070,28 +1058,23 @@ class LearnFragment : Fragment() {
                             currentVocabulary = updatedVocabulary
                         }
 
-                        // Calculate stats from last 10 attempts
-                        val last10Percentage = updatedVocabulary?.vocabulary?.getLast10Percentage() ?: 0f
-                        val last10Count = updatedVocabulary?.vocabulary?.getLast10CorrectCount() ?: 0
-                        val last10Total = updatedVocabulary?.vocabulary?.getLast10AttemptsList()?.size ?: 0
-
-                        Logger.d("Updated stats (100% similarity): total=$newTotalAttempts, correct=$newCorrectAttempts, last10=$last10Count/$last10Total (${String.format("%.1f", last10Percentage)}%)")
+                        Logger.d("Updated stats (100% similarity): total=$newTotalAttempts, correct=$newCorrectAttempts, memoryScore=${String.format("%.1f", newMemoryScore)}%")
 
                         val progressText = if (isVocabularyCompleted) {
-                            "✅ Hoàn thành: $totalSentences/$totalSentences câu | 10 lần gần nhất: $last10Count/$last10Total đúng"
+                            "✅ Hoàn thành: $totalSentences/$totalSentences câu | Độ nhớ: $newCorrectAttempts/$newTotalAttempts đúng"
                         } else {
-                            "${completedVietnamese.size}/$totalSentences câu | 10 lần gần nhất: $last10Count/$last10Total đúng"
+                            "${completedVietnamese.size}/$totalSentences câu | Độ nhớ: $newCorrectAttempts/$newTotalAttempts đúng"
                         }
                         binding.textProgress.text = progressText
 
                         if (isVocabularyCompleted && updatedVocabulary?.vocabulary?.hasPassed() == true) {
-                            Logger.d("✅ [100% similarity] Word COMPLETED with 7+/10 correct (${String.format("%.1f", last10Percentage)}%), REPLACING...")
+                            Logger.d("✅ [100% similarity] Word COMPLETED with 70%+ accuracy (${String.format("%.1f", newMemoryScore)}%), REPLACING...")
                             // Replace word in queue (wordsLearned already incremented per sentence)
                             lifecycleScope.launch {
                                 replaceWordInQueue(currentStats.id)
                             }
-                        } else if (isVocabularyCompleted && last10Total < 10) {
-                            Logger.d("⏳ [100% similarity] Word completed but only $last10Total/10 attempts, need more practice")
+                        } else if (isVocabularyCompleted && newTotalAttempts < 10) {
+                            Logger.d("⏳ [100% similarity] Word completed but only $newTotalAttempts/10 attempts, need more practice")
                         }
 
                         updateWordQueueUI()
@@ -1167,14 +1150,10 @@ class LearnFragment : Fragment() {
                             currentVocabulary = updatedVocabulary
                         }
 
-                        // Calculate stats from last 10 attempts
-                        val last10Count = updatedVocabulary?.vocabulary?.getLast10CorrectCount() ?: 0
-                        val last10Total = updatedVocabulary?.vocabulary?.getLast10AttemptsList()?.size ?: 0
-
-                        Logger.d("Updated learning stats (wrong): total=$newTotalAttempts, correct=$newCorrectAttempts, last10=$last10Count/$last10Total")
+                        Logger.d("Updated learning stats (wrong): total=$newTotalAttempts, correct=$newCorrectAttempts, memoryScore=${String.format("%.1f", newMemoryScore)}%")
 
                         // Update progress text (show Vietnamese progress + learning stats)
-                        val progressText = "${completedVietnamese.size}/$totalSentences câu | 10 lần gần nhất: $last10Count/$last10Total đúng"
+                        val progressText = "${completedVietnamese.size}/$totalSentences câu | Độ nhớ: $newCorrectAttempts/$newTotalAttempts đúng"
                         binding.textProgress.text = progressText
                     } catch (e: Exception) {
                         Logger.e("Failed to update learning stats", e)
