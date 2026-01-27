@@ -83,23 +83,29 @@ class AppwriteService {
     }
 
     buildSentencesFromExamples(examples) {
+        console.log('check_logic_edit: buildSentencesFromExamples called with', JSON.stringify(examples, null, 2));
         const seen = new Set();
         const allSentences = [];
 
         if (Array.isArray(examples)) {
             for (const example of examples) {
+                console.log('check_logic_edit: processing example', JSON.stringify(example, null, 2));
                 if (!example || !example.sentences) continue;
 
                 const raw = String(example.sentences).trim();
+                console.log('check_logic_edit: raw sentences string', raw);
                 if (!raw) continue;
 
                 if (raw.startsWith('[')) {
+                    console.log('check_logic_edit: raw starts with [, trying to parse as JSON array');
                     try {
                         const parsed = JSON.parse(raw);
+                        console.log('check_logic_edit: parsed JSON array', JSON.stringify(parsed, null, 2));
                         if (Array.isArray(parsed)) {
                             for (const s of parsed) {
                                 const sentence = this.normalizeSentence(s);
                                 const key = sentence.toLowerCase();
+                                console.log('check_logic_edit: sentence from JSON array:', sentence, 'key:', key, 'already seen:', seen.has(key));
                                 if (sentence.length > 0 && !seen.has(key)) {
                                     seen.add(key);
                                     allSentences.push(sentence);
@@ -108,13 +114,16 @@ class AppwriteService {
                             continue;
                         }
                     } catch (e) {
+                        console.log('check_logic_edit: JSON parse failed, falling through to split by newline');
                     }
                 }
 
                 const parts = raw.split(/\n+/);
+                console.log('check_logic_edit: split by newline, parts:', parts);
                 for (const part of parts) {
                     const sentence = this.normalizeSentence(part);
                     const key = sentence.toLowerCase();
+                    console.log('check_logic_edit: sentence from split:', sentence, 'key:', key, 'already seen:', seen.has(key));
                     if (sentence.length > 0 && !seen.has(key)) {
                         seen.add(key);
                         allSentences.push(sentence);
@@ -122,6 +131,8 @@ class AppwriteService {
                 }
             }
         }
+
+        console.log('check_logic_edit: allSentences before truncation', allSentences);
 
         if (allSentences.length === 0) {
             return '';
@@ -133,11 +144,13 @@ class AppwriteService {
             const candidate = [...result, sentence];
             const json = JSON.stringify(candidate);
             if (json.length > MAX_LENGTH) {
+                console.log('check_logic_edit: reached MAX_LENGTH, stopping');
                 break;
             }
             result.push(sentence);
         }
 
+        console.log('check_logic_edit: final result', result);
         return JSON.stringify(result);
     }
 
@@ -212,10 +225,18 @@ class AppwriteService {
      * Update vocabulary in Appwrite
      */
     async updateVocabulary(documentId, vocabulary, examples) {
+        console.log('check_logic_edit: appwriteService.updateVocabulary called');
+        console.log('check_logic_edit: documentId', documentId);
+        console.log('check_logic_edit: vocabulary', JSON.stringify(vocabulary, null, 2));
+        console.log('check_logic_edit: examples received', JSON.stringify(examples, null, 2));
+
         const firstExample = Array.isArray(examples) && examples.length > 0
             ? examples[0]
             : { sentences: '', vietnamese: '', grammar: '' };
+        console.log('check_logic_edit: firstExample', JSON.stringify(firstExample, null, 2));
+
         const sentencesJson = this.buildSentencesFromExamples(examples);
+        console.log('check_logic_edit: sentencesJson after buildSentencesFromExamples', sentencesJson);
 
         const data = {
             word: String(vocabulary.word || '').trim(),
@@ -230,6 +251,7 @@ class AppwriteService {
             memoryScore: String(vocabulary.memoryScore || 0),
             last10Attempts: vocabulary.last10Attempts || '[]'
         };
+        console.log('check_logic_edit: final data to send to Appwrite', JSON.stringify(data, null, 2));
 
         return this.databases.updateDocument(
             this.databaseId,

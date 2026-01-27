@@ -455,6 +455,7 @@ const EditPage = {
         }
 
         const examples = this.collectExamples('edit-examples-list');
+        console.log('check_logic_edit: collected examples from form', JSON.stringify(examples, null, 2));
 
         if (examples.length === 0) {
             App.showToast('Please add at least one example', 'error');
@@ -464,6 +465,7 @@ const EditPage = {
         try {
             // Get existing vocabulary
             const existing = await db.getVocabularyById(this.currentEditId);
+            console.log('check_logic_edit: existing vocabulary from DB', JSON.stringify(existing, null, 2));
             if (!existing) {
                 App.showToast('Vocabulary not found', 'error');
                 return;
@@ -474,11 +476,14 @@ const EditPage = {
             existing.category = category;
             existing.lastStudiedAt = Date.now();
             await db.updateVocabulary(existing);
+            console.log('check_logic_edit: updated vocabulary in DB');
 
             // Delete old examples and insert new ones
             await db.deleteExamplesByVocabularyId(this.currentEditId);
+            console.log('check_logic_edit: deleted old examples for vocabId', this.currentEditId);
 
             for (const example of examples) {
+                console.log('check_logic_edit: inserting example', JSON.stringify(example, null, 2));
                 await db.insertExample({
                     vocabularyId: this.currentEditId,
                     sentences: example.sentences,
@@ -489,7 +494,9 @@ const EditPage = {
             }
 
             // Sync to server - wait for sync to complete
+            console.log('check_logic_edit: starting sync to server for vocabId', this.currentEditId);
             await syncManager.syncSingleVocabulary(this.currentEditId);
+            console.log('check_logic_edit: sync completed');
 
             this.hideEditDialog();
             App.showToast('Vocabulary updated successfully', 'success');

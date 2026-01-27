@@ -263,14 +263,19 @@ class SyncManager {
      * Sync a single vocabulary to server
      */
     async syncVocabularyToServer(vocabulary, examples) {
+        console.log('check_logic_edit: syncVocabularyToServer called');
+        console.log('check_logic_edit: vocabulary', JSON.stringify(vocabulary, null, 2));
+        console.log('check_logic_edit: examples', JSON.stringify(examples, null, 2));
         try {
             if (vocabulary.appwriteDocumentId) {
                 // Update existing document
+                console.log('check_logic_edit: updating existing document', vocabulary.appwriteDocumentId);
                 await appwriteService.updateVocabulary(
                     vocabulary.appwriteDocumentId,
                     vocabulary,
                     examples
                 );
+                console.log('check_logic_edit: update completed');
             } else {
                 // Check if document already exists on server by word
                 // This prevents duplicate documents when editing locally before first sync
@@ -315,6 +320,7 @@ class SyncManager {
     async syncSingleVocabulary(vocabularyId) {
         try {
             const vocabWithExamples = await db.getVocabularyWithExamples(vocabularyId);
+            console.log('check_logic_edit: syncSingleVocabulary - vocabWithExamples from DB', JSON.stringify(vocabWithExamples, null, 2));
             if (!vocabWithExamples) return;
 
             await appwriteService.loginAnonymously();
