@@ -72,6 +72,10 @@ const LearnPage = {
                             <input type="radio" name="learn-category-filter" value="WRITING" ${savedCategory === 'WRITING' ? 'checked' : ''}>
                             <span>WRITING</span>
                         </label>
+                        <label class="filter-radio">
+                            <input type="radio" name="learn-category-filter" value="POPULAR_TOPICS" ${savedCategory === 'POPULAR_TOPICS' ? 'checked' : ''}>
+                            <span>Popular topics</span>
+                        </label>
                     </div>
                 </div>
 

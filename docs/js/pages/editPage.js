@@ -45,6 +45,10 @@ const EditPage = {
                         <input type="radio" name="category-filter" value="WRITING" ${savedCategory === 'WRITING' ? 'checked' : ''}>
                         <span>WRITING</span>
                     </label>
+                    <label class="filter-radio">
+                        <input type="radio" name="category-filter" value="POPULAR_TOPICS" ${savedCategory === 'POPULAR_TOPICS' ? 'checked' : ''}>
+                        <span>Popular topics</span>
+                    </label>
                 </div>
             </div>
             <div class="vocabulary-list" id="vocabulary-list">
@@ -180,7 +184,9 @@ const EditPage = {
                             ? 'category-badge-speaking'
                             : category === 'WRITING'
                                 ? 'category-badge-writing'
-                                : 'category-badge-general';
+                                : category === 'POPULAR_TOPICS'
+                                    ? 'category-badge-popular'
+                                    : 'category-badge-general';
             const categoryLabel =
                 category === 'TOEIC'
                     ? 'TOEIC'
@@ -190,7 +196,9 @@ const EditPage = {
                             ? 'SPEAKING'
                             : category === 'WRITING'
                                 ? 'WRITING'
-                                : 'General';
+                                : category === 'POPULAR_TOPICS'
+                                    ? 'Popular topics'
+                                    : 'General';
 
             return `
                 <div class="vocab-item" data-id="${vocabulary.id}">
@@ -405,12 +413,14 @@ const EditPage = {
         this.currentEditId = id;
 
         const vocabWithExamples = await db.getVocabularyWithExamples(id);
+        console.log('check_logic_edit: showEditDialog - vocabWithExamples from DB', JSON.stringify(vocabWithExamples, null, 2));
         if (!vocabWithExamples) {
             App.showToast('Vocabulary not found', 'error');
             return;
         }
 
         const { vocabulary, examples } = vocabWithExamples;
+        console.log('check_logic_edit: showEditDialog - examples count from DB:', examples.length);
 
         document.getElementById('edit-vocab-word').value = vocabulary.word;
 
@@ -427,6 +437,8 @@ const EditPage = {
             this.addExampleField('edit-examples-list');
         } else {
             for (const example of examples) {
+                console.log('check_logic_edit: showEditDialog - adding example to form:', JSON.stringify(example, null, 2));
+                console.log('check_logic_edit: showEditDialog - example.sentences value:', example.sentences);
                 this.addExampleField('edit-examples-list', example.sentences, example.vietnamese, example.grammar);
             }
         }
@@ -575,16 +587,21 @@ const EditPage = {
         const container = document.getElementById(containerId);
         const examples = [];
 
-        container.querySelectorAll('.example-item').forEach(item => {
+        console.log('check_logic_edit: collectExamples from container', containerId);
+        container.querySelectorAll('.example-item').forEach((item, index) => {
             const sentences = item.querySelector('.example-sentences').value.trim();
             const vietnamese = item.querySelector('.example-vietnamese').value.trim();
             const grammar = item.querySelector('.example-grammar').value.trim();
+
+            console.log(`check_logic_edit: example ${index} - sentences from textarea:`, sentences);
+            console.log(`check_logic_edit: example ${index} - vietnamese:`, vietnamese);
 
             if (sentences) {
                 examples.push({ sentences, vietnamese, grammar });
             }
         });
 
+        console.log('check_logic_edit: collectExamples result:', JSON.stringify(examples, null, 2));
         return examples;
     },
 

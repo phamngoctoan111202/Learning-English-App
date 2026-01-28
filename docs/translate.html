@@ -647,6 +647,7 @@
                 <button class="category-toggle-btn" data-category="TOEIC">TOEIC</button>
                 <button class="category-toggle-btn" data-category="SPEAKING">SPEAKING</button>
                 <button class="category-toggle-btn" data-category="WRITING">WRITING</button>
+                <button class="category-toggle-btn" data-category="POPULAR_TOPICS">Popular topics</button>
             </div>
             <div style="color: white; font-size: 14px;" id="progress-display">
                 Loading...
@@ -1294,6 +1295,8 @@ Chọn nhóm từ vựng và bấm "Tạo prompt" để sinh đoạn hướng d�
                         return 'speaking practice';
                     case 'WRITING':
                         return 'writing practice';
+                    case 'POPULAR_TOPICS':
+                        return 'popular topics';
                     default:
                         return selectedCategory;
                 }

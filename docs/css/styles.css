@@ -270,6 +270,11 @@ body {
     color: var(--white);
 }
 
+.category-badge-popular {
+    background: #E91E63;
+    color: var(--white);
+}
+
 .vocab-stats {
     font-size: 13px;
     color: var(--text-secondary);

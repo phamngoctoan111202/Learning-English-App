@@ -33,6 +33,10 @@ const ReviewPage = {
                             <input type="radio" name="review-category-filter" value="WRITING" ${savedCategory === 'WRITING' ? 'checked' : ''}>
                             <span>WRITING</span>
                         </label>
+                        <label class="filter-radio">
+                            <input type="radio" name="review-category-filter" value="POPULAR_TOPICS" ${savedCategory === 'POPULAR_TOPICS' ? 'checked' : ''}>
+                            <span>Popular topics</span>
+                        </label>
                     </div>
                 </div>
 
@@ -175,6 +179,8 @@ const ReviewPage = {
                     return 'speaking practice';
                 case 'WRITING':
                     return 'writing practice';
+                case 'POPULAR_TOPICS':
+                    return 'popular topics';
                 default:
                     return this.selectedCategory;
             }
