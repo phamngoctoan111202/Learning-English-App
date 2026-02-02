@@ -71,6 +71,26 @@
             border-color: white;
         }
 
+        .category-count {
+            margin-left: 6px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 12px;
+            line-height: 1.2;
+            background: rgba(255, 255, 255, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+        }
+
+        .category-count:empty {
+            display: none;
+        }
+
+        .category-toggle-btn.active .category-count {
+            color: #4A90E2;
+            background: rgba(74, 144, 226, 0.12);
+            border-color: rgba(74, 144, 226, 0.25);
+        }
+
         .logo {
             width: 36px;
             height: 36px;
@@ -642,12 +662,12 @@
             <span class="logo">🤖</span>
             <h1>AI Translator</h1>
             <div class="category-toggle-group">
-                <button class="category-toggle-btn active" data-category="VSTEP">VSTEP</button>
-                <button class="category-toggle-btn" data-category="GENERAL">GENERAL</button>
-                <button class="category-toggle-btn" data-category="TOEIC">TOEIC</button>
-                <button class="category-toggle-btn" data-category="SPEAKING">SPEAKING</button>
-                <button class="category-toggle-btn" data-category="WRITING">WRITING</button>
-                <button class="category-toggle-btn" data-category="POPULAR_TOPICS">Popular topics</button>
+                <button class="category-toggle-btn active" data-category="VSTEP">VSTEP <span class="category-count"></span></button>
+                <button class="category-toggle-btn" data-category="GENERAL">GENERAL <span class="category-count"></span></button>
+                <button class="category-toggle-btn" data-category="TOEIC">TOEIC <span class="category-count"></span></button>
+                <button class="category-toggle-btn" data-category="SPEAKING">SPEAKING <span class="category-count"></span></button>
+                <button class="category-toggle-btn" data-category="WRITING">WRITING <span class="category-count"></span></button>
+                <button class="category-toggle-btn" data-category="POPULAR_TOPICS">Popular topics <span class="category-count"></span></button>
             </div>
             <div style="color: white; font-size: 14px;" id="progress-display">
                 Loading...
@@ -1112,6 +1132,24 @@ Chọn nhóm từ vựng và bấm "Tạo prompt" để sinh đoạn hướng d�
         const paragraphPromptTextarea = document.getElementById('paragraphPrompt');
         const paragraphGenerateButton = document.getElementById('generateParagraphPromptButton');
 
+        function updateCategoryCounts() {
+            const counts = {};
+            for (const vocab of (vocabularyData || [])) {
+                const category = vocab?.category || 'GENERAL';
+                counts[category] = (counts[category] || 0) + 1;
+            }
+
+            document.querySelectorAll('.category-toggle-btn').forEach(btn => {
+                const category = btn.dataset.category;
+                const countEl = btn.querySelector('.category-count');
+                if (!countEl) return;
+
+                const count = counts[category];
+                countEl.textContent = Number.isFinite(count) ? String(count) : '';
+                countEl.title = Number.isFinite(count) ? `${count} từ` : '';
+            });
+        }
+
         // ========================================
         // HELPER FUNCTIONS FOR QUEUE LOGIC
         // ========================================
@@ -1231,6 +1269,31 @@ Chọn nhóm từ vựng và bấm "Tạo prompt" để sinh đoạn hướng d�
             });
         }
 
+        function expandVsWordItems(wordItems) {
+            const result = [];
+            const seen = new Set();
+
+            for (const item of (wordItems || [])) {
+                if (!item) continue;
+                const raw = String(item).trim();
+                if (!raw) continue;
+
+                const parts = raw
+                    .split(/\s+vs\s+/i)
+                    .map(p => p.trim())
+                    .filter(Boolean);
+
+                for (const part of parts.length > 0 ? parts : [raw]) {
+                    const key = part.toLowerCase();
+                    if (seen.has(key)) continue;
+                    seen.add(key);
+                    result.push(part);
+                }
+            }
+
+            return result;
+        }
+
         function updateParagraphModeWords() {
             if (!paragraphWordsList || !paragraphWordsCount || !paragraphPromptTextarea) {
                 return;
@@ -1252,10 +1315,11 @@ Chọn nhóm từ vựng và bấm "Tạo prompt" để sinh đoạn hướng d�
                 return;
             }
 
-            const words = mastered
-                .map(v => v.word)
-                .filter(Boolean)
-                .sort((a, b) => a.localeCompare(b));
+            const words = expandVsWordItems(
+                mastered
+                    .map(v => v.word)
+                    .filter(Boolean)
+            ).sort((a, b) => a.localeCompare(b));
 
             paragraphWordsList.innerHTML = words
                 .map(w => `<span class="paragraph-word-chip">${escapeHtml(w)}</span>`)
@@ -1274,10 +1338,11 @@ Chọn nhóm từ vựng và bấm "Tạo prompt" để sinh đoạn hướng d�
                 return;
             }
 
-            const words = mastered
-                .map(v => v.word)
-                .filter(Boolean)
-                .sort((a, b) => a.localeCompare(b));
+            const words = expandVsWordItems(
+                mastered
+                    .map(v => v.word)
+                    .filter(Boolean)
+            ).sort((a, b) => a.localeCompare(b));
 
             const lengthValue = paragraphLengthSelect
                 ? parseInt(paragraphLengthSelect.value || '5', 10)
@@ -1305,12 +1370,20 @@ Chọn nhóm từ vựng và bấm "Tạo prompt" để sinh đoạn hướng d�
             const wordsListText = words.join(', ');
 
             const promptText =
-                'You are an English teacher helping a learner review previously mastered vocabulary ' +
-                'for the ' + categoryLabel + ' exam.\n' +
-                'Write one coherent English paragraph of about ' + lengthValue + ' sentences.\n' +
-                'The paragraph must naturally use all of the following words at least once: ' +
-                wordsListText + '.\n' +
-                'Use clear, everyday language suitable for an intermediate learner.\n' +
+                'You are an English teacher helping a learner review previously mastered vocabulary for the ' + categoryLabel + ' exam.\n' +
+                'Write one coherent English paragraph of about ' + lengthValue + ' sentences that tells a connected story or describes a related scenario.\n' +
+                '\n' +
+                'CRITICAL REQUIREMENTS:\n' +
+                '1. You MUST use ALL of these words/phrases at least once: ' + wordsListText + '.\n' +
+                '2. Try to use as MANY of these words/phrases as possible MULTIPLE TIMES if it fits naturally.\n' +
+                '3. The paragraph must tell a coherent story - all sentences should connect logically.\n' +
+                '4. Use clear, everyday language suitable for an intermediate learner.\n' +
+                '5. Bold or highlight each target vocabulary word/phrase when used (e.g., **word**).\n' +
+                '\n' +
+                'Notes:\n' +
+                '- If an item looks like "A vs B", treat it as two separate targets: "A" and "B" (ignore the token "vs").\n' +
+                '- If some targets can be used interchangeably, you may swap them in places, but still include EVERY target at least once.\n' +
+                '\n' +
                 'Only output the English paragraph, nothing else.';
 
             paragraphPromptTextarea.value = promptText;
@@ -1386,6 +1459,8 @@ Chọn nhóm từ vựng và bấm "Tạo prompt" để sinh đoạn hướng d�
                 if (vocabularyData.length === 0) {
                     throw new Error('No vocabulary data available');
                 }
+
+                updateCategoryCounts();
 
                 // Try to load queue from localStorage first
                 await loadWordQueue();
