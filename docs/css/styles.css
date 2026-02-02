@@ -180,6 +180,29 @@ body {
     font-size: 14px;
 }
 
+.category-count-pill {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 6px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    line-height: 1.2;
+    background: rgba(26, 115, 232, 0.12);
+    border: 1px solid rgba(26, 115, 232, 0.22);
+    color: var(--primary-color);
+}
+
+.category-count-pill:empty {
+    display: none;
+}
+
+.filter-radio:has(input:checked) .category-count-pill {
+    background: rgba(255, 255, 255, 0.22);
+    border-color: rgba(255, 255, 255, 0.35);
+    color: var(--white);
+}
+
 .search-input {
     width: 100%;
     max-width: 600px;

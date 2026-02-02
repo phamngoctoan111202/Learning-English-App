@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "appwrite": "^8.1.0"
+    "appwrite": "^21.5.0"
   },
   "devDependencies": {
     "vite": "^4.4.5"

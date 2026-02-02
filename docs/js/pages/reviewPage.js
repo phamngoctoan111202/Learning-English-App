@@ -15,27 +15,27 @@ const ReviewPage = {
                     <div class="category-filter">
                         <label class="filter-radio">
                             <input type="radio" name="review-category-filter" value="GENERAL" ${savedCategory === 'GENERAL' ? 'checked' : ''}>
-                            <span>General</span>
+                            <span>General <span class="category-count-pill" data-category-count="GENERAL"></span></span>
                         </label>
                         <label class="filter-radio">
                             <input type="radio" name="review-category-filter" value="TOEIC" ${savedCategory === 'TOEIC' ? 'checked' : ''}>
-                            <span>TOEIC</span>
+                            <span>TOEIC <span class="category-count-pill" data-category-count="TOEIC"></span></span>
                         </label>
                         <label class="filter-radio">
                             <input type="radio" name="review-category-filter" value="VSTEP" ${savedCategory === 'VSTEP' ? 'checked' : ''}>
-                            <span>VSTEP</span>
+                            <span>VSTEP <span class="category-count-pill" data-category-count="VSTEP"></span></span>
                         </label>
                         <label class="filter-radio">
                             <input type="radio" name="review-category-filter" value="SPEAKING" ${savedCategory === 'SPEAKING' ? 'checked' : ''}>
-                            <span>SPEAKING</span>
+                            <span>SPEAKING <span class="category-count-pill" data-category-count="SPEAKING"></span></span>
                         </label>
                         <label class="filter-radio">
                             <input type="radio" name="review-category-filter" value="WRITING" ${savedCategory === 'WRITING' ? 'checked' : ''}>
-                            <span>WRITING</span>
+                            <span>WRITING <span class="category-count-pill" data-category-count="WRITING"></span></span>
                         </label>
                         <label class="filter-radio">
                             <input type="radio" name="review-category-filter" value="POPULAR_TOPICS" ${savedCategory === 'POPULAR_TOPICS' ? 'checked' : ''}>
-                            <span>Popular topics</span>
+                            <span>Popular topics <span class="category-count-pill" data-category-count="POPULAR_TOPICS"></span></span>
                         </label>
                     </div>
                 </div>
@@ -74,6 +74,27 @@ const ReviewPage = {
         this.loadData();
     },
 
+    async updateCategoryCounts() {
+        try {
+            const allVocabs = await db.getAllVocabularies();
+            const counts = {};
+
+            for (const vocab of (allVocabs || [])) {
+                const category = vocab?.category || 'GENERAL';
+                counts[category] = (counts[category] || 0) + 1;
+            }
+
+            document.querySelectorAll('[data-category-count]').forEach(el => {
+                const category = el.dataset.categoryCount;
+                const count = counts[category] || 0;
+                el.textContent = String(count);
+                el.title = `${count} từ`;
+            });
+        } catch (error) {
+            console.error('Error updating category counts:', error);
+        }
+    },
+
     setupEventListeners() {
         const categoryRadios = document.querySelectorAll('input[name="review-category-filter"]');
         categoryRadios.forEach(radio => {
@@ -108,6 +129,8 @@ const ReviewPage = {
         if (listContainer) {
             App.showLoading(listContainer);
         }
+
+        await this.updateCategoryCounts();
 
         this.masteredVocabs = await this.loadMasteredVocabs();
         this.renderWords();
