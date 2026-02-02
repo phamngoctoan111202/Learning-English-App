@@ -29,7 +29,7 @@ class ReviewFragment : Fragment() {
     private lateinit var buttonCopyPrompt: Button
 
     private var selectedCategory: String = "GENERAL"
-    private var masteredVocabs: List<Vocabulary> = emptyList()
+    private var learnedVocabs: List<Vocabulary> = emptyList()
 
     private val lengthOptions = listOf(
         LengthOption(3, "Ngắn - khoảng 3 câu"),
@@ -136,16 +136,12 @@ class ReviewFragment : Fragment() {
                 val database = AppDatabase.getDatabase(requireContext())
                 val allVocabs = database.vocabularyDao().getVocabulariesByCategory(selectedCategory).first()
 
-                // Filter mastered words (70%+ accuracy with at least 10 total attempts)
-                // memoryScore is stored as ratio (0.0 - 1.0), so 70% = 0.7
-                masteredVocabs = allVocabs.filter { vocab ->
-                    vocab.totalAttempts >= 10 && vocab.memoryScore >= 0.7f
-                }
+                learnedVocabs = allVocabs.filter { vocab -> vocab.totalAttempts >= 1 }
 
                 renderWords()
                 generatePrompt()
             } catch (e: Exception) {
-                Logger.e("Error loading mastered vocabs: ${e.message}")
+                Logger.e("Error loading learned vocabs: ${e.message}")
             }
         }
     }
@@ -153,11 +149,11 @@ class ReviewFragment : Fragment() {
     private fun renderWords() {
         flexboxMasteredWords.removeAllViews()
 
-        if (masteredVocabs.isEmpty()) {
-            textWordsCount.text = "(0 từ đã đạt 7/10 trong nhóm này)"
+        if (learnedVocabs.isEmpty()) {
+            textWordsCount.text = "(0 từ đã học trong nhóm này)"
 
             val emptyText = TextView(requireContext()).apply {
-                text = "Hãy luyện thêm ở tab Learn để đạt 7/10, sau đó quay lại đây để ôn bằng đoạn văn."
+                text = "Hãy học ít nhất 1 lần ở tab Learn, sau đó quay lại đây để ôn bằng đoạn văn."
                 setTextColor(0xFF777777.toInt())
                 textSize = 13f
             }
@@ -165,7 +161,7 @@ class ReviewFragment : Fragment() {
             return
         }
 
-        val words = masteredVocabs
+        val words = learnedVocabs
             .mapNotNull { it.word }
             .sorted()
 
@@ -191,12 +187,12 @@ class ReviewFragment : Fragment() {
     }
 
     private fun generatePrompt() {
-        if (masteredVocabs.isEmpty()) {
-            editTextPrompt.setText("Chưa có từ nào đạt 7/10 trong nhóm này để tạo prompt. Hãy luyện thêm ở tab Learn.")
+        if (learnedVocabs.isEmpty()) {
+            editTextPrompt.setText("Chưa có từ nào trong nhóm này để tạo prompt. Hãy học ít nhất 1 lần ở tab Learn.")
             return
         }
 
-        val words = masteredVocabs
+        val words = learnedVocabs
             .mapNotNull { it.word }
             .sorted()
 
@@ -214,7 +210,7 @@ class ReviewFragment : Fragment() {
         val wordsListText = words.joinToString(", ")
 
         val promptText = buildString {
-            append("You are an English teacher helping a learner review previously mastered vocabulary for the ")
+            append("You are an English teacher helping a learner review previously learned vocabulary for the ")
             append(categoryLabel)
             append(" exam.\n")
             append("Write one coherent English paragraph of about ")

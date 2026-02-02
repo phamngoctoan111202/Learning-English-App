@@ -103,7 +103,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="⭐ Các từ đã master (độ nhớ ≥ 7/10)"
+                    android:text="⭐ Các từ đã học (chỉ cần học 1 lần)"
                     android:textSize="14sp"
                     android:textStyle="bold"
                     android:textColor="#333"
