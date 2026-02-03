@@ -257,13 +257,15 @@ const ReviewPage = {
             '**Words used:** [list words actually used]\n' +
             '**Words skipped:** [list words that didn\'t fit naturally, or "None" if all used]\n\n' +
             '**Comprehension Questions (10 MCQs about the paragraph content):**\n' +
-            '1. [Question about information in the paragraph]\n' +
+            '1. [Question]\n' +
             '   A) ...\n' +
             '   B) ...\n' +
             '   C) ...\n' +
-            '   D) ...\n' +
-            '   Answer: [letter]\n\n' +
-            '[Continue for questions 2-10]';
+            '   D) ...\n\n' +
+            '[Continue for questions 2-10]\n\n' +
+            '---\n' +
+            '**Answer Key (hidden below):**\n' +
+            '1. [letter] | 2. [letter] | 3. [letter] | 4. [letter] | 5. [letter] | 6. [letter] | 7. [letter] | 8. [letter] | 9. [letter] | 10. [letter]';
 
         promptTextarea.value = promptText;
     },
