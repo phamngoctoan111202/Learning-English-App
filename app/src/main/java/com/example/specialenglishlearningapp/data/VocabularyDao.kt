@@ -17,7 +17,7 @@ interface VocabularyDao {
     @Query("SELECT * FROM vocabularies WHERE appwriteDocumentId = :appwriteId")
     suspend fun getVocabularyByAppwriteId(appwriteId: String?): Vocabulary?
 
-    @Query("SELECT * FROM vocabularies WHERE LOWER(word) = LOWER(:word)")
+    @Query("SELECT * FROM vocabularies WHERE LOWER(TRIM(word)) = LOWER(TRIM(:word))")
     suspend fun getVocabularyByWord(word: String): Vocabulary?
 
     @Query("SELECT * FROM vocabularies ORDER BY RANDOM() LIMIT 1")

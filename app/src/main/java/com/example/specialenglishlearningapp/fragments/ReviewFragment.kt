@@ -41,6 +41,11 @@ class ReviewFragment : Fragment() {
         override fun toString(): String = label
     }
 
+    data class ProcessedWordList(
+        val processedWords: List<String>,
+        val synonymGroups: List<List<String>>
+    )
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -186,6 +191,25 @@ class ReviewFragment : Fragment() {
         }
     }
 
+    private fun processWordList(words: List<String>): ProcessedWordList {
+        val processedWords = mutableListOf<String>()
+        val synonymGroups = mutableListOf<List<String>>()
+
+        for (word in words) {
+            if (word.contains(" vs ")) {
+                val parts = word.split(" vs ").map { it.trim() }.filter { it.isNotEmpty() }
+                processedWords.addAll(parts)
+                if (parts.size >= 2) {
+                    synonymGroups.add(parts)
+                }
+            } else {
+                processedWords.add(word)
+            }
+        }
+
+        return ProcessedWordList(processedWords, synonymGroups)
+    }
+
     private fun generatePrompt() {
         if (learnedVocabs.isEmpty()) {
             editTextPrompt.setText("Chưa có từ nào trong nhóm này để tạo prompt. Hãy học ít nhất 1 lần ở tab Learn.")
@@ -195,6 +219,8 @@ class ReviewFragment : Fragment() {
         val words = learnedVocabs
             .mapNotNull { it.word }
             .sorted()
+
+        val (processedWords, synonymGroups) = processWordList(words)
 
         val selectedLength = (spinnerLength.selectedItem as? LengthOption)?.sentences ?: 5
 
@@ -207,24 +233,43 @@ class ReviewFragment : Fragment() {
             else -> selectedCategory
         }
 
-        val wordsListText = words.joinToString(", ")
+        val wordsListText = processedWords.joinToString(", ")
+
+        val synonymSection = if (synonymGroups.isNotEmpty()) {
+            val synonymLines = synonymGroups.joinToString("\n") { group -> "- ${group.joinToString(" / ")}" }
+            "\n**SYNONYM/ALTERNATIVE GROUPS (can write as word1/word2):**\n$synonymLines\n"
+        } else {
+            ""
+        }
 
         val promptText = buildString {
             append("You are an English teacher helping a learner review previously learned vocabulary for the ")
             append(categoryLabel)
-            append(" exam.\n")
-            append("Write one coherent English paragraph of about ")
+            append(" exam.\n\n")
+            append("**TASK:** Write one coherent English paragraph of about ")
             append(selectedLength)
-            append(" sentences that tells a connected story or describes a related scenario.\n\n")
-            append("CRITICAL REQUIREMENTS:\n")
-            append("1. You MUST use ALL of these words at least once: ")
+            append(" sentences, followed by 10 multiple-choice comprehension questions.\n\n")
+            append("**VOCABULARY TO USE:**\n")
             append(wordsListText)
-            append("\n")
-            append("2. Try to use as MANY of these words as possible MULTIPLE TIMES if it fits naturally.\n")
-            append("3. The paragraph must tell a coherent story - all sentences should connect logically.\n")
-            append("4. Use clear, everyday language suitable for an intermediate learner.\n")
-            append("5. Bold or highlight each target vocabulary word when used (e.g., **word**).\n\n")
-            append("Only output the English paragraph, nothing else.")
+            append(synonymSection)
+            append("\n**CRITICAL REQUIREMENTS:**\n")
+            append("1. PRIORITY: Write a meaningful, coherent paragraph first. Do NOT force words that don't fit naturally.\n")
+            append("2. Use as many target words as possible, but SKIP words that would make the paragraph awkward or unnatural.\n")
+            append("3. For synonym pairs (e.g., hamper/prevent), you may write \"hamper/prevent\" to show both alternatives.\n")
+            append("4. Bold each target vocabulary word when used (e.g., **word** or **word1/word2**).\n")
+            append("5. The paragraph must tell a connected story with logical flow between sentences.\n\n")
+            append("**OUTPUT FORMAT:**\n\n")
+            append("**Paragraph:**\n[Your paragraph here]\n\n")
+            append("**Words used:** [list words actually used]\n")
+            append("**Words skipped:** [list words that didn't fit naturally, or \"None\" if all used]\n\n")
+            append("**Comprehension Questions (10 MCQs about the paragraph content):**\n")
+            append("1. [Question about information in the paragraph]\n")
+            append("   A) ...\n")
+            append("   B) ...\n")
+            append("   C) ...\n")
+            append("   D) ...\n")
+            append("   Answer: [letter]\n\n")
+            append("[Continue for questions 2-10]")
         }
 
         editTextPrompt.setText(promptText)

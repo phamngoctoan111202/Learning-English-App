@@ -82,6 +82,17 @@ class AppwriteService {
             .trim();
     }
 
+    canonicalizeSentence(sentence) {
+        const s = String(sentence || '');
+        if (typeof ExampleUtils !== 'undefined' && typeof ExampleUtils.normalizeSentence === 'function') {
+            return ExampleUtils.normalizeSentence(s);
+        }
+        if (typeof StringComparator !== 'undefined' && typeof StringComparator.normalize === 'function') {
+            return StringComparator.normalize(s);
+        }
+        return this.normalizeSentence(s).toLowerCase();
+    }
+
     buildSentencesFromExamples(examples) {
         console.log('check_logic_edit: buildSentencesFromExamples called with', JSON.stringify(examples, null, 2));
         const seen = new Set();
@@ -104,7 +115,7 @@ class AppwriteService {
                         if (Array.isArray(parsed)) {
                             for (const s of parsed) {
                                 const sentence = this.normalizeSentence(s);
-                                const key = sentence.toLowerCase();
+                                const key = this.canonicalizeSentence(sentence);
                                 console.log('check_logic_edit: sentence from JSON array:', sentence, 'key:', key, 'already seen:', seen.has(key));
                                 if (sentence.length > 0 && !seen.has(key)) {
                                     seen.add(key);
@@ -122,7 +133,7 @@ class AppwriteService {
                 console.log('check_logic_edit: split by newline, parts:', parts);
                 for (const part of parts) {
                     const sentence = this.normalizeSentence(part);
-                    const key = sentence.toLowerCase();
+                    const key = this.canonicalizeSentence(sentence);
                     console.log('check_logic_edit: sentence from split:', sentence, 'key:', key, 'already seen:', seen.has(key));
                     if (sentence.length > 0 && !seen.has(key)) {
                         seen.add(key);

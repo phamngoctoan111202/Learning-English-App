@@ -9,6 +9,10 @@ class Database {
         this.db = null;
     }
 
+    normalizeWord(word) {
+        return String(word || '').trim().toLowerCase();
+    }
+
     /**
      * Initialize IndexedDB
      */
@@ -82,15 +86,31 @@ class Database {
      * Get vocabulary by word
      */
     async getVocabularyByWord(word) {
-        return new Promise((resolve, reject) => {
+        const getByIndexedWord = (key) => new Promise((resolve, reject) => {
             const transaction = this.db.transaction(['vocabularies'], 'readonly');
             const store = transaction.objectStore('vocabularies');
             const index = store.index('word');
-            const request = index.get(word);
+            const request = index.get(key);
 
-            request.onsuccess = () => resolve(request.result);
+            request.onsuccess = () => resolve(request.result || null);
             request.onerror = () => reject(request.error);
         });
+
+        const rawWord = String(word || '');
+        const direct = await getByIndexedWord(rawWord);
+        if (direct) return direct;
+
+        const trimmed = rawWord.trim();
+        if (trimmed && trimmed !== rawWord) {
+            const byTrimmed = await getByIndexedWord(trimmed);
+            if (byTrimmed) return byTrimmed;
+        }
+
+        const targetKey = this.normalizeWord(rawWord);
+        if (!targetKey) return null;
+
+        const allVocabs = await this.getAllVocabularies();
+        return allVocabs.find(v => this.normalizeWord(v.word) === targetKey) || null;
     }
 
     /**

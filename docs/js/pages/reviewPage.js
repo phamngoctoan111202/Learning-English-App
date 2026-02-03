@@ -42,7 +42,7 @@ const ReviewPage = {
 
                 <div class="card" style="grid-column: 1 / -1;">
                     <div style="margin-bottom: 8px; font-size: 14px;">
-                        <strong>⭐ Các từ đã master (độ nhớ ≥ 7/10)</strong>
+                        <strong>⭐ Các từ đã học (số lần học ≥ 1)</strong>
                     </div>
                     <div id="review-words-count" style="font-size: 13px; color: #666; margin-bottom: 8px;"></div>
                     <div id="review-words-list" style="min-height: 48px; border-radius: 8px; border: 1px solid #e0e0e0; padding: 8px;"></div>
@@ -141,12 +141,10 @@ const ReviewPage = {
         const allVocabs = await db.getAllVocabularies();
         const filtered = allVocabs.filter(v => (v.category || 'GENERAL') === this.selectedCategory);
 
-        // Filter mastered words (70%+ accuracy with at least 10 total attempts)
+        // Filter learned words (at least 1 attempt)
         return filtered.filter(vocab => {
             const totalAttempts = vocab.totalAttempts || 0;
-            const correctAttempts = vocab.correctAttempts || 0;
-            const memoryScore = totalAttempts > 0 ? (correctAttempts / totalAttempts) * 100 : 0;
-            return totalAttempts >= 10 && memoryScore >= 70;
+            return totalAttempts >= 1;
         });
     },
 
@@ -156,8 +154,8 @@ const ReviewPage = {
         if (!listContainer || !countLabel) return;
 
         if (!this.masteredVocabs || this.masteredVocabs.length === 0) {
-            countLabel.textContent = '(0 từ đã đạt 7/10 trong nhóm này)';
-            listContainer.innerHTML = '<div style="font-size: 13px; color: #777;">Hãy luyện thêm ở tab Learn để đạt 7/10, sau đó quay lại đây để ôn bằng đoạn văn.</div>';
+            countLabel.textContent = '(0 từ đã học trong nhóm này)';
+            listContainer.innerHTML = '<div style="font-size: 13px; color: #777;">Hãy học ít nhất 1 lần ở tab Learn, sau đó quay lại đây để ôn bằng đoạn văn.</div>';
             return;
         }
 
@@ -173,12 +171,31 @@ const ReviewPage = {
             .join(' ');
     },
 
+    processWordList(words) {
+        const processedWords = [];
+        const synonymGroups = [];
+
+        for (const word of words) {
+            if (word.includes(' vs ')) {
+                const parts = word.split(' vs ').map(p => p.trim()).filter(Boolean);
+                processedWords.push(...parts);
+                if (parts.length >= 2) {
+                    synonymGroups.push(parts);
+                }
+            } else {
+                processedWords.push(word);
+            }
+        }
+
+        return { processedWords, synonymGroups };
+    },
+
     generatePrompt() {
         const promptTextarea = document.getElementById('review-prompt');
         if (!promptTextarea) return;
 
         if (!this.masteredVocabs || this.masteredVocabs.length === 0) {
-            promptTextarea.value = 'Chưa có từ nào đạt 7/10 trong nhóm này để tạo prompt. Hãy luyện thêm ở tab Learn.';
+            promptTextarea.value = 'Chưa có từ nào trong nhóm này để tạo prompt. Hãy học ít nhất 1 lần ở tab Learn.';
             return;
         }
 
@@ -186,6 +203,8 @@ const ReviewPage = {
             .map(v => v.word)
             .filter(Boolean)
             .sort((a, b) => a.localeCompare(b));
+
+        const { processedWords, synonymGroups } = this.processWordList(words);
 
         const lengthSelect = document.getElementById('review-length');
         const lengthValue = lengthSelect ? parseInt(lengthSelect.value || '5', 10) : 5;
@@ -209,24 +228,42 @@ const ReviewPage = {
             }
         })();
 
-        const wordsListText = words.join(', ');
+        const wordsListText = processedWords.join(', ');
+
+        let synonymSection = '';
+        if (synonymGroups.length > 0) {
+            const synonymLines = synonymGroups.map(group => `- ${group.join(' / ')}`).join('\n');
+            synonymSection = `\n**SYNONYM/ALTERNATIVE GROUPS (can write as word1/word2):**\n${synonymLines}\n`;
+        }
 
         const promptText =
-            'You are an English teacher helping a learner review previously mastered vocabulary for the ' +
+            'You are an English teacher helping a learner review previously learned vocabulary for the ' +
             categoryLabel +
-            ' exam.\n' +
-            'Write one coherent English paragraph of about ' +
+            ' exam.\n\n' +
+            '**TASK:** Write one coherent English paragraph of about ' +
             lengthValue +
-            ' sentences that tells a connected story or describes a related scenario.\n\n' +
-            'CRITICAL REQUIREMENTS:\n' +
-            '1. You MUST use ALL of these words at least once: ' +
+            ' sentences, followed by 10 multiple-choice comprehension questions.\n\n' +
+            '**VOCABULARY TO USE:**\n' +
             wordsListText +
-            '\n' +
-            '2. Try to use as MANY of these words as possible MULTIPLE TIMES if it fits naturally.\n' +
-            '3. The paragraph must tell a coherent story - all sentences should connect logically.\n' +
-            '4. Use clear, everyday language suitable for an intermediate learner.\n' +
-            '5. Bold or highlight each target vocabulary word when used (e.g., **word**).\n\n' +
-            'Only output the English paragraph, nothing else.';
+            synonymSection +
+            '\n**CRITICAL REQUIREMENTS:**\n' +
+            '1. PRIORITY: Write a meaningful, coherent paragraph first. Do NOT force words that don\'t fit naturally.\n' +
+            '2. Use as many target words as possible, but SKIP words that would make the paragraph awkward or unnatural.\n' +
+            '3. For synonym pairs (e.g., hamper/prevent), you may write "hamper/prevent" to show both alternatives.\n' +
+            '4. Bold each target vocabulary word when used (e.g., **word** or **word1/word2**).\n' +
+            '5. The paragraph must tell a connected story with logical flow between sentences.\n\n' +
+            '**OUTPUT FORMAT:**\n\n' +
+            '**Paragraph:**\n[Your paragraph here]\n\n' +
+            '**Words used:** [list words actually used]\n' +
+            '**Words skipped:** [list words that didn\'t fit naturally, or "None" if all used]\n\n' +
+            '**Comprehension Questions (10 MCQs about the paragraph content):**\n' +
+            '1. [Question about information in the paragraph]\n' +
+            '   A) ...\n' +
+            '   B) ...\n' +
+            '   C) ...\n' +
+            '   D) ...\n' +
+            '   Answer: [letter]\n\n' +
+            '[Continue for questions 2-10]';
 
         promptTextarea.value = promptText;
     },

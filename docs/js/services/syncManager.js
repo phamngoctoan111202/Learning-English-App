@@ -21,6 +21,17 @@ class SyncManager {
             .trim();
     }
 
+    canonicalizeSentence(sentence) {
+        const s = String(sentence || '');
+        if (typeof ExampleUtils !== 'undefined' && typeof ExampleUtils.normalizeSentence === 'function') {
+            return ExampleUtils.normalizeSentence(s);
+        }
+        if (typeof StringComparator !== 'undefined' && typeof StringComparator.normalize === 'function') {
+            return StringComparator.normalize(s);
+        }
+        return this.normalizeSentence(s).toLowerCase();
+    }
+
     parseSentencesToList(sentences) {
         const raw = String(sentences || '').trim();
         if (!raw) return [];
@@ -45,7 +56,7 @@ class SyncManager {
         const seen = new Set();
         const result = [];
         for (const s of list) {
-            const key = s.toLowerCase();
+            const key = this.canonicalizeSentence(s);
             if (seen.has(key)) continue;
             seen.add(key);
             result.push(s);
@@ -280,7 +291,7 @@ class SyncManager {
                 // Check if document already exists on server by word
                 // This prevents duplicate documents when editing locally before first sync
                 const existingDocs = await appwriteService.listVocabularies([
-                    Appwrite.Query.equal('word', vocabulary.word)
+                    Appwrite.Query.equal('word', String(vocabulary.word || '').trim())
                 ]);
 
                 if (existingDocs.length > 0) {
