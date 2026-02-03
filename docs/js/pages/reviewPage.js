@@ -242,16 +242,17 @@ const ReviewPage = {
             ' exam.\n\n' +
             '**TASK:** Write one coherent English paragraph of about ' +
             lengthValue +
-            ' sentences, followed by 10 multiple-choice comprehension questions.\n\n' +
+            ' sentences at CEFR B2/B2+ reading level, followed by 10 multiple-choice comprehension questions.\n\n' +
             '**VOCABULARY TO USE:**\n' +
             wordsListText +
             synonymSection +
-            '\n**CRITICAL REQUIREMENTS:**\n' +
-            '1. PRIORITY: Write a meaningful, coherent paragraph first. Do NOT force words that don\'t fit naturally.\n' +
-            '2. Use as many target words as possible, but SKIP words that would make the paragraph awkward or unnatural.\n' +
-            '3. For synonym pairs (e.g., hamper/prevent), you may write "hamper/prevent" to show both alternatives.\n' +
-            '4. Bold each target vocabulary word when used (e.g., **word** or **word1/word2**).\n' +
-            '5. The paragraph must tell a connected story with logical flow between sentences.\n\n' +
+            '\n**CRITICAL REQUIREMENTS (in order of priority):**\n' +
+            '1. COHERENCE FIRST: The paragraph MUST read naturally and make logical sense. Every sentence should connect smoothly to the next.\n' +
+            '2. MEANINGFUL CONTENT: Tell a realistic story or describe a plausible scenario. The content should be interesting and make sense in real life.\n' +
+            '3. DO NOT FORCE WORDS: Only use vocabulary that fits naturally. SKIP any word that would make the paragraph awkward, illogical, or unnatural.\n' +
+            '4. B2/B2+ LEVEL: Use appropriate grammar structures (conditionals, passive voice, relative clauses) and maintain readability for upper-intermediate learners.\n' +
+            '5. For synonym pairs (e.g., hamper/prevent), you may write "hamper/prevent" to show both alternatives.\n' +
+            '6. Bold each target vocabulary word when used (e.g., **word** or **word1/word2**).\n\n' +
             '**OUTPUT FORMAT:**\n\n' +
             '**Paragraph:**\n[Your paragraph here]\n\n' +
             '**Words used:** [list words actually used]\n' +
