@@ -32,9 +32,9 @@ class ReviewFragment : Fragment() {
     private var learnedVocabs: List<Vocabulary> = emptyList()
 
     private val lengthOptions = listOf(
-        LengthOption(3, "Ngắn - khoảng 3 câu"),
-        LengthOption(5, "Vừa - khoảng 5 câu"),
-        LengthOption(8, "Dài - khoảng 8 câu")
+        LengthOption(30, "Ngắn - khoảng 30 câu"),
+        LengthOption(50, "Vừa - khoảng 50 câu"),
+        LengthOption(70, "Dài - khoảng 60-70 câu")
     )
 
     data class LengthOption(val sentences: Int, val label: String) {
@@ -261,8 +261,6 @@ class ReviewFragment : Fragment() {
             append("6. Bold each target vocabulary word when used (e.g., **word** or **word1/word2**).\n\n")
             append("**OUTPUT FORMAT:**\n\n")
             append("**Paragraph:**\n[Your paragraph here]\n\n")
-            append("**Words used:** [list words actually used]\n")
-            append("**Words skipped:** [list words that didn't fit naturally, or \"None\" if all used]\n\n")
             append("**Comprehension Questions (10 MCQs about the paragraph content):**\n")
             append("1. [Question]\n")
             append("   A) ...\n")

@@ -53,9 +53,9 @@ const ReviewPage = {
                         <div>
                             <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px;">Độ dài đoạn văn</div>
                             <select id="review-length" style="padding: 6px 10px; border-radius: 6px; border: 1px solid #ccc;">
-                                <option value="3">Ngắn · khoảng 3 câu</option>
-                                <option value="5" selected>Vừa · khoảng 5 câu</option>
-                                <option value="8">Dài · khoảng 8 câu</option>
+                                <option value="30">Ngắn · khoảng 30 câu</option>
+                                <option value="50" selected>Vừa · khoảng 50 câu</option>
+                                <option value="70">Dài · khoảng 60-70 câu</option>
                             </select>
                         </div>
                     </div>
@@ -255,8 +255,6 @@ const ReviewPage = {
             '6. Bold each target vocabulary word when used (e.g., **word** or **word1/word2**).\n\n' +
             '**OUTPUT FORMAT:**\n\n' +
             '**Paragraph:**\n[Your paragraph here]\n\n' +
-            '**Words used:** [list words actually used]\n' +
-            '**Words skipped:** [list words that didn\'t fit naturally, or "None" if all used]\n\n' +
             '**Comprehension Questions (10 MCQs about the paragraph content):**\n' +
             '1. [Question]\n' +
             '   A) ...\n' +
