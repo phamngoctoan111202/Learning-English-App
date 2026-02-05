@@ -28,61 +28,146 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Category Filter -->
-        <RadioGroup
-            android:id="@+id/radioGroupCategoryFilter"
+        <!-- Category Filter with Stats -->
+        <HorizontalScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="12dp"
-            android:layout_marginBottom="8dp"
-            android:gravity="center">
+            android:scrollbars="none"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp">
 
-            <RadioButton
-                android:id="@+id/radioFilterAll"
-                android:layout_width="0dp"
+            <RadioGroup
+                android:id="@+id/radioGroupCategoryFilter"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="All"
-                android:checked="true" />
+                android:orientation="horizontal"
+                android:gravity="center">
 
-            <RadioButton
-                android:id="@+id/radioFilterGeneral"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="General" />
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:paddingHorizontal="4dp">
+                    <RadioButton
+                        android:id="@+id/radioFilterAll"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="All"
+                        android:checked="true" />
+                    <TextView
+                        android:id="@+id/textStatsAll"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0/0"
+                        android:textSize="10sp"
+                        android:textColor="@android:color/darker_gray" />
+                </LinearLayout>
 
-            <RadioButton
-                android:id="@+id/radioFilterToeic"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="TOEIC" />
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:paddingHorizontal="4dp">
+                    <RadioButton
+                        android:id="@+id/radioFilterGeneral"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="General" />
+                    <TextView
+                        android:id="@+id/textStatsGeneral"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0/0"
+                        android:textSize="10sp"
+                        android:textColor="@android:color/darker_gray" />
+                </LinearLayout>
 
-            <RadioButton
-                android:id="@+id/radioFilterVstep"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="VSTEP" />
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:paddingHorizontal="4dp">
+                    <RadioButton
+                        android:id="@+id/radioFilterToeic"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="TOEIC" />
+                    <TextView
+                        android:id="@+id/textStatsToeic"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0/0"
+                        android:textSize="10sp"
+                        android:textColor="@android:color/darker_gray" />
+                </LinearLayout>
 
-            <RadioButton
-                android:id="@+id/radioFilterSpeaking"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="SPEAKING" />
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:paddingHorizontal="4dp">
+                    <RadioButton
+                        android:id="@+id/radioFilterVstep"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="VSTEP" />
+                    <TextView
+                        android:id="@+id/textStatsVstep"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0/0"
+                        android:textSize="10sp"
+                        android:textColor="@android:color/darker_gray" />
+                </LinearLayout>
 
-            <RadioButton
-                android:id="@+id/radioFilterWriting"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="WRITING" />
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:paddingHorizontal="4dp">
+                    <RadioButton
+                        android:id="@+id/radioFilterSpeaking"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="SPEAKING" />
+                    <TextView
+                        android:id="@+id/textStatsSpeaking"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0/0"
+                        android:textSize="10sp"
+                        android:textColor="@android:color/darker_gray" />
+                </LinearLayout>
 
-        </RadioGroup>
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:paddingHorizontal="4dp">
+                    <RadioButton
+                        android:id="@+id/radioFilterWriting"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="WRITING" />
+                    <TextView
+                        android:id="@+id/textStatsWriting"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0/0"
+                        android:textSize="10sp"
+                        android:textColor="@android:color/darker_gray" />
+                </LinearLayout>
+
+            </RadioGroup>
+
+        </HorizontalScrollView>
 
         <!-- RecyclerView -->
         <androidx.recyclerview.widget.RecyclerView

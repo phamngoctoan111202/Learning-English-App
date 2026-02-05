@@ -49,6 +49,22 @@ interface VocabularyDao {
 
     @Query("DELETE FROM vocabularies WHERE id = :id")
     suspend fun deleteVocabularyById(id: Long)
+
+    // Count total vocabularies by category
+    @Query("SELECT COUNT(*) FROM vocabularies WHERE category = :category")
+    suspend fun countByCategory(category: String): Int
+
+    // Count learned vocabularies by category (totalAttempts >= 1)
+    @Query("SELECT COUNT(*) FROM vocabularies WHERE category = :category AND totalAttempts >= 1")
+    suspend fun countLearnedByCategory(category: String): Int
+
+    // Count total vocabularies
+    @Query("SELECT COUNT(*) FROM vocabularies")
+    suspend fun countAll(): Int
+
+    // Count all learned vocabularies (totalAttempts >= 1)
+    @Query("SELECT COUNT(*) FROM vocabularies WHERE totalAttempts >= 1")
+    suspend fun countAllLearned(): Int
 }
 
 @Dao

@@ -140,6 +140,31 @@ class EditFragment : Fragment() {
                 }
             }
         }
+
+        editViewModel.categoryStatsMap.observe(viewLifecycleOwner) { statsMap ->
+            updateCategoryStats(statsMap)
+        }
+    }
+
+    private fun updateCategoryStats(statsMap: Map<String, com.example.specialenglishlearningapp.viewmodel.CategoryStats>) {
+        statsMap["ALL"]?.let { stats ->
+            binding.textStatsAll.text = "${stats.learned}/${stats.total}"
+        }
+        statsMap["GENERAL"]?.let { stats ->
+            binding.textStatsGeneral.text = "${stats.learned}/${stats.total}"
+        }
+        statsMap["TOEIC"]?.let { stats ->
+            binding.textStatsToeic.text = "${stats.learned}/${stats.total}"
+        }
+        statsMap["VSTEP"]?.let { stats ->
+            binding.textStatsVstep.text = "${stats.learned}/${stats.total}"
+        }
+        statsMap["SPEAKING"]?.let { stats ->
+            binding.textStatsSpeaking.text = "${stats.learned}/${stats.total}"
+        }
+        statsMap["WRITING"]?.let { stats ->
+            binding.textStatsWriting.text = "${stats.learned}/${stats.total}"
+        }
     }
 
     private fun showAddDialog() {

@@ -21,6 +21,11 @@ sealed class AddVocabularyResult {
     data class Duplicate(val word: String) : AddVocabularyResult()
 }
 
+data class CategoryStats(
+    val total: Int,
+    val learned: Int
+)
+
 class EditViewModel(application: Application) : AndroidViewModel(application) {
     private val database: AppDatabase = AppDatabase.getDatabase(application)
     private val syncManager: SyncManager = SyncManager(application.applicationContext, database)
@@ -35,6 +40,9 @@ class EditViewModel(application: Application) : AndroidViewModel(application) {
     private val _addVocabularyStatus = MutableLiveData<AddVocabularyResult>()
     val addVocabularyStatus: LiveData<AddVocabularyResult> = _addVocabularyStatus
 
+    private val _categoryStatsMap = MutableLiveData<Map<String, CategoryStats>>(emptyMap())
+    val categoryStatsMap: LiveData<Map<String, CategoryStats>> = _categoryStatsMap
+
     private var currentCategoryFilter: String? = null // null = All, "GENERAL", "TOEIC"
     private var currentSearchQuery: String = ""
 
@@ -44,8 +52,28 @@ class EditViewModel(application: Application) : AndroidViewModel(application) {
                 Logger.d("VM Loaded ${list.size} vocabularies")
                 _allVocabularies.postValue(list)
                 applyFilters() // Apply current filters
+                loadCategoryStats() // Load stats when data changes
             }
         }
+    }
+
+    private suspend fun loadCategoryStats() {
+        val categories = listOf("GENERAL", "TOEIC", "VSTEP", "SPEAKING", "WRITING")
+        val statsMap = mutableMapOf<String, CategoryStats>()
+
+        // Stats for each category
+        for (category in categories) {
+            val total = database.vocabularyDao().countByCategory(category)
+            val learned = database.vocabularyDao().countLearnedByCategory(category)
+            statsMap[category] = CategoryStats(total, learned)
+        }
+
+        // Stats for "ALL"
+        val allTotal = database.vocabularyDao().countAll()
+        val allLearned = database.vocabularyDao().countAllLearned()
+        statsMap["ALL"] = CategoryStats(allTotal, allLearned)
+
+        _categoryStatsMap.postValue(statsMap)
     }
 
     fun filterByCategory(category: String?) {

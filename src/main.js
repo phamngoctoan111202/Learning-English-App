@@ -13,6 +13,8 @@ const COLLECTION_ID = 'vocabularies';
 
 // Global variables
 let isConnected = false;
+let allVocabularies = [];
+let currentCategory = 'ALL';
 
 // DOM elements
 const statusDiv = document.getElementById('status');
@@ -75,29 +77,15 @@ async function loadVocabularies() {
     try {
         log('📚 Loading vocabularies...');
         showStatus('Đang tải danh sách từ vựng...', 'loading');
-        
+
         const response = await databases.listDocuments(DATABASE_ID, COLLECTION_ID);
         log('✅ Documents fetched successfully');
         log('📊 Document count:', response.documents.length);
-        
-        if (response.documents.length === 0) {
-            vocabList.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Chưa có từ vựng nào</p>';
-        } else {
-            vocabList.innerHTML = response.documents.map(doc => {
-                const data = doc.data;
-                const sentences = data.sentences ? JSON.parse(data.sentences) : [];
-                return `
-                    <div class="vocab-item">
-                        <div>
-                            <div class="vocab-word">${data.word}</div>
-                            <div class="vocab-examples">${sentences.length} câu ví dụ</div>
-                        </div>
-                        <button class="delete-btn" onclick="deleteVocabulary('${doc.$id}')">Xóa</button>
-                    </div>
-                `;
-            }).join('');
-        }
-        
+
+        allVocabularies = response.documents;
+        updateCategoryStats();
+        renderVocabularyList();
+
         showStatus(`✅ Đã tải ${response.documents.length} từ vựng`, 'success');
     } catch (error) {
         log('❌ Error loading vocabularies:', error);
@@ -105,7 +93,86 @@ async function loadVocabularies() {
     }
 }
 
-async function saveVocabulary(word, sentences, vietnamese) {
+function updateCategoryStats() {
+    const categories = ['GENERAL', 'TOEIC', 'VSTEP', 'SPEAKING', 'WRITING'];
+    const stats = {};
+
+    // Calculate stats for each category
+    for (const category of categories) {
+        const categoryVocabs = allVocabularies.filter(doc => {
+            const data = doc.data || doc;
+            return data.category === category;
+        });
+        const learned = categoryVocabs.filter(doc => {
+            const data = doc.data || doc;
+            return parseInt(data.totalAttempts || '0') >= 1;
+        }).length;
+        stats[category] = { total: categoryVocabs.length, learned };
+    }
+
+    // Calculate stats for ALL
+    const allLearned = allVocabularies.filter(doc => {
+        const data = doc.data || doc;
+        return parseInt(data.totalAttempts || '0') >= 1;
+    }).length;
+    stats['ALL'] = { total: allVocabularies.length, learned: allLearned };
+
+    // Update UI
+    document.getElementById('statsAll').textContent = `${stats['ALL'].learned}/${stats['ALL'].total}`;
+    document.getElementById('statsGeneral').textContent = `${stats['GENERAL'].learned}/${stats['GENERAL'].total}`;
+    document.getElementById('statsToeic').textContent = `${stats['TOEIC'].learned}/${stats['TOEIC'].total}`;
+    document.getElementById('statsVstep').textContent = `${stats['VSTEP'].learned}/${stats['VSTEP'].total}`;
+    document.getElementById('statsSpeaking').textContent = `${stats['SPEAKING'].learned}/${stats['SPEAKING'].total}`;
+    document.getElementById('statsWriting').textContent = `${stats['WRITING'].learned}/${stats['WRITING'].total}`;
+}
+
+function renderVocabularyList() {
+    let filteredVocabs = allVocabularies;
+
+    if (currentCategory !== 'ALL') {
+        filteredVocabs = allVocabularies.filter(doc => {
+            const data = doc.data || doc;
+            return data.category === currentCategory;
+        });
+    }
+
+    if (filteredVocabs.length === 0) {
+        vocabList.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Chưa có từ vựng nào</p>';
+    } else {
+        vocabList.innerHTML = filteredVocabs.map(doc => {
+            const data = doc.data || doc;
+            const sentences = data.sentences ? JSON.parse(data.sentences) : [];
+            const totalAttempts = parseInt(data.totalAttempts || '0');
+            const isLearned = totalAttempts >= 1;
+            const category = data.category || 'GENERAL';
+            return `
+                <div class="vocab-item">
+                    <div>
+                        <div class="vocab-word">${data.word} ${isLearned ? '✓' : ''}</div>
+                        <div class="vocab-examples">${sentences.length} câu ví dụ · ${category}</div>
+                    </div>
+                    <button class="delete-btn" onclick="deleteVocabulary('${doc.$id}')">Xóa</button>
+                </div>
+            `;
+        }).join('');
+    }
+}
+
+function setCategory(category) {
+    currentCategory = category;
+
+    // Update active button
+    document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.category === category) {
+            btn.classList.add('active');
+        }
+    });
+
+    renderVocabularyList();
+}
+
+async function saveVocabulary(word, sentences, vietnamese, category) {
     if (!isConnected) {
         showStatus('Vui lòng kết nối Appwrite trước', 'error');
         return;
@@ -114,11 +181,12 @@ async function saveVocabulary(word, sentences, vietnamese) {
     try {
         log('💾 Saving vocabulary to Appwrite...');
         showStatus('Đang lưu từ vựng...', 'loading');
-        
+
         const data = {
             word: word,
             sentences: JSON.stringify(sentences),
             vietnamese: vietnamese || null,
+            category: category || 'GENERAL',
             createdAt: Date.now().toString(),
             lastStudiedAt: '0',
             priorityScore: '0',
@@ -138,13 +206,13 @@ async function saveVocabulary(word, sentences, vietnamese) {
 
         log('✅ Document created successfully:', response);
         showStatus('✅ Đã lưu từ vựng thành công!', 'success');
-        
+
         // Reset form
         resetForm();
-        
+
         // Reload vocabulary list
         loadVocabularies();
-        
+
     } catch (error) {
         log('❌ Error saving vocabulary:', error);
         showStatus('❌ Lỗi lưu từ vựng: ' + error.message, 'error');
@@ -235,10 +303,11 @@ document.getElementById('addExample').addEventListener('click', addExample);
 
 document.getElementById('vocabularyForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-    
+
     const word = wordInput.value.trim();
     const vietnamese = vietnameseInput.value.trim();
-    
+    const category = document.getElementById('category').value;
+
     if (!word) {
         showStatus('Vui lòng nhập từ vựng', 'error');
         return;
@@ -247,7 +316,7 @@ document.getElementById('vocabularyForm').addEventListener('submit', async funct
     // Collect all examples
     const exampleTextareas = document.querySelectorAll('#examplesContainer textarea');
     const allSentences = [];
-    
+
     for (const textarea of exampleTextareas) {
         const sentences = textarea.value.trim().split('\n').filter(s => s.trim());
         allSentences.push(...sentences);
@@ -258,7 +327,14 @@ document.getElementById('vocabularyForm').addEventListener('submit', async funct
         return;
     }
 
-    await saveVocabulary(word, allSentences, vietnamese);
+    await saveVocabulary(word, allSentences, vietnamese, category);
+});
+
+// Category filter click handlers
+document.querySelectorAll('.category-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        setCategory(btn.dataset.category);
+    });
 });
 
 // Global functions for onclick handlers

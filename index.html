@@ -268,6 +268,69 @@
         .delete-btn:hover {
             background: #ff3742;
         }
+
+        .category-filter {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        .category-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 80px;
+        }
+
+        .category-btn:hover {
+            border-color: #4facfe;
+            background: #f0f9ff;
+        }
+
+        .category-btn.active {
+            border-color: #4facfe;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .category-btn.active .category-stats {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .category-name {
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .category-stats {
+            font-size: 11px;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        .form-group select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            background: white;
+        }
+
+        .form-group select:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
     </style>
 </head>
 <body>
@@ -317,6 +380,17 @@
                     <input type="text" id="vietnamese" placeholder="Ví dụ: Xin chào">
                 </div>
 
+                <div class="form-group">
+                    <label for="category">Danh mục:</label>
+                    <select id="category">
+                        <option value="GENERAL">General</option>
+                        <option value="TOEIC">TOEIC</option>
+                        <option value="VSTEP">VSTEP</option>
+                        <option value="SPEAKING">Speaking</option>
+                        <option value="WRITING">Writing</option>
+                    </select>
+                </div>
+
                 <button type="submit" id="submitBtn" class="submit-btn">
                     💾 Lưu từ vựng
                 </button>
@@ -326,6 +400,35 @@
 
             <div class="vocab-list">
                 <h3>📋 Danh sách từ vựng</h3>
+
+                <!-- Category Filter -->
+                <div class="category-filter" id="categoryFilter">
+                    <button class="category-btn active" data-category="ALL">
+                        <span class="category-name">All</span>
+                        <span class="category-stats" id="statsAll">0/0</span>
+                    </button>
+                    <button class="category-btn" data-category="GENERAL">
+                        <span class="category-name">General</span>
+                        <span class="category-stats" id="statsGeneral">0/0</span>
+                    </button>
+                    <button class="category-btn" data-category="TOEIC">
+                        <span class="category-name">TOEIC</span>
+                        <span class="category-stats" id="statsToeic">0/0</span>
+                    </button>
+                    <button class="category-btn" data-category="VSTEP">
+                        <span class="category-name">VSTEP</span>
+                        <span class="category-stats" id="statsVstep">0/0</span>
+                    </button>
+                    <button class="category-btn" data-category="SPEAKING">
+                        <span class="category-name">Speaking</span>
+                        <span class="category-stats" id="statsSpeaking">0/0</span>
+                    </button>
+                    <button class="category-btn" data-category="WRITING">
+                        <span class="category-name">Writing</span>
+                        <span class="category-stats" id="statsWriting">0/0</span>
+                    </button>
+                </div>
+
                 <div id="vocabList"></div>
             </div>
         </div>
