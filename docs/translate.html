@@ -1133,10 +1133,18 @@ Chọn nhóm từ vựng và bấm "Tạo prompt" để sinh đoạn hướng d�
         const paragraphGenerateButton = document.getElementById('generateParagraphPromptButton');
 
         function updateCategoryCounts() {
-            const counts = {};
+            const stats = {};
+            // Calculate stats for each category
             for (const vocab of (vocabularyData || [])) {
                 const category = vocab?.category || 'GENERAL';
-                counts[category] = (counts[category] || 0) + 1;
+                if (!stats[category]) {
+                    stats[category] = { total: 0, learned: 0 };
+                }
+                stats[category].total++;
+                // Count as learned if totalAttempts >= 1
+                if ((vocab.totalAttempts || 0) >= 1) {
+                    stats[category].learned++;
+                }
             }
 
             document.querySelectorAll('.category-toggle-btn').forEach(btn => {
@@ -1144,9 +1152,14 @@ Chọn nhóm từ vựng và bấm "Tạo prompt" để sinh đoạn hướng d�
                 const countEl = btn.querySelector('.category-count');
                 if (!countEl) return;
 
-                const count = counts[category];
-                countEl.textContent = Number.isFinite(count) ? String(count) : '';
-                countEl.title = Number.isFinite(count) ? `${count} từ` : '';
+                const categoryStats = stats[category];
+                if (categoryStats) {
+                    countEl.textContent = `${categoryStats.learned}/${categoryStats.total}`;
+                    countEl.title = `${categoryStats.learned} đã học / ${categoryStats.total} tổng`;
+                } else {
+                    countEl.textContent = '0/0';
+                    countEl.title = '';
+                }
             });
         }
 
