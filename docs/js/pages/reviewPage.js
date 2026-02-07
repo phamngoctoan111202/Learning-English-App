@@ -48,6 +48,67 @@ const ReviewPage = {
                     <div id="review-words-list" style="min-height: 48px; border-radius: 8px; border: 1px solid #e0e0e0; padding: 8px;"></div>
                 </div>
 
+                <!-- Popular Topics Card -->
+                <div class="card" style="grid-column: 1 / -1; background: #FFF3E0;">
+                    <div style="font-size: 16px; font-weight: 700; margin-bottom: 16px; color: #E65100;">
+                        🔥 Popular Topics (VSTEP - không cần học từ trước)
+                    </div>
+
+                    <!-- Task Type Selector -->
+                    <div style="margin-bottom: 16px;">
+                        <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Loại bài</div>
+                        <div style="display: flex; gap: 16px;">
+                            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                                <input type="radio" name="popular-task-type" value="speaking" checked>
+                                <span>🗣️ Speaking</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                                <input type="radio" name="popular-task-type" value="writing">
+                                <span>✍️ Writing</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Topic Selector -->
+                    <div style="margin-bottom: 16px;">
+                        <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Chủ đề VSTEP</div>
+                        <select id="popular-topic" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px;">
+                            <option value="education">Education & Learning</option>
+                            <option value="technology">Technology & Innovation</option>
+                            <option value="environment">Environment & Climate</option>
+                            <option value="health">Health & Lifestyle</option>
+                            <option value="work">Work & Career</option>
+                            <option value="society">Society & Culture</option>
+                            <option value="travel">Travel & Tourism</option>
+                            <option value="media">Media & Communication</option>
+                            <option value="family">Family & Relationships</option>
+                            <option value="economy">Economy & Business</option>
+                        </select>
+                    </div>
+
+                    <!-- Your Ideas Input -->
+                    <div style="margin-bottom: 16px;">
+                        <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Ý tưởng của bạn (tùy chọn)</div>
+                        <textarea id="popular-ideas" style="width: 100%; min-height: 80px; border-radius: 8px; border: 1px solid #ccc; padding: 10px; font-size: 14px; resize: vertical;" placeholder="Ví dụ: Tôi muốn nói về việc học online có lợi ích như tiết kiệm thời gian, chi phí, và linh hoạt về địa điểm..."></textarea>
+                    </div>
+
+                    <!-- Generated Prompt -->
+                    <div style="margin-bottom: 12px;">
+                        <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Prompt (copy sang AI)</div>
+                        <textarea id="popular-prompt" style="width: 100%; min-height: 120px; border-radius: 8px; border: 1px solid #ccc; padding: 10px; font-size: 14px; resize: vertical;" readonly></textarea>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div style="display: flex; gap: 8px;">
+                        <button id="popular-generate-btn" class="primary-btn" style="flex: 1;">
+                            🔥 Tạo prompt Popular Topic
+                        </button>
+                        <button id="popular-copy-btn" class="secondary-btn" style="flex: 1;">
+                            📋 Copy prompt
+                        </button>
+                    </div>
+                </div>
+
                 <div class="card" style="grid-column: 1 / -1;">
                     <div style="display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 12px;">
                         <div>
@@ -114,6 +175,35 @@ const ReviewPage = {
         if (lengthSelect) {
             lengthSelect.addEventListener('change', () => {
                 this.generatePrompt();
+            });
+        }
+
+        // Popular Topics listeners
+        const popularGenerateBtn = document.getElementById('popular-generate-btn');
+        if (popularGenerateBtn) {
+            popularGenerateBtn.addEventListener('click', () => {
+                this.generatePopularPrompt();
+            });
+        }
+
+        const popularCopyBtn = document.getElementById('popular-copy-btn');
+        if (popularCopyBtn) {
+            popularCopyBtn.addEventListener('click', () => {
+                this.copyPopularPrompt();
+            });
+        }
+
+        const popularTaskTypeRadios = document.querySelectorAll('input[name="popular-task-type"]');
+        popularTaskTypeRadios.forEach(radio => {
+            radio.addEventListener('change', () => {
+                this.generatePopularPrompt();
+            });
+        });
+
+        const popularTopicSelect = document.getElementById('popular-topic');
+        if (popularTopicSelect) {
+            popularTopicSelect.addEventListener('change', () => {
+                this.generatePopularPrompt();
             });
         }
     },
@@ -267,6 +357,143 @@ const ReviewPage = {
             '1. [letter] | 2. [letter] | 3. [letter] | 4. [letter] | 5. [letter] | 6. [letter] | 7. [letter] | 8. [letter] | 9. [letter] | 10. [letter]';
 
         promptTextarea.value = promptText;
+    },
+
+    generatePopularPrompt() {
+        const promptTextarea = document.getElementById('popular-prompt');
+        if (!promptTextarea) return;
+
+        // Get selected task type
+        const taskTypeRadio = document.querySelector('input[name="popular-task-type"]:checked');
+        const taskType = taskTypeRadio ? taskTypeRadio.value : 'speaking';
+
+        // Get selected topic
+        const topicSelect = document.getElementById('popular-topic');
+        const topicValue = topicSelect ? topicSelect.value : 'education';
+        const topicText = topicSelect ? topicSelect.options[topicSelect.selectedIndex].text : 'Education & Learning';
+
+        // Get user's ideas
+        const ideasTextarea = document.getElementById('popular-ideas');
+        const userIdeas = ideasTextarea ? ideasTextarea.value.trim() : '';
+
+        // Topic-specific prompts
+        const topicDescriptions = {
+            'education': 'education, learning methods, online/offline classes, studying abroad, educational technology',
+            'technology': 'technology, innovation, artificial intelligence, social media, digital transformation',
+            'environment': 'environment, climate change, sustainability, pollution, conservation',
+            'health': 'health, fitness, nutrition, mental health, healthcare systems',
+            'work': 'work, career development, work-life balance, remote work, job satisfaction',
+            'society': 'society, culture, traditions, social issues, community',
+            'travel': 'travel, tourism, cultural exchange, vacation, exploring new places',
+            'media': 'media, communication, news, entertainment, advertising',
+            'family': 'family, relationships, parenting, generation gap, friendship',
+            'economy': 'economy, business, entrepreneurship, financial planning, market trends'
+        };
+
+        const topicDesc = topicDescriptions[topicValue] || topicText;
+
+        // Build the prompt
+        let promptText = '';
+
+        if (taskType === 'speaking') {
+            promptText = `You are an experienced VSTEP Speaking examiner helping a B2/B2+ level student prepare for the VSTEP Speaking test.
+
+**TOPIC:** ${topicText}
+
+**TASK:** Create a realistic VSTEP Part 3 speaking question about ${topicDesc}.
+
+${userIdeas ? `**STUDENT'S IDEAS/PERSPECTIVE:**\n${userIdeas}\n` : ''}
+**CRITICAL REQUIREMENTS:**
+1. **COHERENCE & LOGIC FIRST**: The answer should flow naturally with clear connections between ideas. Prioritize logical structure over vocabulary complexity.
+2. **EASY TO REMEMBER**: Use simple, memorable reasoning and examples that are realistic and relatable.
+3. **NATURAL LANGUAGE**: Write as a real person would speak - don't force complex vocabulary. Use B2 level naturally.
+4. **CLEAR STRUCTURE**:
+   - Introduction: Direct answer to the question
+   - Main points (2-3 ideas): Each with explanation and example
+   - Conclusion: Brief summary or personal reflection
+
+**OUTPUT FORMAT:**
+
+**Question:**
+[VSTEP Part 3 question about the topic]
+
+**Sample Answer (Speaking - about 2 minutes):**
+[Write a natural, coherent speaking answer that:
+- Uses conversational language
+- Has clear idea progression
+- Includes real-life examples
+- Sounds like authentic speech, not written text
+- Length: approximately 200-250 words]
+
+**Key Phrases Used:**
+[List 5-8 useful phrases naturally used in the answer]`;
+
+        } else {
+            // Writing
+            promptText = `You are an experienced VSTEP Writing examiner helping a B2/B2+ level student prepare for the VSTEP Writing test.
+
+**TOPIC:** ${topicText}
+
+**TASK:** Create a realistic VSTEP Task 2 essay question about ${topicDesc}.
+
+${userIdeas ? `**STUDENT'S IDEAS/PERSPECTIVE:**\n${userIdeas}\n` : ''}
+**CRITICAL REQUIREMENTS:**
+1. **COHERENCE & LOGIC FIRST**: The essay should have clear paragraph structure and logical flow. Prioritize well-connected ideas over vocabulary complexity.
+2. **EASY TO REMEMBER**: Use straightforward arguments and memorable examples that are realistic.
+3. **NATURAL LANGUAGE**: Write with clear, precise B2 level language. Don't force advanced vocabulary unnaturally.
+4. **CLEAR STRUCTURE**:
+   - Introduction: Paraphrase topic + thesis statement
+   - Body paragraphs (2): Each with topic sentence, explanation, example
+   - Conclusion: Summarize main points + personal opinion
+
+**OUTPUT FORMAT:**
+
+**Essay Question:**
+[VSTEP Task 2 question about the topic]
+[Give your opinion / Discuss both views / Advantages & Disadvantages]
+Write at least 250 words.
+
+**Sample Essay:**
+[Write a coherent, well-structured essay that:
+- Has clear paragraph organization
+- Uses topic sentences effectively
+- Develops ideas logically
+- Includes relevant examples
+- Maintains consistent argumentation
+- Length: approximately 280-320 words]
+
+**Key Vocabulary & Phrases:**
+[List 8-12 useful words/phrases naturally used in the essay]`;
+        }
+
+        promptTextarea.value = promptText;
+    },
+
+    copyPopularPrompt() {
+        const promptTextarea = document.getElementById('popular-prompt');
+        if (!promptTextarea || !promptTextarea.value) {
+            App.showToast('Chưa có prompt để copy!');
+            return;
+        }
+
+        // Use modern clipboard API
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(promptTextarea.value)
+                .then(() => {
+                    App.showToast('Đã copy prompt Popular Topic!');
+                })
+                .catch(() => {
+                    // Fallback to old method
+                    promptTextarea.select();
+                    document.execCommand('copy');
+                    App.showToast('Đã copy prompt Popular Topic!');
+                });
+        } else {
+            // Fallback for older browsers
+            promptTextarea.select();
+            document.execCommand('copy');
+            App.showToast('Đã copy prompt Popular Topic!');
+        }
     },
 
     cleanup() {

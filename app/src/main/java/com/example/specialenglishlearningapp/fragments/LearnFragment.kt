@@ -479,7 +479,9 @@ class LearnFragment : Fragment() {
                         val existingIds = restoredWords.map { it.vocabulary.id }.toSet()
                         val additionalWords = filtered
                             .filter { it.vocabulary.id !in existingIds }
-                            .sortedWith(compareBy<VocabularyWithExamples> { it.vocabulary.memoryScore }
+                            .sortedWith(compareBy<VocabularyWithExamples> { if (it.vocabulary.totalAttempts == 0) 0 else 1 }
+                                .thenByDescending { if (it.vocabulary.totalAttempts == 0) it.vocabulary.createdAt else 0L }
+                                .thenBy { it.vocabulary.memoryScore }
                                 .thenBy { it.vocabulary.lastStudiedAt }
                                 .thenByDescending { it.vocabulary.createdAt })
                             .take(30 - restoredWords.size)
@@ -491,9 +493,12 @@ class LearnFragment : Fragment() {
                     }
                 } else {
                     // First time: Select 30 words with lowest memoryScore, then shuffle
-                    Logger.d("🆕 FIRST TIME setup: selecting 30 words with lowest memoryScore and shuffling")
+                    // Prioritize never-studied words (totalAttempts == 0) first, newest first
+                    Logger.d("🆕 FIRST TIME setup: selecting 30 words (prioritizing never-studied, then lowest memoryScore)")
                     filtered
-                        .sortedWith(compareBy<VocabularyWithExamples> { it.vocabulary.memoryScore }
+                        .sortedWith(compareBy<VocabularyWithExamples> { if (it.vocabulary.totalAttempts == 0) 0 else 1 }
+                            .thenByDescending { if (it.vocabulary.totalAttempts == 0) it.vocabulary.createdAt else 0L }
+                            .thenBy { it.vocabulary.memoryScore }
                             .thenBy { it.vocabulary.lastStudiedAt }
                             .thenByDescending { it.vocabulary.createdAt })
                         .take(30)
@@ -621,7 +626,9 @@ class LearnFragment : Fragment() {
             }
 
             val replacement = candidateWords
-                .sortedWith(compareBy<VocabularyWithExamples> { it.vocabulary.memoryScore }
+                .sortedWith(compareBy<VocabularyWithExamples> { if (it.vocabulary.totalAttempts == 0) 0 else 1 }
+                    .thenByDescending { if (it.vocabulary.totalAttempts == 0) it.vocabulary.createdAt else 0L }
+                    .thenBy { it.vocabulary.memoryScore }
                     .thenBy { it.vocabulary.lastStudiedAt }
                     .thenByDescending { it.vocabulary.createdAt })
                 .firstOrNull()
