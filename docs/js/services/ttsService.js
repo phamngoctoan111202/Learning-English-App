@@ -74,7 +74,6 @@ class TTSService {
 
         // Check cache first
         if (this.audioCache.has(normalizedText)) {
-            console.log('Playing from cache:', text);
             await this.playAudioUrl(this.audioCache.get(normalizedText));
             return;
         }
@@ -128,15 +127,13 @@ class TTSService {
                 if (response.ok) {
                     const blob = await response.blob();
                     const url = URL.createObjectURL(blob);
-                    console.log('ElevenLabs TTS success');
                     return url;
                 }
             } catch (error) {
-                console.log('ElevenLabs API key failed:', error.message);
+                // API key failed, try next
             }
         }
 
-        console.log('All ElevenLabs keys exhausted');
         return null;
     }
 
@@ -167,15 +164,13 @@ class TTSService {
                 if (response.ok) {
                     const blob = await response.blob();
                     const url = URL.createObjectURL(blob);
-                    console.log('OpenAI TTS success');
                     return url;
                 }
             } catch (error) {
-                console.log('OpenAI API key failed:', error.message);
+                // API key failed, try next
             }
         }
 
-        console.log('All OpenAI keys exhausted');
         return null;
     }
 
@@ -203,9 +198,6 @@ class TTSService {
             }
 
             window.speechSynthesis.speak(utterance);
-            console.log('Using browser TTS');
-        } else {
-            console.error('Browser TTS not supported');
         }
     }
 

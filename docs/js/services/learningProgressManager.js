@@ -23,8 +23,6 @@ class LearningProgressManager {
      * Initialize - Load from Appwrite or create new session
      */
     async initialize() {
-        console.log('🔄 [Progress] Initializing...');
-
         try {
             // Try to load from Appwrite
             await appwriteService.loginAnonymously();
@@ -34,17 +32,10 @@ class LearningProgressManager {
                 // Load existing session from server
                 this.startTime = parseInt(serverData.startTime);
                 this.wordsLearned = parseInt(serverData.wordsLearned) || 0;
-                console.log('✅ [Progress] Loaded from Appwrite:', {
-                    startTime: new Date(this.startTime).toLocaleString(),
-                    wordsLearned: this.wordsLearned,
-                    goal: this.getCurrentGoal(),
-                    debt: this.getDebt()
-                });
             } else {
                 // Create new session
                 this.startTime = Date.now();
                 this.wordsLearned = 0;
-                console.log('🆕 [Progress] Created new session');
 
                 // Sync new session to server
                 await this.syncToAppwrite();
@@ -62,29 +53,20 @@ class LearningProgressManager {
                 const data = JSON.parse(localData);
                 this.startTime = data.startTime || Date.now();
                 this.wordsLearned = data.wordsLearned || 0;
-                console.log('⚠️ [Progress] Using localStorage fallback');
             } else {
                 // Last resort: create new session
                 this.startTime = Date.now();
                 this.wordsLearned = 0;
-                console.log('🆕 [Progress] Created new local session');
             }
         }
-
-        console.log('✅ [Progress] Initialized:', this.getSummary());
     }
 
     /**
      * Add completed word - Call this when user completes a sentence correctly
      */
     async addCompletedWord() {
-        const oldCount = this.wordsLearned;
         this.wordsLearned++;
         const newCount = this.wordsLearned;
-
-        console.log('✅ [Progress] Word completed:', oldCount, '→', newCount);
-        console.log('   🎯 Goal:', this.getCurrentGoal());
-        console.log('   💳 Debt:', this.getDebt());
 
         // Save locally
         this.saveToLocalStorage();
@@ -92,9 +74,8 @@ class LearningProgressManager {
         // Sync to server immediately
         try {
             await this.syncToAppwrite();
-            console.log('   ✅ Synced to Appwrite');
         } catch (error) {
-            console.error('   ❌ Sync failed:', error.message);
+            console.error('Sync failed:', error.message);
         }
 
         return newCount;
@@ -234,12 +215,7 @@ class LearningProgressManager {
      * Debug info
      */
     debug() {
-        const summary = this.getSummary();
-        console.log('🐛 [Progress] Debug Info:');
-        console.table(summary);
-        console.log('   Start time:', new Date(this.startTime).toLocaleString());
-        console.log('   Elapsed minutes:', this.getElapsedMinutes().toFixed(2));
-        return summary;
+        return this.getSummary();
     }
 }
 

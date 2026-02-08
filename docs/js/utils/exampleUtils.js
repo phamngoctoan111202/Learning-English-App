@@ -18,10 +18,6 @@ const ExampleUtils = {
         // Trim the input
         const trimmed = sentencesStr.trim();
 
-        if (trimmed.length > 0) {
-            console.log('🧪 [ExampleUtils] parseSentences input:', trimmed.substring(0, 200));
-        }
-
         // Try to parse as JSON array first (Android stores sentences as JSON array)
         if (trimmed.startsWith('[')) {
             try {

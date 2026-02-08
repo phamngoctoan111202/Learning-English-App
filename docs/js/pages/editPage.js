@@ -432,15 +432,14 @@ const EditPage = {
         this.currentEditId = id;
 
         const vocabWithExamples = await db.getVocabularyWithExamples(id);
-        console.log('check_logic_edit: showEditDialog - vocabWithExamples from DB', JSON.stringify(vocabWithExamples, null, 2));
+        
         if (!vocabWithExamples) {
             App.showToast('Vocabulary not found', 'error');
             return;
         }
 
         const { vocabulary, examples } = vocabWithExamples;
-        console.log('check_logic_edit: showEditDialog - examples count from DB:', examples.length);
-
+      
         document.getElementById('edit-vocab-word').value = vocabulary.word;
 
         // Set category radio button
@@ -456,8 +455,6 @@ const EditPage = {
             this.addExampleField('edit-examples-list');
         } else {
             for (const example of examples) {
-                console.log('check_logic_edit: showEditDialog - adding example to form:', JSON.stringify(example, null, 2));
-                console.log('check_logic_edit: showEditDialog - example.sentences value:', example.sentences);
                 this.addExampleField('edit-examples-list', example.sentences, example.vietnamese, example.grammar);
             }
         }
@@ -486,7 +483,6 @@ const EditPage = {
         }
 
         const examples = this.collectExamples('edit-examples-list');
-        console.log('check_logic_edit: collected examples from form', JSON.stringify(examples, null, 2));
 
         if (examples.length === 0) {
             App.showToast('Please add at least one example', 'error');
@@ -496,7 +492,6 @@ const EditPage = {
         try {
             // Get existing vocabulary
             const existing = await db.getVocabularyById(this.currentEditId);
-            console.log('check_logic_edit: existing vocabulary from DB', JSON.stringify(existing, null, 2));
             if (!existing) {
                 App.showToast('Vocabulary not found', 'error');
                 return;
@@ -507,14 +502,11 @@ const EditPage = {
             existing.category = category;
             existing.lastStudiedAt = Date.now();
             await db.updateVocabulary(existing);
-            console.log('check_logic_edit: updated vocabulary in DB');
 
             // Delete old examples and insert new ones
             await db.deleteExamplesByVocabularyId(this.currentEditId);
-            console.log('check_logic_edit: deleted old examples for vocabId', this.currentEditId);
 
             for (const example of examples) {
-                console.log('check_logic_edit: inserting example', JSON.stringify(example, null, 2));
                 await db.insertExample({
                     vocabularyId: this.currentEditId,
                     sentences: example.sentences,
@@ -525,9 +517,7 @@ const EditPage = {
             }
 
             // Sync to server - wait for sync to complete
-            console.log('check_logic_edit: starting sync to server for vocabId', this.currentEditId);
             await syncManager.syncSingleVocabulary(this.currentEditId);
-            console.log('check_logic_edit: sync completed');
 
             this.hideEditDialog();
             App.showToast('Vocabulary updated successfully', 'success');
@@ -606,21 +596,16 @@ const EditPage = {
         const container = document.getElementById(containerId);
         const examples = [];
 
-        console.log('check_logic_edit: collectExamples from container', containerId);
-        container.querySelectorAll('.example-item').forEach((item, index) => {
+        container.querySelectorAll('.example-item').forEach((item) => {
             const sentences = item.querySelector('.example-sentences').value.trim();
             const vietnamese = item.querySelector('.example-vietnamese').value.trim();
             const grammar = item.querySelector('.example-grammar').value.trim();
-
-            console.log(`check_logic_edit: example ${index} - sentences from textarea:`, sentences);
-            console.log(`check_logic_edit: example ${index} - vietnamese:`, vietnamese);
 
             if (sentences) {
                 examples.push({ sentences, vietnamese, grammar });
             }
         });
 
-        console.log('check_logic_edit: collectExamples result:', JSON.stringify(examples, null, 2));
         return examples;
     },
 

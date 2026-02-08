@@ -1261,8 +1261,6 @@ Chọn nhóm từ vựng và bấm "Tạo prompt" để sinh đoạn hướng d�
                 .sort((a, b) => b.reviewPriority - a.reviewPriority)
                 .slice(0, reviewSize);
 
-            console.log(`📊 [Mixed Queue] New: ${selectedNew.length}, Review: ${selectedReview.length}`);
-
             return [...selectedNew, ...selectedReview];
         }
 
@@ -1447,9 +1445,7 @@ Chọn nhóm từ vựng và bấm "Tạo prompt" để sinh đoạn hướng d�
         async function initializeApp() {
             try {
                 // Initialize learning progress manager first
-                console.log('🔄 Initializing learning progress manager...');
                 await learningProgressManager.initialize();
-                console.log('✅ Learning progress manager initialized');
 
                 // Initial progress display
                 updateProgressDisplay();
@@ -1460,13 +1456,10 @@ Chọn nhóm từ vựng và bấm "Tạo prompt" để sinh đoạn hướng d�
                 const cached = buildVocabularyDataFromIndexedDb(await db.getAllVocabulariesWithExamples());
                 if (cached.length > 0) {
                     vocabularyData = cached;
-                    console.log('✅ Loaded', vocabularyData.length, 'vocabulary items from IndexedDB');
                     syncManager.syncServerToClient();
                 } else {
-                    console.log('📡 No cached vocabulary found, syncing from server...');
                     await syncManager.syncServerToClient();
                     vocabularyData = buildVocabularyDataFromIndexedDb(await db.getAllVocabulariesWithExamples());
-                    console.log('✅ Loaded', vocabularyData.length, 'vocabulary items after sync');
                 }
 
                 if (vocabularyData.length === 0) {
@@ -1521,7 +1514,6 @@ Chọn nhóm từ vựng và bấm "Tạo prompt" để sinh đoạn hướng d�
                             wordQueue.push(...shuffled);
                         }
                         currentQueueIndex = 0;
-                        console.log(`📦 Loaded ${validWords.length} words from localStorage (${selectedCategory})`);
 
                         // Save updated queue
                         const queueIds = wordQueue.map(v => v.id);
@@ -1542,9 +1534,6 @@ Chọn nhóm từ vựng và bấm "Tạo prompt" để sinh đoạn hướng d�
             wordQueue = shuffleInterleavedByMemoryScore(mixedQueue);
             currentQueueIndex = 0;
 
-            console.log(`📚 Built queue with ${wordQueue.length} words (${selectedCategory} category)`);
-            console.log('Queue words:', wordQueue.map(v => v.word).join(', '));
-
             // Save queue to localStorage (same as Learn tab)
             const queueIds = wordQueue.map(v => v.id);
             localStorage.setItem(STORAGE_KEY, JSON.stringify(queueIds));
@@ -1562,7 +1551,6 @@ Chọn nhóm từ vựng và bấm "Tạo prompt" để sinh đoạn hướng d�
 
             if (currentQueueIndex >= wordQueue.length) {
                 currentQueueIndex = 0;
-                console.log('🔄 Queue cycled back to start');
             }
 
             currentVocab = wordQueue[currentQueueIndex];
@@ -1577,8 +1565,6 @@ Chọn nhóm từ vựng và bấm "Tạo prompt" để sinh đoạn hướng d�
             translateButton.disabled = false;
             feedbackSection.classList.remove('show');
             inputText.focus();
-
-            console.log(`📖 [${currentQueueIndex + 1}/${wordQueue.length}] Loaded:`, currentVocab.word, '-', currentVocab.vietnamese);
         }
 
         function translateText() {
@@ -1642,7 +1628,6 @@ Chọn nhóm từ vựng và bấm "Tạo prompt" để sinh đoạn hướng d�
             comparisonSection.style.display = 'none';
 
             // Update vocabulary statistics (correct attempts, memory score, etc.)
-            console.log('📊 [Translate] Updating vocabulary stats...');
             const wasMasteredBefore = (function () {
                 const exampleCount = 1;
                 const requiredAttempts = 10 * exampleCount;
@@ -1657,16 +1642,10 @@ Chọn nhóm từ vựng và bấm "Tạo prompt" để sinh đoạn hướng d�
 
             await updateVocabularyStats(currentVocab, true);
 
-            console.log('📚 [Translate] Adding memory attempt for correct example...');
-            console.log('   Before:', learningProgressManager.wordsLearned);
             await learningProgressManager.addCompletedWord();
-            console.log('   After:', learningProgressManager.wordsLearned);
-            console.log('✅ [Translate] Memory attempt counted');
 
             // Update progress display immediately
-            console.log('🔄 [Translate] Updating progress display...');
             updateProgressDisplay();
-            console.log('✅ [Translate] Progress display updated');
 
             // Auto-reload only when word is mastered
             const exampleCountForNext = 1;
@@ -1723,7 +1702,6 @@ Chọn nhóm từ vựng và bấm "Tạo prompt" để sinh đoạn hướng d�
             }
 
             // Update statistics for incorrect answer (only vocabulary stats, NOT wordsLearned)
-            console.log('❌ [Translate] Incorrect answer, updating vocabulary stats only...');
             await updateVocabularyStats(currentVocab, false);
 
             // Update attempts info text after incorrect attempt
@@ -1770,8 +1748,6 @@ Chọn nhóm từ vựng và bấm "Tạo prompt" để sinh đoạn hướng d�
                 // Update lastStudiedAt
                 vocab.lastStudiedAt = Date.now();
 
-                console.log(`📊 Updated stats for "${vocab.word}": ${vocab.correctAttempts}/${vocab.totalAttempts} (${Math.round(vocab.memoryScore * 100)}%)`);
-
                 const localVocab = await db.getVocabularyByAppwriteDocumentId(vocab.id);
                 if (localVocab) {
                     localVocab.totalAttempts = vocab.totalAttempts || 0;
@@ -1794,21 +1770,14 @@ Chọn nhóm từ vựng và bấm "Tạo prompt" để sinh đoạn hướng d�
                             lastStudiedAt: String(vocab.lastStudiedAt || Date.now())
                         }
                     );
-                    console.log('✅ Synced to Appwrite');
                 } catch (error) {
-                    console.warn('Failed to sync stats to Appwrite:', error);
+                    // Sync failed silently
                 }
 
                 // Update vocabularyData array
                 const index = vocabularyData.findIndex(v => v.id === vocab.id);
                 if (index !== -1) {
                     vocabularyData[index] = vocab;
-                }
-
-                // Check if word should be replaced in queue (70%+ accuracy with at least 10 attempts)
-                const memoryPercent = vocab.totalAttempts > 0 ? (vocab.correctAttempts / vocab.totalAttempts) * 100 : 0;
-                if (vocab.totalAttempts >= 10 && memoryPercent >= 70) {
-                    console.log(`🎓 Word "${vocab.word}" mastered! (${vocab.correctAttempts}/${vocab.totalAttempts} = ${Math.round(memoryPercent)}%)`);
                 }
 
             } catch (error) {

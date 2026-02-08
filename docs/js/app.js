@@ -9,16 +9,12 @@ const App = {
      * Initialize the application
      */
     async init() {
-        console.log('Initializing Special English Learning App...');
-
         try {
             // Initialize database
             await db.init();
-            console.log('Database initialized');
 
             // Login to Appwrite anonymously
             await appwriteService.loginAnonymously();
-            console.log('Appwrite session initialized');
 
             // Sync vocabulary words to extension storage
             await appwriteService.syncWordsToExtension();
@@ -31,8 +27,6 @@ const App = {
 
             // Load default page (Learn)
             this.navigateTo('learn');
-
-            console.log('App initialized successfully');
         } catch (error) {
             console.error('Failed to initialize app:', error);
             this.showToast('Failed to initialize app', 'error');

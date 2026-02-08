@@ -391,7 +391,6 @@
         // Load vocabulary data (this will be populated by Android WebView)
         function loadVocabularyData(data) {
             vocabularyData = data;
-            console.log('Loaded vocabulary:', vocabularyData.length, 'items');
         }
 
         // Sample data for testing (remove when integrating with Android)
@@ -679,7 +678,6 @@
         window.updateVocabulary = function(jsonData) {
             try {
                 vocabularyData = JSON.parse(jsonData);
-                console.log('Vocabulary data updated:', vocabularyData.length, 'items');
             } catch (e) {
                 console.error('Failed to parse vocabulary data:', e);
             }

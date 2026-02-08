@@ -26,7 +26,7 @@ const vocabList = document.getElementById('vocabList');
 
 // Utility functions
 function log(message) {
-    console.log(message);
+    // Debug logging disabled in production
 }
 
 function showStatus(message, type = 'info') {
