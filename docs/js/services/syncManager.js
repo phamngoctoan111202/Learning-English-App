@@ -182,9 +182,13 @@ class SyncManager {
 
                 localVocab.appwriteDocumentId = serverAppwriteId;
 
+                // Category is metadata, always sync from server if server has a value
+                if (serverVocab.category) {
+                    localVocab.category = serverVocab.category;
+                }
+
                 if (shouldApplyServerContent) {
                     localVocab.word = serverWord;
-                    localVocab.category = serverVocab.category || localVocab.category || 'GENERAL';
                 }
 
                 localVocab.totalAttempts = mergedTotalAttempts;
