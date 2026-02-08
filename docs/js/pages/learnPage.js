@@ -199,7 +199,7 @@ const LearnPage = {
                 el.title = `${count} từ`;
             });
         } catch (error) {
-            console.error('Error updating category counts:', error);
+            // Error updating category counts silently
         }
     },
 
@@ -257,7 +257,6 @@ const LearnPage = {
      * Handle category change
      */
     async onCategoryChanged(category) {
-        console.log('[LearnPage] Category changed to:', category);
         this.selectedCategory = category;
 
         // Save to localStorage
@@ -308,7 +307,6 @@ const LearnPage = {
                 this.showNoWordsMessage();
             }
         } catch (error) {
-            console.error('Error initializing learn page:', error);
             App.showToast('Failed to initialize learning session', 'error');
         }
     },
@@ -342,7 +340,7 @@ const LearnPage = {
                     return;
                 }
             } catch (e) {
-                console.error('Error loading saved queue:', e);
+                // Error loading saved queue silently
             }
         }
 
@@ -358,16 +356,12 @@ const LearnPage = {
      * - Interleaved shuffling for alternating difficulty
      */
     async createNewQueue() {
-        console.log('🔄 [LearnPage] Creating new queue with Mixed + Decay strategy...');
-
         // Get mixed queue: 70% new + 30% review (with effective score decay)
         const mixedVocabs = await db.getMixedQueueVocabularies(
             this.QUEUE_SIZE * 2, // Get more to account for words without examples
             [],
             this.selectedCategory
         );
-
-        console.log(`📦 [LearnPage] Got ${mixedVocabs.length} mixed vocabularies`);
 
         // Apply interleaved shuffle to create alternating difficulty pattern
         const shuffledVocabs = db.shuffleInterleavedByMemoryScore(mixedVocabs);
@@ -378,7 +372,6 @@ const LearnPage = {
 
             const vocabWithExamples = await db.getVocabularyWithExamples(vocab.id);
             if (!vocabWithExamples) {
-                console.warn('⚠️ [LearnPage] Skipping vocab, not found in DB:', vocab);
                 continue;
             }
 
@@ -387,28 +380,11 @@ const LearnPage = {
                 : 0;
 
             if (examplesCount === 0) {
-                console.warn(
-                    '⚠️ [LearnPage] Skipping vocab with no examples:',
-                    {
-                        id: vocabWithExamples.vocabulary.id,
-                        word: vocabWithExamples.vocabulary.word
-                    }
-                );
                 continue;
             }
 
-            console.log(
-                '✅ [LearnPage] Added to new queue:',
-                {
-                    id: vocabWithExamples.vocabulary.id,
-                    word: vocabWithExamples.vocabulary.word,
-                    examples: examplesCount
-                }
-            );
             this.wordQueue.push(vocabWithExamples);
         }
-
-        console.log(`✅ [LearnPage] Queue created with ${this.wordQueue.length} words (category: ${this.selectedCategory})`);
 
         this.saveWordQueue();
         this.renderWordQueue();
@@ -423,8 +399,6 @@ const LearnPage = {
         const needed = this.QUEUE_SIZE - this.wordQueue.length;
 
         if (needed <= 0) return;
-
-        console.log(`🔄 [LearnPage] Filling queue, need ${needed} more words...`);
 
         // Get mixed vocabularies (70% new + 30% review with decay)
         const additionalVocabs = await db.getMixedQueueVocabularies(
@@ -441,7 +415,6 @@ const LearnPage = {
 
             const vocabWithExamples = await db.getVocabularyWithExamples(vocab.id);
             if (!vocabWithExamples) {
-                console.warn('⚠️ [LearnPage] Skipping vocab in fillWordQueue, not found in DB:', vocab);
                 continue;
             }
 
@@ -450,28 +423,11 @@ const LearnPage = {
                 : 0;
 
             if (examplesCount === 0) {
-                console.warn(
-                    '⚠️ [LearnPage] Skipping vocab in fillWordQueue with no examples:',
-                    {
-                        id: vocabWithExamples.vocabulary.id,
-                        word: vocabWithExamples.vocabulary.word
-                    }
-                );
                 continue;
             }
 
-            console.log(
-                '✅ [LearnPage] Added to existing queue:',
-                {
-                    id: vocabWithExamples.vocabulary.id,
-                    word: vocabWithExamples.vocabulary.word,
-                    examples: examplesCount
-                }
-            );
             this.wordQueue.push(vocabWithExamples);
         }
-
-        console.log(`✅ [LearnPage] Queue filled, now has ${this.wordQueue.length} words (category: ${this.selectedCategory})`);
 
         this.saveWordQueue();
     },
@@ -604,15 +560,7 @@ const LearnPage = {
     updateProgressDisplay(verbose = false) {
         const summary = learningProgressManager.getSummary();
 
-        // Only log when explicitly requested or when wordsLearned changes
         if (verbose || summary.wordsLearned !== this._lastWordsLearned) {
-            console.log('📊 [LearnPage] updateProgressDisplay:');
-            console.log('   📚 Words learned:', summary.wordsLearned);
-            console.log('   🎯 Goal:', summary.goal);
-            console.log('   💳 Debt:', summary.debt);
-            console.log('   📈 Progress:', summary.progressPercentage + '%');
-            console.log('   🏅 Level:', summary.level);
-            console.log('   ⏱️ Elapsed time:', summary.elapsedTime);
             this._lastWordsLearned = summary.wordsLearned;
         }
 
@@ -753,11 +701,6 @@ const LearnPage = {
      * Handle correct answer
      */
     async handleCorrectAnswer() {
-        console.log('✅ [LearnPage] handleCorrectAnswer called');
-        console.log('   Current word:', this.currentVocab?.vocabulary?.word);
-        console.log('   Example index:', this.currentExampleIndex);
-        console.log('   Completed examples:', this.completedExamples.size, '/', this.currentVocab?.examples.length);
-
         App.showToast('Correct!', 'success');
         this.hideErrorCard();
 
@@ -767,26 +710,21 @@ const LearnPage = {
 
         // Mark example as completed
         this.completedExamples.add(this.currentExampleIndex);
-        console.log('   ✓ Marked example', this.currentExampleIndex, 'as completed');
 
         // Mỗi lần làm đúng một ví dụ => +1 nỗ lực ghi nhớ
-        console.log('   📚 Adding memory attempt...');
         await learningProgressManager.addCompletedWord();
         this.updateProgressDisplay(true);
 
         // Check if all examples are done
         if (this.completedExamples.size >= this.currentVocab.examples.length) {
-            console.log('   🎉 All examples completed for this word!');
             const examplesCount = this.currentVocab.examples.length || 1;
             const isMastered = Database.hasPassed(this.currentVocab.vocabulary, examplesCount);
 
             if (isMastered) {
-                console.log('   🏆 Word is mastered (7/10 with examples)!');
                 await this.handleWordMastered();
                 document.getElementById('next-btn').disabled = false;
                 App.showToast('Word mastered! Click Next to continue.', 'success');
             } else {
-                console.log('   ⏳ Word not yet mastered to 7/10 with examples');
                 App.showToast('Keep practicing this word until memory reaches 7/10.', 'warning');
                 setTimeout(() => {
                     this.hideSuccessCard();
@@ -796,12 +734,11 @@ const LearnPage = {
                 }, 2000);
             }
         } else {
-            console.log('   ➡️ Moving to next example...');
             // Move to next example
             setTimeout(() => {
                 this.hideSuccessCard();
                 this.moveToNextExample();
-            }, 2000); // Hide success card after 2 seconds
+            }, 2000);
         }
 
         this.clearInput();
@@ -947,23 +884,11 @@ const LearnPage = {
         );
 
         if (replacementCandidates.length > 0) {
-            console.log(
-                '🔄 [LearnPage] Finding replacement for mastered word:',
-                {
-                    masteredWord,
-                    candidates: replacementCandidates.map(v => ({
-                        id: v.id,
-                        word: v.word
-                    }))
-                }
-            );
-
             const shuffled = db.shuffleInterleavedByMemoryScore(replacementCandidates);
 
             for (const vocab of shuffled) {
                 const replacement = await db.getVocabularyWithExamples(vocab.id);
                 if (!replacement) {
-                    console.warn('⚠️ [LearnPage] Replacement candidate not found in DB:', vocab);
                     continue;
                 }
 
@@ -972,24 +897,8 @@ const LearnPage = {
                     : 0;
 
                 if (examplesCount === 0) {
-                    console.warn(
-                        '⚠️ [LearnPage] Replacement candidate has no examples, skipping:',
-                        {
-                            id: replacement.vocabulary.id,
-                            word: replacement.vocabulary.word
-                        }
-                    );
                     continue;
                 }
-
-                console.log(
-                    '✅ [LearnPage] Replacement word selected:',
-                    {
-                        id: replacement.vocabulary.id,
-                        word: replacement.vocabulary.word,
-                        examples: examplesCount
-                    }
-                );
 
                 this.wordQueue[this.currentIndex] = replacement;
                 this.saveWordQueue();

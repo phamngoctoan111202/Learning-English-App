@@ -21,13 +21,11 @@ class Database {
             const request = indexedDB.open(this.dbName, this.dbVersion);
 
             request.onerror = () => {
-                console.error('Database error:', request.error);
                 reject(request.error);
             };
 
             request.onsuccess = () => {
                 this.db = request.result;
-                console.log('Database initialized successfully');
                 resolve(this.db);
             };
 
@@ -133,7 +131,6 @@ class Database {
      */
     async insertVocabulary(vocabulary) {
         return new Promise((resolve, reject) => {
-            console.log('📝 [DB] insertVocabulary - raw input:', vocabulary);
             const transaction = this.db.transaction(['vocabularies'], 'readwrite');
             const store = transaction.objectStore('vocabularies');
 
@@ -155,7 +152,6 @@ class Database {
                 delete vocabData.id;
             }
 
-            console.log('📝 [DB] insertVocabulary - final data:', vocabData);
             const request = store.add(vocabData);
 
             request.onsuccess = () => resolve(request.result);
@@ -356,8 +352,6 @@ class Database {
             }))
             .sort((a, b) => b.reviewPriority - a.reviewPriority)  // Highest priority first
             .slice(0, reviewSize);
-
-        console.log(`📊 [Mixed Queue] New: ${selectedNew.length}, Review: ${selectedReview.length}`);
 
         // Combine and return
         return [...selectedNew, ...selectedReview];
@@ -634,7 +628,6 @@ class Database {
             await this.deleteVocabulary(id);
         }
 
-        console.log(`Cleaned up ${duplicatesToDelete.length} duplicate vocabularies`);
         return duplicatesToDelete.length;
     }
 }

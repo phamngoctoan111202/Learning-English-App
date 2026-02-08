@@ -45,7 +45,6 @@ class AppwriteService {
             try {
                 const user = await this.account.get();
                 this.userId = user.$id;
-                console.log('Already logged in as:', this.userId);
                 return user;
             } catch (e) {
                 // Not logged in, create anonymous session
@@ -57,11 +56,9 @@ class AppwriteService {
             // Get user info
             const user = await this.account.get();
             this.userId = user.$id;
-            console.log('Logged in anonymously as:', this.userId);
 
             return user;
         } catch (error) {
-            console.error('Anonymous login failed:', error);
             throw error;
         }
     }
@@ -94,29 +91,23 @@ class AppwriteService {
     }
 
     buildSentencesFromExamples(examples) {
-        console.log('check_logic_edit: buildSentencesFromExamples called with', JSON.stringify(examples, null, 2));
         const seen = new Set();
         const allSentences = [];
 
         if (Array.isArray(examples)) {
             for (const example of examples) {
-                console.log('check_logic_edit: processing example', JSON.stringify(example, null, 2));
                 if (!example || !example.sentences) continue;
 
                 const raw = String(example.sentences).trim();
-                console.log('check_logic_edit: raw sentences string', raw);
                 if (!raw) continue;
 
                 if (raw.startsWith('[')) {
-                    console.log('check_logic_edit: raw starts with [, trying to parse as JSON array');
                     try {
                         const parsed = JSON.parse(raw);
-                        console.log('check_logic_edit: parsed JSON array', JSON.stringify(parsed, null, 2));
                         if (Array.isArray(parsed)) {
                             for (const s of parsed) {
                                 const sentence = this.normalizeSentence(s);
                                 const key = this.canonicalizeSentence(sentence);
-                                console.log('check_logic_edit: sentence from JSON array:', sentence, 'key:', key, 'already seen:', seen.has(key));
                                 if (sentence.length > 0 && !seen.has(key)) {
                                     seen.add(key);
                                     allSentences.push(sentence);
@@ -125,16 +116,14 @@ class AppwriteService {
                             continue;
                         }
                     } catch (e) {
-                        console.log('check_logic_edit: JSON parse failed, falling through to split by newline');
+                        // Fall through to split by newline
                     }
                 }
 
                 const parts = raw.split(/\n+/);
-                console.log('check_logic_edit: split by newline, parts:', parts);
                 for (const part of parts) {
                     const sentence = this.normalizeSentence(part);
                     const key = this.canonicalizeSentence(sentence);
-                    console.log('check_logic_edit: sentence from split:', sentence, 'key:', key, 'already seen:', seen.has(key));
                     if (sentence.length > 0 && !seen.has(key)) {
                         seen.add(key);
                         allSentences.push(sentence);
@@ -142,8 +131,6 @@ class AppwriteService {
                 }
             }
         }
-
-        console.log('check_logic_edit: allSentences before truncation', allSentences);
 
         if (allSentences.length === 0) {
             return '';
@@ -155,13 +142,11 @@ class AppwriteService {
             const candidate = [...result, sentence];
             const json = JSON.stringify(candidate);
             if (json.length > MAX_LENGTH) {
-                console.log('check_logic_edit: reached MAX_LENGTH, stopping');
                 break;
             }
             result.push(sentence);
         }
 
-        console.log('check_logic_edit: final result', result);
         return JSON.stringify(result);
     }
 
@@ -182,7 +167,6 @@ class AppwriteService {
             );
             return response.documents || [];
         } catch (error) {
-            console.error('Error listing vocabularies:', error);
             return [];
         }
     }
@@ -236,18 +220,11 @@ class AppwriteService {
      * Update vocabulary in Appwrite
      */
     async updateVocabulary(documentId, vocabulary, examples) {
-        console.log('check_logic_edit: appwriteService.updateVocabulary called');
-        console.log('check_logic_edit: documentId', documentId);
-        console.log('check_logic_edit: vocabulary', JSON.stringify(vocabulary, null, 2));
-        console.log('check_logic_edit: examples received', JSON.stringify(examples, null, 2));
-
         const firstExample = Array.isArray(examples) && examples.length > 0
             ? examples[0]
             : { sentences: '', vietnamese: '', grammar: '' };
-        console.log('check_logic_edit: firstExample', JSON.stringify(firstExample, null, 2));
 
         const sentencesJson = this.buildSentencesFromExamples(examples);
-        console.log('check_logic_edit: sentencesJson after buildSentencesFromExamples', sentencesJson);
 
         const data = {
             word: String(vocabulary.word || '').trim(),
@@ -262,7 +239,6 @@ class AppwriteService {
             memoryScore: String(vocabulary.memoryScore || 0),
             last10Attempts: vocabulary.last10Attempts || '[]'
         };
-        console.log('check_logic_edit: final data to send to Appwrite', JSON.stringify(data, null, 2));
 
         return this.databases.updateDocument(
             this.databaseId,
@@ -322,8 +298,6 @@ class AppwriteService {
             lastUpdated: Date.now().toString()
         };
 
-        console.log('[AppwriteService] Saving progress:', data);
-
         try {
             // Try to update existing document
             const result = await this.databases.updateDocument(
@@ -332,22 +306,18 @@ class AppwriteService {
                 documentId,
                 data
             );
-            console.log('[AppwriteService] ✅ Update successful');
             return result;
         } catch (error) {
             // Document doesn't exist, create it
             if (error.code === 404) {
-                console.log('[AppwriteService] Document not found, creating...');
                 const result = await this.databases.createDocument(
                     this.databaseId,
                     this.learningProgressCollectionId,
                     documentId,
                     data
                 );
-                console.log('[AppwriteService] ✅ Create successful');
                 return result;
             }
-            console.error('[AppwriteService] ❌ Error:', error.message);
             throw error;
         }
     }
@@ -362,7 +332,6 @@ class AppwriteService {
             await this.account.get();
             return true;
         } catch (error) {
-            console.error('Connection test failed:', error);
             return false;
         }
     }
@@ -372,27 +341,21 @@ class AppwriteService {
      * This allows the extension to check if words exist without querying Appwrite
      */
     async syncWordsToExtension() {
-        console.log('[Appwrite Sync] Syncing vocabulary words to extension storage...');
-
         // Check if chrome.storage is available
         if (typeof chrome === 'undefined' || !chrome.storage || !chrome.storage.local) {
-            console.log('[Appwrite Sync] Chrome storage API not available (not a Chrome extension)');
             return { success: false, reason: 'Not an extension' };
         }
 
         // Fetch all vocabularies
         const vocabularies = await this.listVocabularies();
-        console.log('[Appwrite Sync] Fetched', vocabularies.length, 'vocabularies');
 
         // Extract word list (only the words, not full documents)
         const wordsList = vocabularies.map(vocab => vocab.word).filter(word => word);
-        console.log('[Appwrite Sync] Extracted', wordsList.length, 'words');
 
         // Save to chrome.storage.local
         const SAVED_WORDS_STORAGE_KEY = 'saved_words_list';
         await chrome.storage.local.set({ [SAVED_WORDS_STORAGE_KEY]: wordsList });
 
-        console.log('[Appwrite Sync] ✅ Successfully synced', wordsList.length, 'words to extension storage');
         return { success: true, count: wordsList.length };
     }
 }

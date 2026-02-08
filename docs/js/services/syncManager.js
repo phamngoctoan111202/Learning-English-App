@@ -69,12 +69,10 @@ class SyncManager {
      */
     async syncData() {
         if (this.isSyncing) {
-            console.log('Sync already in progress');
             return;
         }
 
         this.isSyncing = true;
-        console.log('Starting data sync...');
 
         try {
             // Ensure logged in
@@ -88,10 +86,8 @@ class SyncManager {
 
             // Then pull from server to update new/remote data
             await this.syncServerToClient();
-
-            console.log('Sync completed successfully');
         } catch (error) {
-            console.error('Sync failed:', error);
+            // Sync failed silently
         } finally {
             this.isSyncing = false;
         }
@@ -101,11 +97,8 @@ class SyncManager {
      * Sync from Appwrite to local IndexedDB
      */
     async syncServerToClient() {
-        console.log('Syncing server to client...');
-
         try {
             const serverVocabs = await appwriteService.listVocabularies();
-            console.log(`Found ${serverVocabs.length} vocabularies on server`);
 
             const localVocabs = await db.getAllVocabularies();
             const byAppwriteId = new Map();
@@ -125,7 +118,7 @@ class SyncManager {
                 await this.mergeVocabularyFromServer(serverVocab, { byAppwriteId, byWord });
             }
         } catch (error) {
-            console.error('Server to client sync failed:', error);
+            // Server to client sync failed silently
         }
     }
 
@@ -235,7 +228,7 @@ class SyncManager {
                 }
             }
         } catch (error) {
-            console.error('Error merging vocabulary:', serverVocab.word, error);
+            // Error merging vocabulary silently
         }
     }
 
@@ -260,17 +253,14 @@ class SyncManager {
      * Sync from local IndexedDB to Appwrite
      */
     async syncClientToServer() {
-        console.log('Syncing client to server...');
-
         try {
             const localVocabs = await db.getAllVocabulariesWithExamples();
-            console.log(`Found ${localVocabs.length} vocabularies locally`);
 
             for (const { vocabulary, examples } of localVocabs) {
                 await this.syncVocabularyToServer(vocabulary, examples);
             }
         } catch (error) {
-            console.error('Client to server sync failed:', error);
+            // Client to server sync failed silently
         }
     }
 
@@ -278,19 +268,14 @@ class SyncManager {
      * Sync a single vocabulary to server
      */
     async syncVocabularyToServer(vocabulary, examples) {
-        console.log('check_logic_edit: syncVocabularyToServer called');
-        console.log('check_logic_edit: vocabulary', JSON.stringify(vocabulary, null, 2));
-        console.log('check_logic_edit: examples', JSON.stringify(examples, null, 2));
         try {
             if (vocabulary.appwriteDocumentId) {
                 // Update existing document
-                console.log('check_logic_edit: updating existing document', vocabulary.appwriteDocumentId);
                 await appwriteService.updateVocabulary(
                     vocabulary.appwriteDocumentId,
                     vocabulary,
                     examples
                 );
-                console.log('check_logic_edit: update completed');
             } else {
                 // Check if document already exists on server by word
                 // This prevents duplicate documents when editing locally before first sync
@@ -300,7 +285,6 @@ class SyncManager {
 
                 if (existingDocs.length > 0) {
                     const existingDoc = existingDocs[0];
-                    console.log(`Found existing document for word "${vocabulary.word}": ${existingDoc.$id}`);
 
                     // Link local vocabulary to existing document
                     vocabulary.appwriteDocumentId = existingDoc.$id;
@@ -325,7 +309,7 @@ class SyncManager {
             // Sync updated word list to extension storage
             await appwriteService.syncWordsToExtension();
         } catch (error) {
-            console.error('Error syncing vocabulary to server:', vocabulary.word, error);
+            // Error syncing vocabulary to server silently
         }
     }
 
@@ -335,7 +319,6 @@ class SyncManager {
     async syncSingleVocabulary(vocabularyId) {
         try {
             const vocabWithExamples = await db.getVocabularyWithExamples(vocabularyId);
-            console.log('check_logic_edit: syncSingleVocabulary - vocabWithExamples from DB', JSON.stringify(vocabWithExamples, null, 2));
             if (!vocabWithExamples) return;
 
             await appwriteService.loginAnonymously();
@@ -344,7 +327,7 @@ class SyncManager {
                 vocabWithExamples.examples
             );
         } catch (error) {
-            console.error('Error syncing single vocabulary:', error);
+            // Error syncing single vocabulary silently
         }
     }
 
@@ -369,8 +352,6 @@ class SyncManager {
             // Otherwise use the one with more attempts
             return serverList.length > localList.length ? serverLast10 : localLast10;
         } catch (e) {
-            console.warn('Error merging last10Attempts:', e);
-            // Return whichever is not empty
             return localLast10 !== '[]' ? localLast10 : serverLast10;
         }
     }
@@ -385,7 +366,7 @@ class SyncManager {
             await appwriteService.loginAnonymously();
             await appwriteService.deleteVocabulary(appwriteDocumentId);
         } catch (error) {
-            console.error('Error deleting vocabulary from server:', error);
+            // Error deleting vocabulary from server silently
         }
     }
 }
