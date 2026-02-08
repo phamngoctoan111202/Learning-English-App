@@ -359,7 +359,7 @@ const ReviewPage = {
         promptTextarea.value = promptText;
     },
 
-    generatePopularPrompt() {
+    async generatePopularPrompt() {
         const promptTextarea = document.getElementById('popular-prompt');
         if (!promptTextarea) return;
 
@@ -375,6 +375,17 @@ const ReviewPage = {
         // Get user's ideas
         const ideasTextarea = document.getElementById('popular-ideas');
         const userIdeas = ideasTextarea ? ideasTextarea.value.trim() : '';
+
+        // Get all vocabularies from POPULAR_TOPICS category (no need to be learned)
+        const allVocabs = await db.getAllVocabularies();
+        const popularTopicVocabs = allVocabs.filter(v => (v.category || 'GENERAL') === 'POPULAR_TOPICS');
+        const words = popularTopicVocabs
+            .map(v => v.word)
+            .filter(Boolean)
+            .sort((a, b) => a.localeCompare(b));
+
+        // Process word list for synonyms
+        const { processedWords, synonymGroups } = this.processWordList(words);
 
         // Topic-specific prompts
         const topicDescriptions = {
@@ -392,6 +403,18 @@ const ReviewPage = {
 
         const topicDesc = topicDescriptions[topicValue] || topicText;
 
+        // Build vocabulary section
+        let vocabularySection = '';
+        if (processedWords.length > 0) {
+            const wordsListText = processedWords.join(', ');
+            vocabularySection = `\n**VOCABULARY BANK (use naturally if appropriate):**\n${wordsListText}\n`;
+
+            if (synonymGroups.length > 0) {
+                const synonymLines = synonymGroups.map(group => `- ${group.join(' / ')}`).join('\n');
+                vocabularySection += `\n**SYNONYM/ALTERNATIVE GROUPS:**\n${synonymLines}\n`;
+            }
+        }
+
         // Build the prompt
         let promptText = '';
 
@@ -401,13 +424,14 @@ const ReviewPage = {
 **TOPIC:** ${topicText}
 
 **TASK:** Create a realistic VSTEP Part 3 speaking question about ${topicDesc}.
-
+${vocabularySection}
 ${userIdeas ? `**STUDENT'S IDEAS/PERSPECTIVE:**\n${userIdeas}\n` : ''}
 **CRITICAL REQUIREMENTS:**
 1. **COHERENCE & LOGIC FIRST**: The answer should flow naturally with clear connections between ideas. Prioritize logical structure over vocabulary complexity.
 2. **EASY TO REMEMBER**: Use simple, memorable reasoning and examples that are realistic and relatable.
 3. **NATURAL LANGUAGE**: Write as a real person would speak - don't force complex vocabulary. Use B2 level naturally.
-4. **CLEAR STRUCTURE**:
+4. **VOCABULARY USAGE**: Use words from the vocabulary bank naturally where they fit. DO NOT force them - skip any word that makes the answer awkward.
+5. **CLEAR STRUCTURE**:
    - Introduction: Direct answer to the question
    - Main points (2-3 ideas): Each with explanation and example
    - Conclusion: Brief summary or personal reflection
@@ -423,10 +447,11 @@ ${userIdeas ? `**STUDENT'S IDEAS/PERSPECTIVE:**\n${userIdeas}\n` : ''}
 - Has clear idea progression
 - Includes real-life examples
 - Sounds like authentic speech, not written text
+- Incorporates vocabulary bank words naturally (bold them: **word**)
 - Length: approximately 200-250 words]
 
-**Key Phrases Used:**
-[List 5-8 useful phrases naturally used in the answer]`;
+**Vocabulary Used:**
+[List which words from the vocabulary bank were used and why they fit naturally]`;
 
         } else {
             // Writing
@@ -435,13 +460,14 @@ ${userIdeas ? `**STUDENT'S IDEAS/PERSPECTIVE:**\n${userIdeas}\n` : ''}
 **TOPIC:** ${topicText}
 
 **TASK:** Create a realistic VSTEP Task 2 essay question about ${topicDesc}.
-
+${vocabularySection}
 ${userIdeas ? `**STUDENT'S IDEAS/PERSPECTIVE:**\n${userIdeas}\n` : ''}
 **CRITICAL REQUIREMENTS:**
 1. **COHERENCE & LOGIC FIRST**: The essay should have clear paragraph structure and logical flow. Prioritize well-connected ideas over vocabulary complexity.
 2. **EASY TO REMEMBER**: Use straightforward arguments and memorable examples that are realistic.
 3. **NATURAL LANGUAGE**: Write with clear, precise B2 level language. Don't force advanced vocabulary unnaturally.
-4. **CLEAR STRUCTURE**:
+4. **VOCABULARY USAGE**: Use words from the vocabulary bank naturally where they fit. DO NOT force them - skip any word that makes the essay awkward.
+5. **CLEAR STRUCTURE**:
    - Introduction: Paraphrase topic + thesis statement
    - Body paragraphs (2): Each with topic sentence, explanation, example
    - Conclusion: Summarize main points + personal opinion
@@ -460,10 +486,11 @@ Write at least 250 words.
 - Develops ideas logically
 - Includes relevant examples
 - Maintains consistent argumentation
+- Incorporates vocabulary bank words naturally (bold them: **word**)
 - Length: approximately 280-320 words]
 
-**Key Vocabulary & Phrases:**
-[List 8-12 useful words/phrases naturally used in the essay]`;
+**Vocabulary Used:**
+[List which words from the vocabulary bank were used and explain how they enhanced the essay]`;
         }
 
         promptTextarea.value = promptText;
