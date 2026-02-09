@@ -67,6 +67,74 @@ const ReviewPage = {
                         ✨ Tạo prompt
                     </button>
                 </div>
+
+                <!-- Popular Topics Section -->
+                <div class="card" style="grid-column: 1 / -1; background: #FFF3E0; border: 2px solid #FF9800;">
+                    <div style="text-align: center; margin-bottom: 16px;">
+                        <strong style="font-size: 16px; color: #E65100;">🔥 Popular Topics (VSTEP - không cần học từ trước)</strong>
+                        <div style="font-size: 12px; color: #666; margin-top: 4px;">Ưu tiên mạch lạc & dễ nhớ, không ép nhồi từ vựng</div>
+                    </div>
+
+                    <div style="display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 16px;">
+                        <!-- Task Type -->
+                        <div>
+                            <div style="font-size: 14px; font-weight: 600; margin-bottom: 6px;">Loại bài</div>
+                            <div style="display: flex; gap: 12px;">
+                                <label style="cursor: pointer;">
+                                    <input type="radio" name="popular-task-type" value="speaking" checked>
+                                    🗣️ Speaking
+                                </label>
+                                <label style="cursor: pointer;">
+                                    <input type="radio" name="popular-task-type" value="writing">
+                                    ✍️ Writing
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Topic Selector -->
+                        <div>
+                            <div style="font-size: 14px; font-weight: 600; margin-bottom: 6px;">Chủ đề VSTEP</div>
+                            <select id="popular-topic-select" style="padding: 6px 10px; border-radius: 6px; border: 1px solid #ccc;">
+                                <option value="education">Education & Learning</option>
+                                <option value="technology">Technology & Innovation</option>
+                                <option value="environment">Environment & Climate</option>
+                                <option value="health">Health & Lifestyle</option>
+                                <option value="work">Work & Career</option>
+                                <option value="society">Society & Culture</option>
+                                <option value="travel">Travel & Tourism</option>
+                                <option value="media">Media & Communication</option>
+                                <option value="family">Family & Relationships</option>
+                                <option value="economy">Economy & Business</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- User Ideas -->
+                    <div style="margin-bottom: 12px;">
+                        <div style="font-size: 14px; font-weight: 600; margin-bottom: 6px;">Ý tưởng của bạn (tùy chọn)</div>
+                        <textarea id="popular-user-ideas" style="width: 100%; min-height: 60px; border-radius: 8px; border: 1px solid #ccc; padding: 10px; font-size: 14px; resize: vertical;" placeholder="Ví dụ: Tôi muốn nói về lợi ích học online như tiết kiệm thời gian, linh hoạt giờ giấc, có thể học lại bài..."></textarea>
+                    </div>
+
+                    <!-- Vocabulary preview -->
+                    <div style="margin-bottom: 12px;">
+                        <div style="font-size: 14px; font-weight: 600; margin-bottom: 6px;">Từ vựng trong kho Popular Topics</div>
+                        <div id="popular-vocab-preview" style="min-height: 40px; border-radius: 8px; border: 1px solid #e0e0e0; padding: 8px; background: white; font-size: 13px; color: #666;"></div>
+                    </div>
+
+                    <!-- Generated Prompt -->
+                    <div style="font-size: 14px; font-weight: 600; margin-bottom: 6px;">Prompt</div>
+                    <textarea id="popular-prompt" style="width: 100%; min-height: 200px; border-radius: 8px; border: 1px solid #ccc; padding: 10px; font-size: 14px; resize: vertical;" readonly></textarea>
+
+                    <!-- Buttons -->
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <button id="popular-generate-btn" class="primary-btn" style="background: #FF9800;">
+                            🔥 Tạo prompt Popular Topic
+                        </button>
+                        <button id="popular-copy-btn" class="secondary-btn" style="border-color: #FF9800; color: #E65100;">
+                            📋 Copy prompt
+                        </button>
+                    </div>
+                </div>
             </div>
         `;
 
@@ -116,6 +184,32 @@ const ReviewPage = {
                 this.generatePrompt();
             });
         }
+
+        // Popular Topics event listeners
+        const popularGenerateBtn = document.getElementById('popular-generate-btn');
+        if (popularGenerateBtn) {
+            popularGenerateBtn.addEventListener('click', () => {
+                this.generatePopularTopicPrompt();
+            });
+        }
+
+        const popularCopyBtn = document.getElementById('popular-copy-btn');
+        if (popularCopyBtn) {
+            popularCopyBtn.addEventListener('click', () => {
+                const prompt = document.getElementById('popular-prompt')?.value;
+                if (prompt) {
+                    navigator.clipboard.writeText(prompt).then(() => {
+                        popularCopyBtn.textContent = '✅ Đã copy!';
+                        setTimeout(() => {
+                            popularCopyBtn.textContent = '📋 Copy prompt';
+                        }, 2000);
+                    });
+                }
+            });
+        }
+
+        // Load popular vocab preview on page load
+        this.loadPopularVocabPreview();
     },
 
     async onCategoryChanged(category) {
@@ -277,5 +371,159 @@ const ReviewPage = {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    },
+
+    // ==================== POPULAR TOPICS ====================
+
+    async loadPopularVocabPreview() {
+        const previewContainer = document.getElementById('popular-vocab-preview');
+        if (!previewContainer) return;
+
+        try {
+            const allVocabs = await db.getAllVocabularies();
+            const popularVocabs = allVocabs.filter(v => v.category === 'POPULAR_TOPICS');
+            const words = popularVocabs.map(v => v.word).filter(Boolean).sort((a, b) => a.localeCompare(b));
+
+            if (words.length === 0) {
+                previewContainer.innerHTML = '<span style="color: #999;">Chưa có từ nào. Thêm từ vào category "Popular Topics" ở tab Edit.</span>';
+            } else {
+                previewContainer.innerHTML = words
+                    .map(w => `<span style="display:inline-block; padding:3px 8px; border-radius:999px; background:#FFE0B2; color:#E65100; font-size:12px; margin:2px;">${this.escapeHtml(w)}</span>`)
+                    .join(' ');
+            }
+        } catch (error) {
+            console.error('Error loading popular vocab preview:', error);
+            previewContainer.innerHTML = '<span style="color: #d32f2f;">Lỗi tải từ vựng</span>';
+        }
+    },
+
+    async generatePopularTopicPrompt() {
+        const promptTextarea = document.getElementById('popular-prompt');
+        if (!promptTextarea) return;
+
+        // Get task type
+        const taskTypeRadio = document.querySelector('input[name="popular-task-type"]:checked');
+        const taskType = taskTypeRadio ? taskTypeRadio.value : 'speaking';
+
+        // Get topic
+        const topicSelect = document.getElementById('popular-topic-select');
+        const topic = topicSelect ? topicSelect.value : 'education';
+
+        // Get user ideas
+        const userIdeasTextarea = document.getElementById('popular-user-ideas');
+        const userIdeas = userIdeasTextarea ? userIdeasTextarea.value.trim() : '';
+
+        // Get ALL words from POPULAR_TOPICS (no learning required)
+        const allVocabs = await db.getAllVocabularies();
+        const popularVocabs = allVocabs.filter(v => v.category === 'POPULAR_TOPICS');
+        const words = popularVocabs.map(v => v.word).filter(Boolean);
+
+        // Build prompt
+        const prompt = this.buildPopularTopicPrompt(taskType, topic, words, userIdeas);
+        promptTextarea.value = prompt;
+    },
+
+    buildPopularTopicPrompt(taskType, topic, words, userIdeas) {
+        const topicDescriptions = {
+            education: 'education, learning methods, online/offline classes, studying abroad, educational technology',
+            technology: 'technology, innovation, AI, digital devices, internet, social media impact',
+            environment: 'environment, climate change, pollution, conservation, sustainable development',
+            health: 'health, lifestyle, diet, exercise, mental health, work-life balance',
+            work: 'work, career, job market, remote work, skills development, entrepreneurship',
+            society: 'society, culture, traditions, generation gap, urbanization, globalization',
+            travel: 'travel, tourism, cultural exchange, local experiences, ecotourism',
+            media: 'media, communication, news, advertising, social media influence, fake news',
+            family: 'family, relationships, parenting, marriage, generation gap, family values',
+            economy: 'economy, business, employment, consumer behavior, startups, globalization'
+        };
+
+        const topicDescription = topicDescriptions[topic] || topic;
+
+        // Task-specific instructions
+        const isSpeaking = taskType === 'speaking';
+        const taskInstruction = isSpeaking
+            ? 'Create a realistic VSTEP Speaking Part 3 question and provide a model spoken answer (about 2 minutes, 200-250 words).'
+            : 'Create a realistic VSTEP Writing Task 2 question and provide a model essay (about 250-300 words).';
+
+        const roleDescription = isSpeaking
+            ? 'You are an experienced VSTEP Speaking examiner helping a B2/B2+ level student prepare for the VSTEP Speaking test.'
+            : 'You are an experienced VSTEP Writing examiner helping a B2/B2+ level student prepare for the VSTEP Writing test.';
+
+        // Process words for synonym groups
+        const { processedWords, synonymGroups } = this.processWordList(words);
+
+        // Build vocabulary section
+        let vocabSection = '';
+        if (processedWords.length > 0) {
+            vocabSection = `\n**VOCABULARY BANK (use naturally where they fit, DO NOT force):**\n${processedWords.join(', ')}\n`;
+
+            if (synonymGroups.length > 0) {
+                const synonymLines = synonymGroups.map(group => `- ${group.join(' / ')}`).join('\n');
+                vocabSection += `\n**SYNONYM/ALTERNATIVE GROUPS:**\n${synonymLines}\n`;
+            }
+
+            vocabSection += `\nNOTE: Only use words that fit naturally. It's better to skip a word than force it awkwardly. The goal is a coherent, memorable answer.\n`;
+        }
+
+        // Build user ideas section
+        let ideasSection = '';
+        if (userIdeas) {
+            ideasSection = `\n**USER'S IDEAS TO INCORPORATE:**\n${userIdeas}\n\nPlease build upon these ideas and structure them coherently.\n`;
+        }
+
+        // Output format based on task type
+        const outputFormat = isSpeaking
+            ? `**OUTPUT FORMAT:**
+
+**Question:**
+[VSTEP Speaking Part 3 question about the topic]
+
+**Model Answer (Speaking - about 2 minutes):**
+[Write a natural, coherent speaking answer that:
+- Uses conversational language (contractions, filler phrases like "Well,", "I think", "To be honest")
+- Has clear idea progression with smooth transitions
+- Includes real-life examples
+- Sounds like authentic speech, not written text
+- Length: approximately 200-250 words]
+
+**Key Phrases Used:**
+[List 5-8 useful phrases naturally used in the answer]
+
+**Structure Summary:**
+[Brief outline: Introduction → Point 1 → Point 2 → (Point 3 if needed) → Conclusion]`
+            : `**OUTPUT FORMAT:**
+
+**Question:**
+[VSTEP Writing Task 2 question about the topic]
+
+**Model Essay (about 250-300 words):**
+[Write a well-structured essay with:
+- Clear introduction with thesis statement
+- 2-3 body paragraphs with topic sentences and examples
+- Conclusion summarizing main points
+- Appropriate academic vocabulary and linking words]
+
+**Key Vocabulary & Phrases Used:**
+[List 8-10 useful words/phrases naturally used in the essay]
+
+**Structure Summary:**
+[Brief outline of the essay structure]`;
+
+        return `${roleDescription}
+
+**TOPIC:** ${topicDescription}
+
+**TASK:** ${taskInstruction}
+${ideasSection}${vocabSection}
+**CRITICAL REQUIREMENTS (in order of priority):**
+1. **COHERENCE & LOGIC FIRST**: The answer must flow naturally with clear connections between ideas. Prioritize logical structure over vocabulary complexity.
+2. **EASY TO REMEMBER**: Use simple, memorable reasoning and examples that are realistic and relatable. The student should be able to recall the main ideas easily.
+3. **NATURAL LANGUAGE**: Write as a real person would ${isSpeaking ? 'speak' : 'write'} - don't force complex vocabulary. Use B2 level naturally.
+4. **CLEAR STRUCTURE**:
+   - Introduction: Direct answer to the question
+   - Main points (2-3 ideas): Each with explanation and example
+   - Conclusion: Brief summary or personal reflection
+
+${outputFormat}`;
     }
 };
