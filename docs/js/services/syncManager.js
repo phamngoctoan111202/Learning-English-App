@@ -1,375 +1,451 @@
 /**
- * Sync Manager - Bidirectional sync between local IndexedDB and Appwrite
- * Tương đương với SyncManager trong Android
+ * Sync Manager - Đồng bộ dữ liệu giữa Local IndexedDB và Appwrite Server
  *
- * Note: Appwrite collection uses flat structure:
- * - word, sentences, vietnamese (not nested examples array)
+ * NGUYÊN TẮC ĐƠN GIẢN:
+ * 1. Server là nguồn sự thật (source of truth)
+ * 2. Pull: Lấy từ server → ghi đè local (merge stats)
+ * 3. Push: Đẩy local chưa có trên server → lên server
+ * 4. Mọi thứ đồng bộ tuần tự, không song song
  */
 class SyncManager {
     constructor() {
         this.isSyncing = false;
     }
 
-    normalizeWord(word) {
-        return String(word || '').trim().toLowerCase();
-    }
-
-    normalizeSentence(sentence) {
-        return String(sentence || '')
-            .replace(/\r/g, '')
-            .replace(/\s+/g, ' ')
-            .trim();
-    }
-
-    canonicalizeSentence(sentence) {
-        const s = String(sentence || '');
-        if (typeof ExampleUtils !== 'undefined' && typeof ExampleUtils.normalizeSentence === 'function') {
-            return ExampleUtils.normalizeSentence(s);
-        }
-        if (typeof StringComparator !== 'undefined' && typeof StringComparator.normalize === 'function') {
-            return StringComparator.normalize(s);
-        }
-        return this.normalizeSentence(s).toLowerCase();
-    }
-
-    parseSentencesToList(sentences) {
-        const raw = String(sentences || '').trim();
-        if (!raw) return [];
-
-        if (raw.startsWith('[')) {
-            try {
-                const parsed = JSON.parse(raw);
-                if (Array.isArray(parsed)) {
-                    return parsed.map(s => this.normalizeSentence(s)).filter(Boolean);
-                }
-            } catch (e) {
-            }
-        }
-
-        const parts = raw.split(/\n+/).map(s => this.normalizeSentence(s)).filter(Boolean);
-        if (parts.length > 0) return parts;
-        return [this.normalizeSentence(raw)].filter(Boolean);
-    }
-
-    buildCanonicalSentencesJson(sentences) {
-        const list = this.parseSentencesToList(sentences);
-        const seen = new Set();
-        const result = [];
-        for (const s of list) {
-            const key = this.canonicalizeSentence(s);
-            if (seen.has(key)) continue;
-            seen.add(key);
-            result.push(s);
-        }
-        return result.length > 0 ? JSON.stringify(result) : '';
-    }
+    // ==================== MAIN SYNC ====================
 
     /**
-     * Full bidirectional sync
+     * Đồng bộ toàn bộ: Pull trước, Push sau
      */
-    async syncData() {
+    async syncAll() {
         if (this.isSyncing) {
-            return;
+            console.log('[Sync] Đang sync, bỏ qua');
+            return { success: false, reason: 'already_syncing' };
         }
 
         this.isSyncing = true;
+        console.log('[Sync] ========== BẮT ĐẦU ĐỒNG BỘ ==========');
 
         try {
-            // Ensure logged in
-            await appwriteService.loginAnonymously();
+            // 1. Đăng nhập
+            await appwriteService.ensureLoggedIn();
 
-            // Clean up duplicates first
-            await db.cleanupDuplicates();
+            // 2. Pull từ server
+            const pullResult = await this.pullFromServer();
+            console.log('[Sync] Pull xong:', pullResult);
 
-            // Push local changes first to avoid server overwriting recent edits
-            await this.syncClientToServer();
+            // 3. Push lên server
+            const pushResult = await this.pushToServer();
+            console.log('[Sync] Push xong:', pushResult);
 
-            // Then pull from server to update new/remote data
-            await this.syncServerToClient();
+            console.log('[Sync] ========== ĐỒNG BỘ HOÀN TẤT ==========');
+            return { success: true, pull: pullResult, push: pushResult };
+
         } catch (error) {
-            // Sync failed silently
+            console.error('[Sync] Lỗi:', error);
+            return { success: false, error: error.message };
+
         } finally {
             this.isSyncing = false;
         }
     }
 
-    /**
-     * Sync from Appwrite to local IndexedDB
-     */
-    async syncServerToClient() {
-        try {
-            const serverVocabs = await appwriteService.listVocabularies();
-
-            const localVocabs = await db.getAllVocabularies();
-            const byAppwriteId = new Map();
-            const byWord = new Map();
-
-            for (const v of localVocabs) {
-                if (v.appwriteDocumentId) {
-                    byAppwriteId.set(v.appwriteDocumentId, v);
-                }
-                const key = this.normalizeWord(v.word);
-                if (!byWord.has(key)) {
-                    byWord.set(key, v);
-                }
-            }
-
-            for (const serverVocab of serverVocabs) {
-                await this.mergeVocabularyFromServer(serverVocab, { byAppwriteId, byWord });
-            }
-        } catch (error) {
-            // Server to client sync failed silently
-        }
+    // Alias cho syncAll
+    async syncData() {
+        return this.syncAll();
     }
 
+    // ==================== PULL FROM SERVER ====================
+
     /**
-     * Merge a single vocabulary from server
-     * Server schema: word, sentences, vietnamese, createdAt, lastStudiedAt, etc.
+     * Lấy toàn bộ từ server về local
+     * Server thắng - local được merge stats
      */
-    async mergeVocabularyFromServer(serverVocab, indexes = null) {
-        try {
-            const serverWord = String(serverVocab.word || '').trim();
-            const serverWordKey = this.normalizeWord(serverWord);
-            const serverAppwriteId = serverVocab.$id;
+    async pullFromServer() {
+        console.log('[Pull] Bắt đầu pull từ server...');
 
-            let localVocab = null;
-            if (indexes?.byAppwriteId && serverAppwriteId) {
-                localVocab = indexes.byAppwriteId.get(serverAppwriteId) || null;
-            }
-            if (!localVocab && indexes?.byWord) {
-                localVocab = indexes.byWord.get(serverWordKey) || null;
-            }
-            if (!localVocab) {
-                const localVocabs = await db.getAllVocabularies();
-                localVocab = localVocabs.find(v => v.appwriteDocumentId === serverAppwriteId)
-                    || localVocabs.find(v => this.normalizeWord(v.word) === serverWordKey)
-                    || null;
-            }
+        // 1. Lấy tất cả từ server
+        const serverList = await appwriteService.getAllVocabularies();
+        console.log(`[Pull] Server có ${serverList.length} từ`);
 
-            // Parse server values (they are stored as strings)
-            const serverTotalAttempts = parseInt(serverVocab.totalAttempts) || 0;
-            const serverCorrectAttempts = parseInt(serverVocab.correctAttempts) || 0;
-            const serverMemoryScore = parseFloat(serverVocab.memoryScore) || 0;
-            const serverLastStudiedAt = parseInt(serverVocab.lastStudiedAt) || 0;
-            const serverCreatedAt = parseInt(serverVocab.createdAt) || Date.now();
+        if (serverList.length === 0) {
+            return { updated: 0, created: 0 };
+        }
 
-            // Parse server last10Attempts
-            const serverLast10Attempts = serverVocab.last10Attempts || '[]';
+        // 2. Lấy tất cả từ local
+        const localList = await db.getAllVocabularies();
+        console.log(`[Pull] Local có ${localList.length} từ`);
+
+        // 3. Tạo map local theo word (lowercase)
+        const localByWord = new Map();
+        for (const v of localList) {
+            const key = String(v.word || '').trim().toLowerCase();
+            if (key) {
+                localByWord.set(key, v);
+            }
+        }
+
+        // 4. Xử lý từng từ server
+        let updated = 0;
+        let created = 0;
+
+        for (const serverVocab of serverList) {
+            const word = String(serverVocab.word || '').trim();
+            const wordKey = word.toLowerCase();
+
+            if (!wordKey) continue;
+
+            const localVocab = localByWord.get(wordKey);
 
             if (localVocab) {
-                const localLastStudiedAt = parseInt(localVocab.lastStudiedAt) || 0;
-                const shouldApplyServerContent = serverLastStudiedAt > localLastStudiedAt;
-
-                // Merge with max values
-                const mergedTotalAttempts = Math.max(localVocab.totalAttempts || 0, serverTotalAttempts);
-                const mergedCorrectAttempts = Math.max(localVocab.correctAttempts || 0, serverCorrectAttempts);
-                const mergedLastStudiedAt = Math.max(localVocab.lastStudiedAt || 0, serverLastStudiedAt);
-                const mergedMemoryScore = Math.max(localVocab.memoryScore || 0, serverMemoryScore);
-
-                // Merge last10Attempts
-                const mergedLast10Attempts = this.mergeLast10Attempts(
-                    localVocab.last10Attempts || '[]',
-                    serverLast10Attempts,
-                    shouldApplyServerContent
-                );
-
-                localVocab.appwriteDocumentId = serverAppwriteId;
-
-                // Category is metadata, always sync from server if server has a value
-                if (serverVocab.category) {
-                    localVocab.category = serverVocab.category;
-                }
-
-                if (shouldApplyServerContent) {
-                    localVocab.word = serverWord;
-                }
-
-                localVocab.totalAttempts = mergedTotalAttempts;
-                localVocab.correctAttempts = mergedCorrectAttempts;
-                localVocab.memoryScore = mergedMemoryScore;
-                localVocab.lastStudiedAt = mergedLastStudiedAt;
-                localVocab.last10Attempts = mergedLast10Attempts;
-
-                await db.updateVocabulary(localVocab);
-
-                // Replace local examples with server data ONLY if server is newer
-                if (shouldApplyServerContent && serverVocab.sentences) {
-                    await this.replaceExamplesFromServer(
-                        localVocab.id,
-                        serverVocab.sentences,
-                        serverVocab.vietnamese,
-                        serverVocab.grammar
-                    );
-                }
+                // Đã có local → Merge và cập nhật
+                await this.mergeAndUpdateLocal(localVocab, serverVocab);
+                updated++;
             } else {
-                // Create new local vocabulary
-                const newVocab = {
-                    word: serverWord,
-                    createdAt: serverCreatedAt,
-                    lastStudiedAt: serverLastStudiedAt,
-                    priorityScore: parseInt(serverVocab.priorityScore) || 0,
-                    category: serverVocab.category || 'GENERAL',
-                    totalAttempts: serverTotalAttempts,
-                    correctAttempts: serverCorrectAttempts,
-                    memoryScore: serverMemoryScore,
-                    last10Attempts: serverLast10Attempts,
-                    appwriteDocumentId: serverAppwriteId
-                };
-
-                const newId = await db.insertVocabulary(newVocab);
-
-                if (serverVocab.sentences) {
-                    await this.replaceExamplesFromServer(
-                        newId,
-                        serverVocab.sentences,
-                        serverVocab.vietnamese,
-                        serverVocab.grammar
-                    );
-                }
+                // Chưa có local → Tạo mới
+                await this.createLocalFromServer(serverVocab);
+                created++;
             }
-        } catch (error) {
-            // Error merging vocabulary silently
+        }
+
+        console.log(`[Pull] Cập nhật: ${updated}, Tạo mới: ${created}`);
+        return { updated, created };
+    }
+
+    /**
+     * Merge server vocab vào local vocab đã tồn tại
+     */
+    async mergeAndUpdateLocal(localVocab, serverVocab) {
+        // Lấy giá trị từ server
+        const serverWord = String(serverVocab.word || '').trim();
+        const serverCategory = serverVocab.category || 'GENERAL';
+        const serverLastStudied = parseInt(serverVocab.lastStudiedAt) || 0;
+        const serverTotalAttempts = parseInt(serverVocab.totalAttempts) || 0;
+        const serverCorrectAttempts = parseInt(serverVocab.correctAttempts) || 0;
+        const serverMemoryScore = parseFloat(serverVocab.memoryScore) || 0;
+        const serverLast10 = serverVocab.last10Attempts || '[]';
+        const serverSentences = serverVocab.sentences || '';
+        const serverVietnamese = serverVocab.vietnamese || '';
+        const serverGrammar = serverVocab.grammar || '';
+
+        // Lấy giá trị local
+        const localLastStudied = parseInt(localVocab.lastStudiedAt) || 0;
+        const localTotalAttempts = parseInt(localVocab.totalAttempts) || 0;
+        const localCorrectAttempts = parseInt(localVocab.correctAttempts) || 0;
+        const localMemoryScore = parseFloat(localVocab.memoryScore) || 0;
+
+        // Merge: Lấy giá trị MAX (ai học nhiều hơn thì lấy)
+        localVocab.word = serverWord;  // Server quyết định spelling
+        localVocab.category = serverCategory;  // Server quyết định category
+        localVocab.appwriteDocumentId = serverVocab.$id;
+
+        // Merge stats: lấy max
+        localVocab.totalAttempts = Math.max(localTotalAttempts, serverTotalAttempts);
+        localVocab.correctAttempts = Math.max(localCorrectAttempts, serverCorrectAttempts);
+        localVocab.memoryScore = Math.max(localMemoryScore, serverMemoryScore);
+        localVocab.lastStudiedAt = Math.max(localLastStudied, serverLastStudied);
+
+        // Merge last10Attempts: lấy cái dài hơn
+        localVocab.last10Attempts = this.mergeLast10(localVocab.last10Attempts, serverLast10);
+
+        // Cập nhật vocabulary
+        await db.updateVocabulary(localVocab);
+
+        // Cập nhật examples từ server
+        if (serverSentences) {
+            await this.updateLocalExamples(localVocab.id, serverSentences, serverVietnamese, serverGrammar);
         }
     }
 
     /**
-     * Replace local examples with server data (flat structure)
+     * Tạo local vocab mới từ server vocab
      */
-    async replaceExamplesFromServer(vocabularyId, sentences, vietnamese, grammar) {
-        await db.deleteExamplesByVocabularyId(vocabularyId);
-        const canonicalSentences = this.buildCanonicalSentencesJson(sentences);
-        if (!canonicalSentences) return;
+    async createLocalFromServer(serverVocab) {
+        const newVocab = {
+            word: String(serverVocab.word || '').trim(),
+            category: serverVocab.category || 'GENERAL',
+            createdAt: parseInt(serverVocab.createdAt) || Date.now(),
+            lastStudiedAt: parseInt(serverVocab.lastStudiedAt) || 0,
+            priorityScore: parseInt(serverVocab.priorityScore) || 0,
+            totalAttempts: parseInt(serverVocab.totalAttempts) || 0,
+            correctAttempts: parseInt(serverVocab.correctAttempts) || 0,
+            memoryScore: parseFloat(serverVocab.memoryScore) || 0,
+            last10Attempts: serverVocab.last10Attempts || '[]',
+            appwriteDocumentId: serverVocab.$id
+        };
 
+        const newId = await db.insertVocabulary(newVocab);
+
+        // Tạo examples
+        const sentences = serverVocab.sentences || '';
+        if (sentences) {
+            await this.updateLocalExamples(newId, sentences, serverVocab.vietnamese || '', serverVocab.grammar || '');
+        }
+
+        console.log(`[Pull] + Tạo mới: "${newVocab.word}"`);
+    }
+
+    /**
+     * Cập nhật examples local từ server sentences
+     */
+    async updateLocalExamples(vocabularyId, sentencesStr, vietnamese, grammar) {
+        // Xóa examples cũ
+        await db.deleteExamplesByVocabularyId(vocabularyId);
+
+        // Parse sentences
+        const sentences = this.parseSentences(sentencesStr);
+        if (sentences.length === 0) return;
+
+        // Tạo example mới (gom tất cả sentences vào 1 example)
         await db.insertExample({
-            vocabularyId,
-            sentences: canonicalSentences,
+            vocabularyId: vocabularyId,
+            sentences: JSON.stringify(sentences),
             vietnamese: vietnamese || '',
             grammar: grammar || '',
             createdAt: Date.now()
         });
     }
 
-    /**
-     * Sync from local IndexedDB to Appwrite
-     */
-    async syncClientToServer() {
-        try {
-            const localVocabs = await db.getAllVocabulariesWithExamples();
-
-            for (const { vocabulary, examples } of localVocabs) {
-                await this.syncVocabularyToServer(vocabulary, examples);
-            }
-        } catch (error) {
-            // Client to server sync failed silently
-        }
-    }
+    // ==================== PUSH TO SERVER ====================
 
     /**
-     * Sync a single vocabulary to server
+     * Đẩy từ local chưa có trên server lên server
      */
-    async syncVocabularyToServer(vocabulary, examples) {
-        try {
+    async pushToServer() {
+        console.log('[Push] Bắt đầu push lên server...');
+
+        // 1. Lấy tất cả local vocab + examples
+        const localList = await db.getAllVocabulariesWithExamples();
+        console.log(`[Push] Local có ${localList.length} từ`);
+
+        let created = 0;
+        let updated = 0;
+
+        for (const { vocabulary, examples } of localList) {
+            const word = String(vocabulary.word || '').trim();
+            if (!word) continue;
+
             if (vocabulary.appwriteDocumentId) {
-                // Update existing document
-                await appwriteService.updateVocabulary(
-                    vocabulary.appwriteDocumentId,
-                    vocabulary,
-                    examples
-                );
+                // Đã có trên server → Update
+                await this.updateServerVocab(vocabulary, examples);
+                updated++;
             } else {
-                // Check if document already exists on server by word
-                // This prevents duplicate documents when editing locally before first sync
-                const existingDocs = await appwriteService.listVocabularies([
-                    Appwrite.Query.equal('word', String(vocabulary.word || '').trim())
-                ]);
+                // Chưa có → Kiểm tra xem server có chưa
+                const existingOnServer = await appwriteService.findVocabularyByWord(word);
 
-                if (existingDocs.length > 0) {
-                    const existingDoc = existingDocs[0];
-
-                    // Link local vocabulary to existing document
-                    vocabulary.appwriteDocumentId = existingDoc.$id;
+                if (existingOnServer) {
+                    // Server đã có → Link và update
+                    vocabulary.appwriteDocumentId = existingOnServer.$id;
                     await db.updateVocabulary(vocabulary);
-
-                    // Update the existing document with new data
-                    await appwriteService.updateVocabulary(
-                        existingDoc.$id,
-                        vocabulary,
-                        examples
-                    );
+                    await this.updateServerVocab(vocabulary, examples);
+                    updated++;
                 } else {
-                    // Create new document
-                    const response = await appwriteService.createVocabulary(vocabulary, examples);
-
-                    // Update local with appwriteDocumentId
-                    vocabulary.appwriteDocumentId = response.$id;
-                    await db.updateVocabulary(vocabulary);
+                    // Server chưa có → Tạo mới
+                    await this.createServerVocab(vocabulary, examples);
+                    created++;
                 }
             }
-
-            // Sync updated word list to extension storage
-            await appwriteService.syncWordsToExtension();
-        } catch (error) {
-            // Error syncing vocabulary to server silently
         }
+
+        console.log(`[Push] Cập nhật: ${updated}, Tạo mới: ${created}`);
+        return { updated, created };
     }
 
     /**
-     * Sync single vocabulary immediately
+     * Tạo vocab mới trên server
+     */
+    async createServerVocab(vocabulary, examples) {
+        const sentences = this.buildSentencesFromExamples(examples);
+        const firstExample = examples[0] || {};
+
+        const data = {
+            word: String(vocabulary.word || '').trim(),
+            sentences: sentences,
+            vietnamese: firstExample.vietnamese || '',
+            grammar: firstExample.grammar || '',
+            createdAt: String(vocabulary.createdAt || Date.now()),
+            lastStudiedAt: String(vocabulary.lastStudiedAt || 0),
+            priorityScore: String(vocabulary.priorityScore || 0),
+            category: vocabulary.category || 'GENERAL',
+            totalAttempts: String(vocabulary.totalAttempts || 0),
+            correctAttempts: String(vocabulary.correctAttempts || 0),
+            memoryScore: String(vocabulary.memoryScore || 0),
+            last10Attempts: vocabulary.last10Attempts || '[]'
+        };
+
+        const response = await appwriteService.createVocabularyDoc(data);
+
+        // Lưu appwriteDocumentId vào local
+        vocabulary.appwriteDocumentId = response.$id;
+        await db.updateVocabulary(vocabulary);
+
+        console.log(`[Push] + Tạo mới: "${vocabulary.word}"`);
+    }
+
+    /**
+     * Cập nhật vocab đã có trên server
+     */
+    async updateServerVocab(vocabulary, examples) {
+        const sentences = this.buildSentencesFromExamples(examples);
+        const firstExample = examples[0] || {};
+
+        const data = {
+            word: String(vocabulary.word || '').trim(),
+            sentences: sentences,
+            vietnamese: firstExample.vietnamese || '',
+            grammar: firstExample.grammar || '',
+            lastStudiedAt: String(vocabulary.lastStudiedAt || 0),
+            priorityScore: String(vocabulary.priorityScore || 0),
+            category: vocabulary.category || 'GENERAL',
+            totalAttempts: String(vocabulary.totalAttempts || 0),
+            correctAttempts: String(vocabulary.correctAttempts || 0),
+            memoryScore: String(vocabulary.memoryScore || 0),
+            last10Attempts: vocabulary.last10Attempts || '[]'
+        };
+
+        await appwriteService.updateVocabularyDoc(vocabulary.appwriteDocumentId, data);
+    }
+
+    // ==================== SINGLE VOCAB SYNC ====================
+
+    /**
+     * Sync một vocab ngay lập tức (khi thêm/sửa)
      */
     async syncSingleVocabulary(vocabularyId) {
         try {
-            const vocabWithExamples = await db.getVocabularyWithExamples(vocabularyId);
-            if (!vocabWithExamples) return;
+            await appwriteService.ensureLoggedIn();
 
-            await appwriteService.loginAnonymously();
-            await this.syncVocabularyToServer(
-                vocabWithExamples.vocabulary,
-                vocabWithExamples.examples
-            );
-        } catch (error) {
-            // Error syncing single vocabulary silently
-        }
-    }
-
-    /**
-     * Merge last10Attempts from local and server
-     * Strategy: Use the one that has more attempts, or server if lastStudied is newer
-     */
-    mergeLast10Attempts(localLast10, serverLast10, serverIsNewer) {
-        try {
-            const localList = JSON.parse(localLast10 || '[]');
-            const serverList = JSON.parse(serverLast10 || '[]');
-
-            // If one is empty, use the other
-            if (localList.length === 0 && serverList.length > 0) return serverLast10;
-            if (serverList.length === 0 && localList.length > 0) return localLast10;
-
-            // If server has more or equal attempts AND is newer, use server
-            if (serverList.length >= localList.length && serverIsNewer) {
-                return serverLast10;
+            const data = await db.getVocabularyWithExamples(vocabularyId);
+            if (!data) {
+                console.warn('[Sync] Không tìm thấy vocab:', vocabularyId);
+                return;
             }
 
-            // Otherwise use the one with more attempts
-            return serverList.length > localList.length ? serverLast10 : localLast10;
-        } catch (e) {
-            return localLast10 !== '[]' ? localLast10 : serverLast10;
+            const { vocabulary, examples } = data;
+
+            if (vocabulary.appwriteDocumentId) {
+                await this.updateServerVocab(vocabulary, examples);
+            } else {
+                // Kiểm tra server có chưa
+                const word = String(vocabulary.word || '').trim();
+                const existingOnServer = await appwriteService.findVocabularyByWord(word);
+
+                if (existingOnServer) {
+                    vocabulary.appwriteDocumentId = existingOnServer.$id;
+                    await db.updateVocabulary(vocabulary);
+                    await this.updateServerVocab(vocabulary, examples);
+                } else {
+                    await this.createServerVocab(vocabulary, examples);
+                }
+            }
+
+            console.log(`[Sync] Đã sync: "${vocabulary.word}"`);
+
+        } catch (error) {
+            console.error('[Sync] Lỗi sync single:', error);
         }
     }
 
+    // ==================== DELETE ====================
+
     /**
-     * Delete vocabulary from server
+     * Xóa vocab khỏi server
      */
     async deleteVocabularyFromServer(appwriteDocumentId) {
         if (!appwriteDocumentId) return;
 
         try {
-            await appwriteService.loginAnonymously();
-            await appwriteService.deleteVocabulary(appwriteDocumentId);
+            await appwriteService.ensureLoggedIn();
+            await appwriteService.deleteVocabularyDoc(appwriteDocumentId);
+            console.log('[Delete] Đã xóa trên server:', appwriteDocumentId);
         } catch (error) {
-            // Error deleting vocabulary from server silently
+            console.error('[Delete] Lỗi:', error);
+        }
+    }
+
+    // ==================== HELPER METHODS ====================
+
+    /**
+     * Parse sentences string thành array
+     */
+    parseSentences(str) {
+        const raw = String(str || '').trim();
+        if (!raw) return [];
+
+        // Thử parse JSON array
+        if (raw.startsWith('[')) {
+            try {
+                const arr = JSON.parse(raw);
+                if (Array.isArray(arr)) {
+                    return arr.map(s => this.normalizeSentence(s)).filter(Boolean);
+                }
+            } catch (e) {
+                // Không phải JSON, xử lý như text
+            }
+        }
+
+        // Split theo newline
+        return raw.split(/\n+/).map(s => this.normalizeSentence(s)).filter(Boolean);
+    }
+
+    /**
+     * Normalize sentence
+     */
+    normalizeSentence(s) {
+        return String(s || '').replace(/\s+/g, ' ').trim();
+    }
+
+    /**
+     * Build sentences JSON từ examples array
+     */
+    buildSentencesFromExamples(examples) {
+        if (!Array.isArray(examples) || examples.length === 0) {
+            return '';
+        }
+
+        const seen = new Set();
+        const result = [];
+
+        for (const ex of examples) {
+            if (!ex || !ex.sentences) continue;
+
+            const sentences = this.parseSentences(ex.sentences);
+            for (const s of sentences) {
+                const key = s.toLowerCase();
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    result.push(s);
+                }
+            }
+        }
+
+        if (result.length === 0) return '';
+
+        // Giới hạn độ dài
+        const MAX_LENGTH = 950;
+        const truncated = [];
+        for (const s of result) {
+            const candidate = [...truncated, s];
+            if (JSON.stringify(candidate).length > MAX_LENGTH) break;
+            truncated.push(s);
+        }
+
+        return truncated.length > 0 ? JSON.stringify(truncated) : '';
+    }
+
+    /**
+     * Merge last10Attempts - lấy cái dài hơn
+     */
+    mergeLast10(localJson, serverJson) {
+        try {
+            const localArr = JSON.parse(localJson || '[]');
+            const serverArr = JSON.parse(serverJson || '[]');
+            return serverArr.length >= localArr.length ? serverJson : localJson;
+        } catch (e) {
+            return serverJson || localJson || '[]';
         }
     }
 }
 
-// Global sync manager instance
+// Global instance
 const syncManager = new SyncManager();

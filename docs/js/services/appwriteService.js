@@ -1,165 +1,124 @@
 /**
- * Appwrite Service - Using official Appwrite SDK
- * Tương đương với AppwriteHelper trong Android
+ * Appwrite Service - API đơn giản để giao tiếp với Appwrite Server
  *
- * Appwrite collection schema:
- * - word: string
- * - sentences: string (JSON array or single sentence)
- * - vietnamese: string (optional)
- * - grammar: string (optional)
- * - createdAt: string
- * - lastStudiedAt: string
- * - priorityScore: string
- * - totalAttempts: string
- * - correctAttempts: string
- * - memoryScore: string
- * - last10Attempts: string (JSON array of booleans for tracking mastery)
+ * NGUYÊN TẮC:
+ * 1. Methods đơn giản, rõ ràng - mỗi method làm 1 việc
+ * 2. Không xử lý logic phức tạp - chỉ gọi API
+ * 3. Trả về dữ liệu thô từ Appwrite
  */
 class AppwriteService {
     constructor() {
-        // Appwrite Configuration
+        // Config
         this.projectId = '68cf65390012ceaa2085';
         this.endpoint = 'https://fra.cloud.appwrite.io/v1';
         this.databaseId = '68cfb8c900053dca6f90';
         this.vocabularyCollectionId = 'vocabularies';
         this.learningProgressCollectionId = 'learning_progress';
 
-        // Initialize Appwrite SDK
+        // SDK
         this.client = new Appwrite.Client();
-        this.client
-            .setEndpoint(this.endpoint)
-            .setProject(this.projectId);
+        this.client.setEndpoint(this.endpoint).setProject(this.projectId);
 
         this.account = new Appwrite.Account(this.client);
         this.databases = new Appwrite.Databases(this.client);
 
         this.userId = null;
+        this.isLoggedIn = false;
     }
 
+    // ==================== AUTH ====================
+
     /**
-     * Login anonymously
+     * Đảm bảo đã đăng nhập
      */
-    async loginAnonymously() {
+    async ensureLoggedIn() {
+        if (this.isLoggedIn) return;
+
         try {
-            // Check if already logged in
-            try {
-                const user = await this.account.get();
-                this.userId = user.$id;
-                return user;
-            } catch (e) {
-                // Not logged in, create anonymous session
-            }
-
-            // Create anonymous session
-            await this.account.createAnonymousSession();
-
-            // Get user info
+            // Kiểm tra session hiện tại
             const user = await this.account.get();
             this.userId = user.$id;
-
-            return user;
-        } catch (error) {
-            throw error;
+            this.isLoggedIn = true;
+            console.log('[Appwrite] Đã đăng nhập:', this.userId);
+        } catch (e) {
+            // Chưa đăng nhập → tạo anonymous session
+            await this.account.createAnonymousSession();
+            const user = await this.account.get();
+            this.userId = user.$id;
+            this.isLoggedIn = true;
+            console.log('[Appwrite] Đăng nhập anonymous:', this.userId);
         }
     }
+
+    // Alias cho compatibility
+    async loginAnonymously() {
+        return this.ensureLoggedIn();
+    }
+
+    // ==================== VOCABULARY - READ ====================
 
     /**
-     * Get current user
+     * Lấy tất cả vocabularies từ server (có pagination)
+     * Appwrite giới hạn 100 documents/request, dùng cursor để lấy hết
      */
-    async getCurrentUser() {
-        return this.account.get();
-    }
+    async getAllVocabularies() {
+        const PAGE_SIZE = 100;
+        const allDocuments = [];
+        let lastId = null;
+        let hasMore = true;
 
-    // ==================== VOCABULARY OPERATIONS ====================
+        console.log('[Appwrite] Bắt đầu lấy tất cả vocabularies...');
 
-    normalizeSentence(sentence) {
-        return String(sentence || '')
-            .replace(/\r/g, '')
-            .replace(/\s+/g, ' ')
-            .trim();
-    }
-
-    canonicalizeSentence(sentence) {
-        const s = String(sentence || '');
-        if (typeof ExampleUtils !== 'undefined' && typeof ExampleUtils.normalizeSentence === 'function') {
-            return ExampleUtils.normalizeSentence(s);
-        }
-        if (typeof StringComparator !== 'undefined' && typeof StringComparator.normalize === 'function') {
-            return StringComparator.normalize(s);
-        }
-        return this.normalizeSentence(s).toLowerCase();
-    }
-
-    buildSentencesFromExamples(examples) {
-        const seen = new Set();
-        const allSentences = [];
-
-        if (Array.isArray(examples)) {
-            for (const example of examples) {
-                if (!example || !example.sentences) continue;
-
-                const raw = String(example.sentences).trim();
-                if (!raw) continue;
-
-                if (raw.startsWith('[')) {
-                    try {
-                        const parsed = JSON.parse(raw);
-                        if (Array.isArray(parsed)) {
-                            for (const s of parsed) {
-                                const sentence = this.normalizeSentence(s);
-                                const key = this.canonicalizeSentence(sentence);
-                                if (sentence.length > 0 && !seen.has(key)) {
-                                    seen.add(key);
-                                    allSentences.push(sentence);
-                                }
-                            }
-                            continue;
-                        }
-                    } catch (e) {
-                        // Fall through to split by newline
-                    }
-                }
-
-                const parts = raw.split(/\n+/);
-                for (const part of parts) {
-                    const sentence = this.normalizeSentence(part);
-                    const key = this.canonicalizeSentence(sentence);
-                    if (sentence.length > 0 && !seen.has(key)) {
-                        seen.add(key);
-                        allSentences.push(sentence);
-                    }
-                }
-            }
-        }
-
-        if (allSentences.length === 0) {
-            return '';
-        }
-
-        const MAX_LENGTH = 950;
-        const result = [];
-        for (const sentence of allSentences) {
-            const candidate = [...result, sentence];
-            const json = JSON.stringify(candidate);
-            if (json.length > MAX_LENGTH) {
-                break;
-            }
-            result.push(sentence);
-        }
-
-        return JSON.stringify(result);
-    }
-
-    /**
-     * List all vocabularies from Appwrite
-     */
-    async listVocabularies(queries = []) {
         try {
-            const finalQueries = [
-                Appwrite.Query.limit(1000),
-                ...queries
-            ];
+            while (hasMore) {
+                const queries = [
+                    Appwrite.Query.limit(PAGE_SIZE),
+                    Appwrite.Query.orderAsc('$id')  // Sắp xếp theo ID để pagination ổn định
+                ];
 
+                // Nếu có lastId, lấy từ sau document đó
+                if (lastId) {
+                    queries.push(Appwrite.Query.cursorAfter(lastId));
+                }
+
+                const response = await this.databases.listDocuments(
+                    this.databaseId,
+                    this.vocabularyCollectionId,
+                    queries
+                );
+
+                const docs = response.documents || [];
+                allDocuments.push(...docs);
+
+                console.log(`[Appwrite] Đã lấy ${allDocuments.length} từ...`);
+
+                // Kiểm tra còn data không
+                if (docs.length < PAGE_SIZE) {
+                    hasMore = false;
+                } else {
+                    lastId = docs[docs.length - 1].$id;
+                }
+            }
+
+            console.log(`[Appwrite] Tổng cộng: ${allDocuments.length} từ`);
+            return allDocuments;
+
+        } catch (error) {
+            console.error('[Appwrite] Lỗi getAllVocabularies:', error);
+            return allDocuments; // Trả về những gì đã lấy được
+        }
+    }
+
+    // Alias cho compatibility
+    async listVocabularies(queries = []) {
+        // Nếu không có query đặc biệt, dùng getAllVocabularies với pagination
+        if (queries.length === 0) {
+            return this.getAllVocabularies();
+        }
+
+        // Nếu có query, chỉ lấy 1 page (cho các trường hợp tìm kiếm cụ thể)
+        try {
+            const finalQueries = [Appwrite.Query.limit(100), ...queries];
             const response = await this.databases.listDocuments(
                 this.databaseId,
                 this.vocabularyCollectionId,
@@ -167,35 +126,76 @@ class AppwriteService {
             );
             return response.documents || [];
         } catch (error) {
+            console.error('[Appwrite] Lỗi listVocabularies:', error);
             return [];
         }
     }
 
     /**
-     * Get vocabulary document by ID
+     * Tìm vocabulary theo word
      */
-    async getVocabulary(documentId) {
-        return this.databases.getDocument(
-            this.databaseId,
-            this.vocabularyCollectionId,
-            documentId
-        );
+    async findVocabularyByWord(word) {
+        try {
+            const response = await this.databases.listDocuments(
+                this.databaseId,
+                this.vocabularyCollectionId,
+                [
+                    Appwrite.Query.equal('word', String(word || '').trim()),
+                    Appwrite.Query.limit(1)
+                ]
+            );
+            return response.documents[0] || null;
+        } catch (error) {
+            console.error('[Appwrite] Lỗi findVocabularyByWord:', error);
+            return null;
+        }
     }
 
     /**
-     * Create vocabulary in Appwrite
-     * Note: Appwrite collection uses flat structure with sentences/vietnamese/grammar fields
+     * Lấy vocabulary theo ID
      */
-    async createVocabulary(vocabulary, examples) {
+    async getVocabularyById(documentId) {
+        try {
+            return await this.databases.getDocument(
+                this.databaseId,
+                this.vocabularyCollectionId,
+                documentId
+            );
+        } catch (error) {
+            console.error('[Appwrite] Lỗi getVocabularyById:', error);
+            return null;
+        }
+    }
+
+    // Alias
+    async getVocabulary(documentId) {
+        return this.getVocabularyById(documentId);
+    }
+
+    // ==================== VOCABULARY - WRITE ====================
+
+    /**
+     * Tạo vocabulary mới
+     */
+    async createVocabularyDoc(data) {
         const documentId = Appwrite.ID.unique();
+        return this.databases.createDocument(
+            this.databaseId,
+            this.vocabularyCollectionId,
+            documentId,
+            data
+        );
+    }
+
+    // Alias cho compatibility
+    async createVocabulary(vocabulary, examples) {
         const firstExample = Array.isArray(examples) && examples.length > 0
             ? examples[0]
             : { sentences: '', vietnamese: '', grammar: '' };
-        const sentencesJson = this.buildSentencesFromExamples(examples);
 
         const data = {
             word: String(vocabulary.word || '').trim(),
-            sentences: sentencesJson || firstExample.sentences || '',
+            sentences: this.buildSentencesJson(examples),
             vietnamese: firstExample.vietnamese || '',
             grammar: firstExample.grammar || '',
             createdAt: String(vocabulary.createdAt || Date.now()),
@@ -208,7 +208,14 @@ class AppwriteService {
             last10Attempts: vocabulary.last10Attempts || '[]'
         };
 
-        return this.databases.createDocument(
+        return this.createVocabularyDoc(data);
+    }
+
+    /**
+     * Cập nhật vocabulary
+     */
+    async updateVocabularyDoc(documentId, data) {
+        return this.databases.updateDocument(
             this.databaseId,
             this.vocabularyCollectionId,
             documentId,
@@ -216,19 +223,15 @@ class AppwriteService {
         );
     }
 
-    /**
-     * Update vocabulary in Appwrite
-     */
+    // Alias cho compatibility
     async updateVocabulary(documentId, vocabulary, examples) {
         const firstExample = Array.isArray(examples) && examples.length > 0
             ? examples[0]
             : { sentences: '', vietnamese: '', grammar: '' };
 
-        const sentencesJson = this.buildSentencesFromExamples(examples);
-
         const data = {
             word: String(vocabulary.word || '').trim(),
-            sentences: sentencesJson || firstExample.sentences || '',
+            sentences: this.buildSentencesJson(examples),
             vietnamese: firstExample.vietnamese || '',
             grammar: firstExample.grammar || '',
             lastStudiedAt: String(vocabulary.lastStudiedAt || Date.now()),
@@ -240,18 +243,13 @@ class AppwriteService {
             last10Attempts: vocabulary.last10Attempts || '[]'
         };
 
-        return this.databases.updateDocument(
-            this.databaseId,
-            this.vocabularyCollectionId,
-            documentId,
-            data
-        );
+        return this.updateVocabularyDoc(documentId, data);
     }
 
     /**
-     * Delete vocabulary from Appwrite
+     * Xóa vocabulary
      */
-    async deleteVocabulary(documentId) {
+    async deleteVocabularyDoc(documentId) {
         return this.databases.deleteDocument(
             this.databaseId,
             this.vocabularyCollectionId,
@@ -259,70 +257,118 @@ class AppwriteService {
         );
     }
 
+    // Alias
+    async deleteVocabulary(documentId) {
+        return this.deleteVocabularyDoc(documentId);
+    }
+
     // ==================== LEARNING PROGRESS ====================
 
     /**
-     * Get learning progress
+     * Lấy learning progress
      */
     async getLearningProgress() {
         try {
-            const documentId = 'user_learning_progress';
             return await this.databases.getDocument(
                 this.databaseId,
                 this.learningProgressCollectionId,
-                documentId
+                'user_learning_progress'
             );
         } catch (error) {
-            // Document not found, return null
-            if (error.code === 404) {
-                return null;
-            }
+            if (error.code === 404) return null;
             throw error;
         }
     }
 
     /**
-     * Create or update learning progress
+     * Lưu learning progress
      */
     async saveLearningProgress(progress) {
         const documentId = 'user_learning_progress';
-
-        // FIXED: Remove userId - collection only has startTime, wordsLearned, lastUpdated
-        // Handle null/undefined startTime by using current time
-        const startTime = progress.startTime || Date.now();
-        const wordsLearned = progress.wordsLearned || 0;
-
         const data = {
-            startTime: startTime.toString(),
-            wordsLearned: wordsLearned.toString(),
-            lastUpdated: Date.now().toString()
+            startTime: String(progress.startTime || Date.now()),
+            wordsLearned: String(progress.wordsLearned || 0),
+            lastUpdated: String(Date.now())
         };
 
         try {
-            // Try to update existing document
-            const result = await this.databases.updateDocument(
+            return await this.databases.updateDocument(
                 this.databaseId,
                 this.learningProgressCollectionId,
                 documentId,
                 data
             );
-            return result;
         } catch (error) {
-            // Document doesn't exist, create it
             if (error.code === 404) {
-                const result = await this.databases.createDocument(
+                return await this.databases.createDocument(
                     this.databaseId,
                     this.learningProgressCollectionId,
                     documentId,
                     data
                 );
-                return result;
             }
             throw error;
         }
     }
 
-    // ==================== UTILITY METHODS ====================
+    // ==================== HELPER ====================
+
+    /**
+     * Build sentences JSON từ examples
+     */
+    buildSentencesJson(examples) {
+        if (!Array.isArray(examples) || examples.length === 0) {
+            return '';
+        }
+
+        const seen = new Set();
+        const result = [];
+
+        for (const ex of examples) {
+            if (!ex || !ex.sentences) continue;
+
+            const raw = String(ex.sentences).trim();
+            if (!raw) continue;
+
+            // Parse sentences
+            let sentences = [];
+            if (raw.startsWith('[')) {
+                try {
+                    const parsed = JSON.parse(raw);
+                    if (Array.isArray(parsed)) {
+                        sentences = parsed;
+                    }
+                } catch (e) {
+                    sentences = raw.split(/\n+/);
+                }
+            } else {
+                sentences = raw.split(/\n+/);
+            }
+
+            // Add unique sentences
+            for (const s of sentences) {
+                const normalized = String(s || '').replace(/\s+/g, ' ').trim();
+                const key = normalized.toLowerCase();
+                if (normalized && !seen.has(key)) {
+                    seen.add(key);
+                    result.push(normalized);
+                }
+            }
+        }
+
+        if (result.length === 0) return '';
+
+        // Truncate if too long
+        const MAX_LENGTH = 950;
+        const truncated = [];
+        for (const s of result) {
+            const candidate = [...truncated, s];
+            if (JSON.stringify(candidate).length > MAX_LENGTH) break;
+            truncated.push(s);
+        }
+
+        return truncated.length > 0 ? JSON.stringify(truncated) : '';
+    }
 
     /**
      * Test connection
@@ -337,28 +383,31 @@ class AppwriteService {
     }
 
     /**
-     * Sync all vocabulary words to Chrome Extension storage
-     * This allows the extension to check if words exist without querying Appwrite
+     * Get current user
+     */
+    async getCurrentUser() {
+        return this.account.get();
+    }
+
+    /**
+     * Sync words to Chrome Extension (nếu có)
      */
     async syncWordsToExtension() {
-        // Check if chrome.storage is available
         if (typeof chrome === 'undefined' || !chrome.storage || !chrome.storage.local) {
             return { success: false, reason: 'Not an extension' };
         }
 
-        // Fetch all vocabularies
-        const vocabularies = await this.listVocabularies();
-
-        // Extract word list (only the words, not full documents)
-        const wordsList = vocabularies.map(vocab => vocab.word).filter(word => word);
-
-        // Save to chrome.storage.local
-        const SAVED_WORDS_STORAGE_KEY = 'saved_words_list';
-        await chrome.storage.local.set({ [SAVED_WORDS_STORAGE_KEY]: wordsList });
-
-        return { success: true, count: wordsList.length };
+        try {
+            const vocabularies = await this.getAllVocabularies();
+            const wordsList = vocabularies.map(v => v.word).filter(Boolean);
+            await chrome.storage.local.set({ saved_words_list: wordsList });
+            return { success: true, count: wordsList.length };
+        } catch (error) {
+            console.error('[Appwrite] Lỗi syncWordsToExtension:', error);
+            return { success: false, error: error.message };
+        }
     }
 }
 
-// Global Appwrite service instance
+// Global instance
 const appwriteService = new AppwriteService();
