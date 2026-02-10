@@ -9,10 +9,6 @@ class Database {
         this.db = null;
     }
 
-    normalizeWord(word) {
-        return String(word || '').trim().toLowerCase();
-    }
-
     /**
      * Initialize IndexedDB
      */
@@ -21,11 +17,13 @@ class Database {
             const request = indexedDB.open(this.dbName, this.dbVersion);
 
             request.onerror = () => {
+                console.error('Database error:', request.error);
                 reject(request.error);
             };
 
             request.onsuccess = () => {
                 this.db = request.result;
+                console.log('Database initialized successfully');
                 resolve(this.db);
             };
 
@@ -84,31 +82,15 @@ class Database {
      * Get vocabulary by word
      */
     async getVocabularyByWord(word) {
-        const getByIndexedWord = (key) => new Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
             const transaction = this.db.transaction(['vocabularies'], 'readonly');
             const store = transaction.objectStore('vocabularies');
             const index = store.index('word');
-            const request = index.get(key);
+            const request = index.get(word);
 
-            request.onsuccess = () => resolve(request.result || null);
+            request.onsuccess = () => resolve(request.result);
             request.onerror = () => reject(request.error);
         });
-
-        const rawWord = String(word || '');
-        const direct = await getByIndexedWord(rawWord);
-        if (direct) return direct;
-
-        const trimmed = rawWord.trim();
-        if (trimmed && trimmed !== rawWord) {
-            const byTrimmed = await getByIndexedWord(trimmed);
-            if (byTrimmed) return byTrimmed;
-        }
-
-        const targetKey = this.normalizeWord(rawWord);
-        if (!targetKey) return null;
-
-        const allVocabs = await this.getAllVocabularies();
-        return allVocabs.find(v => this.normalizeWord(v.word) === targetKey) || null;
     }
 
     /**
@@ -131,6 +113,7 @@ class Database {
      */
     async insertVocabulary(vocabulary) {
         return new Promise((resolve, reject) => {
+            console.log('📝 [DB] insertVocabulary - raw input:', vocabulary);
             const transaction = this.db.transaction(['vocabularies'], 'readwrite');
             const store = transaction.objectStore('vocabularies');
 
@@ -152,6 +135,7 @@ class Database {
                 delete vocabData.id;
             }
 
+            console.log('📝 [DB] insertVocabulary - final data:', vocabData);
             const request = store.add(vocabData);
 
             request.onsuccess = () => resolve(request.result);
@@ -353,6 +337,8 @@ class Database {
             .sort((a, b) => b.reviewPriority - a.reviewPriority)  // Highest priority first
             .slice(0, reviewSize);
 
+        console.log(`📊 [Mixed Queue] New: ${selectedNew.length}, Review: ${selectedReview.length}`);
+
         // Combine and return
         return [...selectedNew, ...selectedReview];
     }
@@ -430,6 +416,20 @@ class Database {
             const request = index.getAll(vocabularyId);
 
             request.onsuccess = () => resolve(request.result || []);
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+    /**
+     * Get example by ID
+     */
+    async getExampleById(id) {
+        return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction(['examples'], 'readonly');
+            const store = transaction.objectStore('examples');
+            const request = store.get(id);
+
+            request.onsuccess = () => resolve(request.result || null);
             request.onerror = () => reject(request.error);
         });
     }
@@ -628,6 +628,7 @@ class Database {
             await this.deleteVocabulary(id);
         }
 
+        console.log(`Cleaned up ${duplicatesToDelete.length} duplicate vocabularies`);
         return duplicatesToDelete.length;
     }
 }

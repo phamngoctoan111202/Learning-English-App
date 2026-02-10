@@ -455,7 +455,7 @@ const EditPage = {
             this.addExampleField('edit-examples-list');
         } else {
             for (const example of examples) {
-                this.addExampleField('edit-examples-list', example.sentences, example.vietnamese, example.grammar);
+                this.addExampleField('edit-examples-list', example.sentences, example.vietnamese, example.grammar, example.id);
             }
         }
 
@@ -503,17 +503,27 @@ const EditPage = {
             existing.lastStudiedAt = Date.now();
             await db.updateVocabulary(existing);
 
-            // Delete old examples and insert new ones
-            await db.deleteExamplesByVocabularyId(this.currentEditId);
-
+            // Update existing examples and insert new ones
             for (const example of examples) {
-                await db.insertExample({
-                    vocabularyId: this.currentEditId,
-                    sentences: example.sentences,
-                    vietnamese: example.vietnamese,
-                    grammar: example.grammar,
-                    createdAt: Date.now()
-                });
+                if (example.id) {
+                    // Update existing example
+                    const existingExample = await db.getExampleById(example.id);
+                    if (existingExample) {
+                        existingExample.sentences = example.sentences;
+                        existingExample.vietnamese = example.vietnamese;
+                        existingExample.grammar = example.grammar;
+                        await db.updateExample(existingExample);
+                    }
+                } else {
+                    // Insert new example
+                    await db.insertExample({
+                        vocabularyId: this.currentEditId,
+                        sentences: example.sentences,
+                        vietnamese: example.vietnamese,
+                        grammar: example.grammar,
+                        createdAt: Date.now()
+                    });
+                }
             }
 
             // Sync to server - wait for sync to complete
@@ -561,12 +571,13 @@ const EditPage = {
 
     // ==================== HELPER METHODS ====================
 
-    addExampleField(containerId, sentences = '', vietnamese = '', grammar = '') {
+    addExampleField(containerId, sentences = '', vietnamese = '', grammar = '', exampleId = null) {
         const container = document.getElementById(containerId);
         const index = container.children.length + 1;
 
         const exampleItem = document.createElement('div');
         exampleItem.className = 'example-item';
+        if (exampleId) exampleItem.dataset.exampleId = exampleId;
         exampleItem.innerHTML = `
             <label>Example ${index}</label>
             <textarea class="example-sentences" placeholder="English sentences (one per line)">${this.escapeHtml(sentences)}</textarea>
@@ -577,7 +588,20 @@ const EditPage = {
             </button>
         `;
 
-        exampleItem.querySelector('.remove-example-btn').addEventListener('click', () => {
+        exampleItem.querySelector('.remove-example-btn').addEventListener('click', async () => {
+            const id = exampleItem.dataset.exampleId;
+            if (id) {
+                try {
+                    await db.deleteExample(Number(id));
+                    if (this.currentEditId) {
+                        await syncManager.syncSingleVocabulary(this.currentEditId);
+                    }
+                } catch (error) {
+                    console.error('Error deleting example:', error);
+                    App.showToast('Failed to delete example', 'error');
+                    return;
+                }
+            }
             exampleItem.remove();
             this.renumberExamples(containerId);
         });
@@ -600,9 +624,10 @@ const EditPage = {
             const sentences = item.querySelector('.example-sentences').value.trim();
             const vietnamese = item.querySelector('.example-vietnamese').value.trim();
             const grammar = item.querySelector('.example-grammar').value.trim();
+            const exampleId = item.dataset.exampleId ? Number(item.dataset.exampleId) : null;
 
             if (sentences) {
-                examples.push({ sentences, vietnamese, grammar });
+                examples.push({ id: exampleId, sentences, vietnamese, grammar });
             }
         });
 
