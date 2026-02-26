@@ -24,35 +24,6 @@ class SyncManager(context: Context, private val database: AppDatabase) {
     private val databaseId = AppwriteConfig.DATABASE_ID
     private val vocabularyCollectionId = AppwriteConfig.VOCABULARY_COLLECTION_ID
 
-    private fun normalizeWordKey(word: String?): String {
-        return word.orEmpty().trim().lowercase()
-    }
-
-    private fun normalizeCategory(value: String?): String {
-        return when (value?.trim()?.uppercase()) {
-            "TOEIC" -> "TOEIC"
-            "VSTEP" -> "VSTEP"
-            "SPEAKING" -> "SPEAKING"
-            "WRITING" -> "WRITING"
-            "POPULAR_TOPICS", "POPULAR TOPICS" -> "POPULAR_TOPICS"
-            else -> "GENERAL"
-        }
-    }
-
-    private fun normalizeSentenceForKey(sentence: String): String {
-        return sentence.trim().replace(Regex("\\s+"), " ").lowercase()
-    }
-
-    private fun exampleKey(sentencesJson: String, vietnamese: String?, grammar: String?): String {
-        val normalizedSentences = ExampleUtils.jsonToSentences(sentencesJson)
-            .map { normalizeSentenceForKey(it) }
-            .filter { it.isNotEmpty() }
-            .sorted()
-        val viKey = normalizeSentenceForKey(vietnamese.orEmpty())
-        val grammarKey = normalizeSentenceForKey(grammar.orEmpty())
-        return normalizedSentences.joinToString("|") + "||" + viKey + "||" + grammarKey
-    }
-
     suspend fun syncData(): Result<Unit> = withContext(Dispatchers.IO) {
         try {
             Logger.d("Starting sync with anonymous authentication...")
@@ -124,15 +95,8 @@ class SyncManager(context: Context, private val database: AppDatabase) {
         // Get all vocabularies
         val allVocabularies = vocabularyDao.getAllVocabularies().first()
 
-        for (vocab in allVocabularies) {
-            val trimmedWord = vocab.word.trim()
-            if (trimmedWord != vocab.word) {
-                vocabularyDao.updateVocabulary(vocab.copy(word = trimmedWord))
-            }
-        }
-
         // Group by word (case-insensitive)
-        val groupedByWord = allVocabularies.groupBy { normalizeWordKey(it.word) }
+        val groupedByWord = allVocabularies.groupBy { it.word.lowercase() }
 
         var duplicatesRemoved = 0
         var examplesMerged = 0
@@ -149,19 +113,17 @@ class SyncManager(context: Context, private val database: AppDatabase) {
                 Logger.d("Keeping vocabulary ID ${keepVocab.id}, removing ${duplicates.size} duplicates")
 
                 // Merge examples from duplicates to the kept vocabulary
-                val existingExamples = exampleDao.getExamplesByVocabularyIdSync(keepVocab.id)
-                val existingExampleKeys = existingExamples
-                    .map { exampleKey(it.sentences, it.vietnamese, it.grammar) }
-                    .toMutableSet()
-
                 for (duplicate in duplicates) {
                     // Get examples from duplicate
                     val duplicateExamples = exampleDao.getExamplesByVocabularyIdSync(duplicate.id)
 
                     // Transfer examples to kept vocabulary
                     for (example in duplicateExamples) {
-                        val key = exampleKey(example.sentences, example.vietnamese, example.grammar)
-                        val isDuplicateExample = existingExampleKeys.contains(key)
+                        // Check if similar example already exists
+                        val existingExamples = exampleDao.getExamplesByVocabularyIdSync(keepVocab.id)
+                        val isDuplicateExample = existingExamples.any {
+                            it.sentences.lowercase() == example.sentences.lowercase()
+                        }
 
                         if (!isDuplicateExample) {
                             exampleDao.insertExample(
@@ -171,7 +133,6 @@ class SyncManager(context: Context, private val database: AppDatabase) {
                                 )
                             )
                             examplesMerged++
-                            existingExampleKeys.add(key)
                         }
                     }
 
@@ -204,10 +165,10 @@ class SyncManager(context: Context, private val database: AppDatabase) {
         // Build maps for both appwriteDocumentId AND word lookup
         val allLocalVocabs = vocabularyDao.getAllVocabularies().first()
         val existingRoomVocabByAppwriteId = allLocalVocabs.associateBy { it.appwriteDocumentId }
-        val existingRoomVocabByWord = allLocalVocabs.associateBy { normalizeWordKey(it.word) }
+        val existingRoomVocabByWord = allLocalVocabs.associateBy { it.word.lowercase() }
 
         // Group Appwrite documents by word to detect duplicates on server
-        val appwriteDataByWord = appwriteData.groupBy { normalizeWordKey(it.data["word"] as String?) }
+        val appwriteDataByWord = appwriteData.groupBy { (it.data["word"] as String).lowercase() }
 
         // Track which documents to delete from Appwrite (duplicates)
         val documentsToDeleteFromAppwrite = mutableListOf<String>()
@@ -271,11 +232,11 @@ class SyncManager(context: Context, private val database: AppDatabase) {
     ) {
         val data = appwriteDoc.data
         val appwriteId = appwriteDoc.id
-        val word = (data["word"] as String).trim()
+        val word = data["word"] as String
 
         // Check if vocabulary exists by appwriteDocumentId OR by word
         val roomVocabById = existingRoomVocabByAppwriteId[appwriteId]
-        val roomVocabByWord = existingRoomVocabByWord[normalizeWordKey(word)]
+        val roomVocabByWord = existingRoomVocabByWord[word.lowercase()]
 
         when {
             // Case 1: Found by appwriteDocumentId - normal update
@@ -359,12 +320,12 @@ class SyncManager(context: Context, private val database: AppDatabase) {
     ) {
         // Create vocabulary
         val vocabulary = Vocabulary(
-            word = (data["word"] as String).trim(),
+            word = data["word"] as String,
             createdAt = (data["createdAt"] as String?)?.toLongOrNull() ?: System.currentTimeMillis(),
             lastStudiedAt = (data["lastStudiedAt"] as String?)?.toLongOrNull() ?: 0L,
             priorityScore = (data["priorityScore"] as String?)?.toIntOrNull() ?: 0,
             appwriteDocumentId = appwriteId,
-            category = normalizeCategory(data["category"] as String?),
+            category = (data["category"] as String?) ?: "GENERAL",
             totalAttempts = (data["totalAttempts"] as String?)?.toIntOrNull() ?: 0,
             correctAttempts = (data["correctAttempts"] as String?)?.toIntOrNull() ?: 0,
             memoryScore = (data["memoryScore"] as String?)?.toFloatOrNull() ?: 0.0f,

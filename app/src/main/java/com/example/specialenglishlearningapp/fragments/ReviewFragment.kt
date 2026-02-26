@@ -29,22 +29,17 @@ class ReviewFragment : Fragment() {
     private lateinit var buttonCopyPrompt: Button
 
     private var selectedCategory: String = "GENERAL"
-    private var learnedVocabs: List<Vocabulary> = emptyList()
+    private var masteredVocabs: List<Vocabulary> = emptyList()
 
     private val lengthOptions = listOf(
-        LengthOption(30, "Ngắn - khoảng 30 câu"),
-        LengthOption(50, "Vừa - khoảng 50 câu"),
-        LengthOption(70, "Dài - khoảng 60-70 câu")
+        LengthOption(3, "Ngắn - khoảng 3 câu"),
+        LengthOption(5, "Vừa - khoảng 5 câu"),
+        LengthOption(8, "Dài - khoảng 8 câu")
     )
 
     data class LengthOption(val sentences: Int, val label: String) {
         override fun toString(): String = label
     }
-
-    data class ProcessedWordList(
-        val processedWords: List<String>,
-        val synonymGroups: List<List<String>>
-    )
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -141,12 +136,16 @@ class ReviewFragment : Fragment() {
                 val database = AppDatabase.getDatabase(requireContext())
                 val allVocabs = database.vocabularyDao().getVocabulariesByCategory(selectedCategory).first()
 
-                learnedVocabs = allVocabs.filter { vocab -> vocab.totalAttempts >= 1 }
+                // Filter mastered words (70%+ accuracy with at least 10 total attempts)
+                // memoryScore is stored as ratio (0.0 - 1.0), so 70% = 0.7
+                masteredVocabs = allVocabs.filter { vocab ->
+                    vocab.totalAttempts >= 10 && vocab.memoryScore >= 0.7f
+                }
 
                 renderWords()
                 generatePrompt()
             } catch (e: Exception) {
-                Logger.e("Error loading learned vocabs: ${e.message}")
+                Logger.e("Error loading mastered vocabs: ${e.message}")
             }
         }
     }
@@ -154,11 +153,11 @@ class ReviewFragment : Fragment() {
     private fun renderWords() {
         flexboxMasteredWords.removeAllViews()
 
-        if (learnedVocabs.isEmpty()) {
-            textWordsCount.text = "(0 từ đã học trong nhóm này)"
+        if (masteredVocabs.isEmpty()) {
+            textWordsCount.text = "(0 từ đã đạt 7/10 trong nhóm này)"
 
             val emptyText = TextView(requireContext()).apply {
-                text = "Hãy học ít nhất 1 lần ở tab Learn, sau đó quay lại đây để ôn bằng đoạn văn."
+                text = "Hãy luyện thêm ở tab Learn để đạt 7/10, sau đó quay lại đây để ôn bằng đoạn văn."
                 setTextColor(0xFF777777.toInt())
                 textSize = 13f
             }
@@ -166,7 +165,7 @@ class ReviewFragment : Fragment() {
             return
         }
 
-        val words = learnedVocabs
+        val words = masteredVocabs
             .mapNotNull { it.word }
             .sorted()
 
@@ -191,36 +190,15 @@ class ReviewFragment : Fragment() {
         }
     }
 
-    private fun processWordList(words: List<String>): ProcessedWordList {
-        val processedWords = mutableListOf<String>()
-        val synonymGroups = mutableListOf<List<String>>()
-
-        for (word in words) {
-            if (word.contains(" vs ")) {
-                val parts = word.split(" vs ").map { it.trim() }.filter { it.isNotEmpty() }
-                processedWords.addAll(parts)
-                if (parts.size >= 2) {
-                    synonymGroups.add(parts)
-                }
-            } else {
-                processedWords.add(word)
-            }
-        }
-
-        return ProcessedWordList(processedWords, synonymGroups)
-    }
-
     private fun generatePrompt() {
-        if (learnedVocabs.isEmpty()) {
-            editTextPrompt.setText("Chưa có từ nào trong nhóm này để tạo prompt. Hãy học ít nhất 1 lần ở tab Learn.")
+        if (masteredVocabs.isEmpty()) {
+            editTextPrompt.setText("Chưa có từ nào đạt 7/10 trong nhóm này để tạo prompt. Hãy luyện thêm ở tab Learn.")
             return
         }
 
-        val words = learnedVocabs
+        val words = masteredVocabs
             .mapNotNull { it.word }
             .sorted()
-
-        val (processedWords, synonymGroups) = processWordList(words)
 
         val selectedLength = (spinnerLength.selectedItem as? LengthOption)?.sentences ?: 5
 
@@ -233,44 +211,24 @@ class ReviewFragment : Fragment() {
             else -> selectedCategory
         }
 
-        val wordsListText = processedWords.joinToString(", ")
-
-        val synonymSection = if (synonymGroups.isNotEmpty()) {
-            val synonymLines = synonymGroups.joinToString("\n") { group -> "- ${group.joinToString(" / ")}" }
-            "\n**SYNONYM/ALTERNATIVE GROUPS (can write as word1/word2):**\n$synonymLines\n"
-        } else {
-            ""
-        }
+        val wordsListText = words.joinToString(", ")
 
         val promptText = buildString {
-            append("You are an English teacher helping a learner review previously learned vocabulary for the ")
+            append("You are an English teacher helping a learner review previously mastered vocabulary for the ")
             append(categoryLabel)
-            append(" exam.\n\n")
-            append("**TASK:** Write one coherent English paragraph of about ")
+            append(" exam.\n")
+            append("Write one coherent English paragraph of about ")
             append(selectedLength)
-            append(" sentences at CEFR B2/B2+ reading level, followed by 10 multiple-choice comprehension questions.\n\n")
-            append("**VOCABULARY TO USE:**\n")
+            append(" sentences that tells a connected story or describes a related scenario.\n\n")
+            append("CRITICAL REQUIREMENTS:\n")
+            append("1. You MUST use ALL of these words at least once: ")
             append(wordsListText)
-            append(synonymSection)
-            append("\n**CRITICAL REQUIREMENTS (in order of priority):**\n")
-            append("1. COHERENCE FIRST: The paragraph MUST read naturally and make logical sense. Every sentence should connect smoothly to the next.\n")
-            append("2. MEANINGFUL CONTENT: Tell a realistic story or describe a plausible scenario. The content should be interesting and make sense in real life.\n")
-            append("3. DO NOT FORCE WORDS: Only use vocabulary that fits naturally. SKIP any word that would make the paragraph awkward, illogical, or unnatural.\n")
-            append("4. B2/B2+ LEVEL: Use appropriate grammar structures (conditionals, passive voice, relative clauses) and maintain readability for upper-intermediate learners.\n")
-            append("5. For synonym pairs (e.g., hamper/prevent), you may write \"hamper/prevent\" to show both alternatives.\n")
-            append("6. Bold each target vocabulary word when used (e.g., **word** or **word1/word2**).\n\n")
-            append("**OUTPUT FORMAT:**\n\n")
-            append("**Paragraph:**\n[Your paragraph here]\n\n")
-            append("**Comprehension Questions (10 MCQs about the paragraph content):**\n")
-            append("1. [Question]\n")
-            append("   A) ...\n")
-            append("   B) ...\n")
-            append("   C) ...\n")
-            append("   D) ...\n\n")
-            append("[Continue for questions 2-10]\n\n")
-            append("---\n")
-            append("**Answer Key (hidden below):**\n")
-            append("1. [letter] | 2. [letter] | 3. [letter] | 4. [letter] | 5. [letter] | 6. [letter] | 7. [letter] | 8. [letter] | 9. [letter] | 10. [letter]")
+            append("\n")
+            append("2. Try to use as MANY of these words as possible MULTIPLE TIMES if it fits naturally.\n")
+            append("3. The paragraph must tell a coherent story - all sentences should connect logically.\n")
+            append("4. Use clear, everyday language suitable for an intermediate learner.\n")
+            append("5. Bold or highlight each target vocabulary word when used (e.g., **word**).\n\n")
+            append("Only output the English paragraph, nothing else.")
         }
 
         editTextPrompt.setText(promptText)

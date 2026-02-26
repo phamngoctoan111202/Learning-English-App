@@ -42,7 +42,7 @@ const ReviewPage = {
 
                 <div class="card" style="grid-column: 1 / -1;">
                     <div style="margin-bottom: 8px; font-size: 14px;">
-                        <strong>⭐ Các từ đã học (số lần học ≥ 1)</strong>
+                        <strong>⭐ Từ vựng trong nhóm</strong>
                     </div>
                     <div id="review-words-count" style="font-size: 13px; color: #666; margin-bottom: 8px;"></div>
                     <div id="review-words-list" style="min-height: 48px; border-radius: 8px; border: 1px solid #e0e0e0; padding: 8px;"></div>
@@ -233,13 +233,7 @@ const ReviewPage = {
 
     async loadMasteredVocabs() {
         const allVocabs = await db.getAllVocabularies();
-        const filtered = allVocabs.filter(v => (v.category || 'GENERAL') === this.selectedCategory);
-
-        // Filter learned words (at least 1 attempt)
-        return filtered.filter(vocab => {
-            const totalAttempts = vocab.totalAttempts || 0;
-            return totalAttempts >= 1;
-        });
+        return allVocabs.filter(v => (v.category || 'GENERAL') === this.selectedCategory);
     },
 
     renderWords() {
@@ -248,8 +242,8 @@ const ReviewPage = {
         if (!listContainer || !countLabel) return;
 
         if (!this.masteredVocabs || this.masteredVocabs.length === 0) {
-            countLabel.textContent = '(0 từ đã học trong nhóm này)';
-            listContainer.innerHTML = '<div style="font-size: 13px; color: #777;">Hãy học ít nhất 1 lần ở tab Learn, sau đó quay lại đây để ôn bằng đoạn văn.</div>';
+            countLabel.textContent = '(0 từ trong nhóm này)';
+            listContainer.innerHTML = '<div style="font-size: 13px; color: #777;">Chưa có từ vựng nào trong nhóm này.</div>';
             return;
         }
 
@@ -289,7 +283,7 @@ const ReviewPage = {
         if (!promptTextarea) return;
 
         if (!this.masteredVocabs || this.masteredVocabs.length === 0) {
-            promptTextarea.value = 'Chưa có từ nào trong nhóm này để tạo prompt. Hãy học ít nhất 1 lần ở tab Learn.';
+            promptTextarea.value = 'Chưa có từ nào trong nhóm này để tạo prompt.';
             return;
         }
 
