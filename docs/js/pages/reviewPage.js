@@ -330,7 +330,7 @@ const ReviewPage = {
             ' exam.\n\n' +
             '**TASK:** Write one coherent English paragraph of about ' +
             lengthValue +
-            ' sentences at CEFR B2/B2+ reading level, followed by 10 multiple-choice comprehension questions.\n\n' +
+            ' sentences at CEFR B2/B2+ reading level, followed by 20 multiple-choice comprehension questions.\n\n' +
             '**VOCABULARY TO USE:**\n' +
             wordsListText +
             synonymSection +
@@ -343,16 +343,16 @@ const ReviewPage = {
             '6. Bold each target vocabulary word when used (e.g., **word** or **word1/word2**).\n\n' +
             '**OUTPUT FORMAT:**\n\n' +
             '**Paragraph:**\n[Your paragraph here]\n\n' +
-            '**Comprehension Questions (10 MCQs about the paragraph content):**\n' +
+            '**Comprehension Questions (20 MCQs about the paragraph content):**\n' +
             '1. [Question]\n' +
             '   A) ...\n' +
             '   B) ...\n' +
             '   C) ...\n' +
             '   D) ...\n\n' +
-            '[Continue for questions 2-10]\n\n' +
+            '[Continue for questions 2-20]\n\n' +
             '---\n' +
             '**Answer Key (hidden below):**\n' +
-            '1. [letter] | 2. [letter] | 3. [letter] | 4. [letter] | 5. [letter] | 6. [letter] | 7. [letter] | 8. [letter] | 9. [letter] | 10. [letter]';
+            '1. [letter] | 2. [letter] | 3. [letter] | 4. [letter] | 5. [letter] | 6. [letter] | 7. [letter] | 8. [letter] | 9. [letter] | 10. [letter] | 11. [letter] | 12. [letter] | 13. [letter] | 14. [letter] | 15. [letter] | 16. [letter] | 17. [letter] | 18. [letter] | 19. [letter] | 20. [letter]';
 
         promptTextarea.value = promptText;
     },
