@@ -330,7 +330,7 @@ const ReviewPage = {
             ' exam.\n\n' +
             '**TASK:** Write one coherent English paragraph of about ' +
             lengthValue +
-            ' sentences at CEFR B2/B2+ reading level, followed by 20 multiple-choice comprehension questions.\n\n' +
+            ' sentences (approximately 500 words) at CEFR B2/B2+ reading level, followed by 20 multiple-choice comprehension questions.\n\n' +
             '**VOCABULARY TO USE:**\n' +
             wordsListText +
             synonymSection +
@@ -478,7 +478,8 @@ const ReviewPage = {
 - Has clear idea progression with smooth transitions
 - Includes real-life examples
 - Sounds like authentic speech, not written text
-- Length: approximately 200-250 words]
+- Bolds every vocabulary bank word when used (e.g., **word**)
+- Length: approximately 500 words]
 
 **Key Phrases Used:**
 [List 5-8 useful phrases naturally used in the answer]
@@ -490,12 +491,13 @@ const ReviewPage = {
 **Question:**
 [VSTEP Writing Task 2 question about the topic]
 
-**Model Essay (about 250-300 words):**
+**Model Essay (about 500 words):**
 [Write a well-structured essay with:
 - Clear introduction with thesis statement
 - 2-3 body paragraphs with topic sentences and examples
 - Conclusion summarizing main points
-- Appropriate academic vocabulary and linking words]
+- Appropriate academic vocabulary and linking words
+- Bolds every vocabulary bank word when used (e.g., **word**)]
 
 **Key Vocabulary & Phrases Used:**
 [List 8-10 useful words/phrases naturally used in the essay]
@@ -517,6 +519,7 @@ ${ideasSection}${vocabSection}
    - Introduction: Direct answer to the question
    - Main points (2-3 ideas): Each with explanation and example
    - Conclusion: Brief summary or personal reflection
+5. **BOLD VOCABULARY**: Bold every word from the vocabulary bank when used (e.g., **word** or **word1/word2**). Only bold words from the vocabulary bank, not other words.
 
 ${outputFormat}`;
     }
