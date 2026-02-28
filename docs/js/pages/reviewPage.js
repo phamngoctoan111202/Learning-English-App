@@ -395,10 +395,6 @@ const ReviewPage = {
         const promptTextarea = document.getElementById('popular-prompt');
         if (!promptTextarea) return;
 
-        // Get task type
-        const taskTypeRadio = document.querySelector('input[name="popular-task-type"]:checked');
-        const taskType = taskTypeRadio ? taskTypeRadio.value : 'speaking';
-
         // Get topic
         const topicSelect = document.getElementById('popular-topic-select');
         const topic = topicSelect ? topicSelect.value : 'education';
@@ -413,11 +409,11 @@ const ReviewPage = {
         const words = popularVocabs.map(v => v.word).filter(Boolean);
 
         // Build prompt
-        const prompt = this.buildPopularTopicPrompt(taskType, topic, words, userIdeas);
+        const prompt = this.buildPopularTopicPrompt(topic, words, userIdeas);
         promptTextarea.value = prompt;
     },
 
-    buildPopularTopicPrompt(taskType, topic, words, userIdeas) {
+    buildPopularTopicPrompt(topic, words, userIdeas) {
         const topicDescriptions = {
             education: 'education, learning methods, online/offline classes, studying abroad, educational technology',
             technology: 'technology, innovation, AI, digital devices, internet, social media impact',
@@ -434,14 +430,9 @@ const ReviewPage = {
         const topicDescription = topicDescriptions[topic] || topic;
 
         // Task-specific instructions
-        const isSpeaking = taskType === 'speaking';
-        const taskInstruction = isSpeaking
-            ? 'Create a realistic VSTEP Speaking Part 3 question and provide a model spoken answer (about 2 minutes, 200-250 words).'
-            : 'Create a realistic VSTEP Writing Task 2 question and provide a model essay (about 250-300 words).';
+        const taskInstruction = 'Write one coherent English reading passage of approximately 500 words at CEFR B2/B2+ level, followed by 20 multiple-choice comprehension questions.';
 
-        const roleDescription = isSpeaking
-            ? 'You are an experienced VSTEP Speaking examiner helping a B2/B2+ level student prepare for the VSTEP Speaking test.'
-            : 'You are an experienced VSTEP Writing examiner helping a B2/B2+ level student prepare for the VSTEP Writing test.';
+        const roleDescription = 'You are an English teacher helping a B2/B2+ level student review vocabulary through a reading passage.';
 
         // Process words for synonym groups
         const { processedWords, synonymGroups } = this.processWordList(words);
@@ -465,45 +456,24 @@ const ReviewPage = {
             ideasSection = `\n**USER'S IDEAS TO INCORPORATE:**\n${userIdeas}\n\nPlease build upon these ideas and structure them coherently.\n`;
         }
 
-        // Output format based on task type
-        const outputFormat = isSpeaking
-            ? `**OUTPUT FORMAT:**
+        // Output format
+        const outputFormat = `**OUTPUT FORMAT:**
 
-**Question:**
-[VSTEP Speaking Part 3 question about the topic]
+**Passage:**
+[Your reading passage here — approximately 500 words, bold every vocabulary bank word when used (e.g., **word** or **word1/word2**)]
 
-**Model Answer (Speaking - about 2 minutes):**
-[Write a natural, coherent speaking answer that:
-- Uses conversational language (contractions, filler phrases like "Well,", "I think", "To be honest")
-- Has clear idea progression with smooth transitions
-- Includes real-life examples
-- Sounds like authentic speech, not written text
-- Bolds every vocabulary bank word when used (e.g., **word**)
-- Length: approximately 500 words]
+**Comprehension Questions (20 MCQs about the passage content):**
+1. [Question]
+   A) ...
+   B) ...
+   C) ...
+   D) ...
 
-**Key Phrases Used:**
-[List 5-8 useful phrases naturally used in the answer]
+[Continue for questions 2-20]
 
-**Structure Summary:**
-[Brief outline: Introduction → Point 1 → Point 2 → (Point 3 if needed) → Conclusion]`
-            : `**OUTPUT FORMAT:**
-
-**Question:**
-[VSTEP Writing Task 2 question about the topic]
-
-**Model Essay (about 500 words):**
-[Write a well-structured essay with:
-- Clear introduction with thesis statement
-- 2-3 body paragraphs with topic sentences and examples
-- Conclusion summarizing main points
-- Appropriate academic vocabulary and linking words
-- Bolds every vocabulary bank word when used (e.g., **word**)]
-
-**Key Vocabulary & Phrases Used:**
-[List 8-10 useful words/phrases naturally used in the essay]
-
-**Structure Summary:**
-[Brief outline of the essay structure]`;
+---
+**Answer Key (hidden below):**
+1. [letter] | 2. [letter] | 3. [letter] | 4. [letter] | 5. [letter] | 6. [letter] | 7. [letter] | 8. [letter] | 9. [letter] | 10. [letter] | 11. [letter] | 12. [letter] | 13. [letter] | 14. [letter] | 15. [letter] | 16. [letter] | 17. [letter] | 18. [letter] | 19. [letter] | 20. [letter]`;
 
         return `${roleDescription}
 
@@ -512,13 +482,10 @@ const ReviewPage = {
 **TASK:** ${taskInstruction}
 ${ideasSection}${vocabSection}
 **CRITICAL REQUIREMENTS (in order of priority):**
-1. **COHERENCE & LOGIC FIRST**: The answer must flow naturally with clear connections between ideas. Prioritize logical structure over vocabulary complexity.
-2. **EASY TO REMEMBER**: Use simple, memorable reasoning and examples that are realistic and relatable. The student should be able to recall the main ideas easily.
-3. **NATURAL LANGUAGE**: Write as a real person would ${isSpeaking ? 'speak' : 'write'} - don't force complex vocabulary. Use B2 level naturally.
-4. **CLEAR STRUCTURE**:
-   - Introduction: Direct answer to the question
-   - Main points (2-3 ideas): Each with explanation and example
-   - Conclusion: Brief summary or personal reflection
+1. **COHERENCE FIRST**: The passage MUST read naturally and make logical sense. Every sentence should connect smoothly to the next.
+2. **MEANINGFUL CONTENT**: Tell a realistic story or describe a plausible scenario related to the topic. The content should be interesting and make sense in real life.
+3. **DO NOT FORCE WORDS**: Only use vocabulary that fits naturally. SKIP any word that would make the passage awkward, illogical, or unnatural.
+4. **B2/B2+ LEVEL**: Use appropriate grammar structures (conditionals, passive voice, relative clauses) and maintain readability for upper-intermediate learners.
 5. **BOLD VOCABULARY**: Bold every word from the vocabulary bank when used (e.g., **word** or **word1/word2**). Only bold words from the vocabulary bank, not other words.
 
 ${outputFormat}`;
