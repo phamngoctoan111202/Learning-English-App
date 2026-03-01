@@ -92,20 +92,24 @@ const ReviewPage = {
                         </div>
 
                         <!-- Topic Selector -->
-                        <div>
+                        <div style="flex: 1; min-width: 220px;">
                             <div style="font-size: 14px; font-weight: 600; margin-bottom: 6px;">Chủ đề VSTEP</div>
-                            <select id="popular-topic-select" style="padding: 6px 10px; border-radius: 6px; border: 1px solid #ccc;">
-                                <option value="education">Education & Learning</option>
-                                <option value="technology">Technology & Innovation</option>
-                                <option value="environment">Environment & Climate</option>
-                                <option value="health">Health & Lifestyle</option>
-                                <option value="work">Work & Career</option>
-                                <option value="society">Society & Culture</option>
-                                <option value="travel">Travel & Tourism</option>
-                                <option value="media">Media & Communication</option>
-                                <option value="family">Family & Relationships</option>
-                                <option value="economy">Economy & Business</option>
-                            </select>
+                            <input type="text" id="popular-topic-select" list="popular-topic-list"
+                                style="padding: 6px 10px; border-radius: 6px; border: 1px solid #ccc; width: 100%;"
+                                placeholder="Nhập chủ đề hoặc chọn gợi ý..."
+                                value="education, learning methods, online/offline classes, studying abroad, educational technology">
+                            <datalist id="popular-topic-list">
+                                <option value="education, learning methods, online/offline classes, studying abroad, educational technology">
+                                <option value="technology, innovation, AI, digital devices, internet, social media impact">
+                                <option value="environment, climate change, pollution, conservation, sustainable development">
+                                <option value="health, lifestyle, diet, exercise, mental health, work-life balance">
+                                <option value="work, career, job market, remote work, skills development, entrepreneurship">
+                                <option value="society, culture, traditions, generation gap, urbanization, globalization">
+                                <option value="travel, tourism, cultural exchange, local experiences, ecotourism">
+                                <option value="media, communication, news, advertising, social media influence, fake news">
+                                <option value="family, relationships, parenting, marriage, generation gap, family values">
+                                <option value="economy, business, employment, consumer behavior, startups, globalization">
+                            </datalist>
                         </div>
                     </div>
 
@@ -396,8 +400,8 @@ const ReviewPage = {
         if (!promptTextarea) return;
 
         // Get topic
-        const topicSelect = document.getElementById('popular-topic-select');
-        const topic = topicSelect ? topicSelect.value : 'education';
+        const topicInput = document.getElementById('popular-topic-select');
+        const topic = topicInput ? topicInput.value.trim() || 'education' : 'education';
 
         // Get user ideas
         const userIdeasTextarea = document.getElementById('popular-user-ideas');
@@ -414,20 +418,7 @@ const ReviewPage = {
     },
 
     buildPopularTopicPrompt(topic, words, userIdeas) {
-        const topicDescriptions = {
-            education: 'education, learning methods, online/offline classes, studying abroad, educational technology',
-            technology: 'technology, innovation, AI, digital devices, internet, social media impact',
-            environment: 'environment, climate change, pollution, conservation, sustainable development',
-            health: 'health, lifestyle, diet, exercise, mental health, work-life balance',
-            work: 'work, career, job market, remote work, skills development, entrepreneurship',
-            society: 'society, culture, traditions, generation gap, urbanization, globalization',
-            travel: 'travel, tourism, cultural exchange, local experiences, ecotourism',
-            media: 'media, communication, news, advertising, social media influence, fake news',
-            family: 'family, relationships, parenting, marriage, generation gap, family values',
-            economy: 'economy, business, employment, consumer behavior, startups, globalization'
-        };
-
-        const topicDescription = topicDescriptions[topic] || topic;
+        const topicDescription = topic;
 
         // Task-specific instructions
         const taskInstruction = 'Write one coherent English reading passage of approximately 500 words at CEFR B2/B2+ level, followed by 20 multiple-choice comprehension questions.';
