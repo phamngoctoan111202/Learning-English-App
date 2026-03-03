@@ -48,27 +48,6 @@ const ReviewPage = {
                     <div id="review-words-list" style="min-height: 48px; border-radius: 8px; border: 1px solid #e0e0e0; padding: 8px;"></div>
                 </div>
 
-                <div class="card" style="grid-column: 1 / -1;">
-                    <div style="display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 12px;">
-                        <div>
-                            <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px;">Độ dài đoạn văn</div>
-                            <select id="review-length" style="padding: 6px 10px; border-radius: 6px; border: 1px solid #ccc;">
-                                <option value="30">Ngắn · khoảng 30 câu</option>
-                                <option value="50" selected>Vừa · khoảng 50 câu</option>
-                                <option value="70">Dài · khoảng 60-70 câu</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div style="font-size: 14px; font-weight: 600; margin-bottom: 6px;">
-                        Prompt để tạo đoạn văn (copy sang AI để luyện viết)
-                    </div>
-                    <textarea id="review-prompt" style="width: 100%; min-height: 140px; border-radius: 8px; border: 1px solid #ccc; padding: 10px; font-size: 14px; resize: vertical;" readonly></textarea>
-                    <button id="review-generate-btn" class="primary-btn" style="margin-top: 10px;">
-                        ✨ Tạo prompt
-                    </button>
-                </div>
-
-                <!-- Popular Topics Section -->
                 <div class="card" style="grid-column: 1 / -1; background: #FFF3E0; border: 2px solid #FF9800;">
                     <div style="text-align: center; margin-bottom: 16px;">
                         <strong style="font-size: 16px; color: #E65100;">🔥 Popular Topics (VSTEP - không cần học từ trước)</strong>
@@ -76,6 +55,16 @@ const ReviewPage = {
                     </div>
 
                     <div style="display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 16px;">
+                        <!-- Length -->
+                        <div>
+                            <div style="font-size: 14px; font-weight: 600; margin-bottom: 6px;">Độ dài đoạn văn</div>
+                            <select id="review-length" style="padding: 6px 10px; border-radius: 6px; border: 1px solid #ccc;">
+                                <option value="30">Ngắn · khoảng 30 câu</option>
+                                <option value="50" selected>Vừa · khoảng 50 câu</option>
+                                <option value="70">Dài · khoảng 60-70 câu</option>
+                            </select>
+                        </div>
+
                         <!-- Task Type -->
                         <div>
                             <div style="font-size: 14px; font-weight: 600; margin-bottom: 6px;">Loại bài</div>
@@ -121,18 +110,18 @@ const ReviewPage = {
 
                     <!-- Vocabulary preview -->
                     <div style="margin-bottom: 12px;">
-                        <div style="font-size: 14px; font-weight: 600; margin-bottom: 6px;">Từ vựng trong kho Popular Topics</div>
+                        <div style="font-size: 14px; font-weight: 600; margin-bottom: 6px;">Từ vựng trong kho</div>
                         <div id="popular-vocab-preview" style="min-height: 40px; border-radius: 8px; border: 1px solid #e0e0e0; padding: 8px; background: white; font-size: 13px; color: #666;"></div>
                     </div>
 
                     <!-- Generated Prompt -->
-                    <div style="font-size: 14px; font-weight: 600; margin-bottom: 6px;">Prompt</div>
+                    <div style="font-size: 14px; font-weight: 600; margin-bottom: 6px;">Prompt để tạo đoạn văn (copy sang AI để luyện viết)</div>
                     <textarea id="popular-prompt" style="width: 100%; min-height: 200px; border-radius: 8px; border: 1px solid #ccc; padding: 10px; font-size: 14px; resize: vertical;" readonly></textarea>
 
                     <!-- Buttons -->
                     <div style="display: flex; gap: 10px; margin-top: 10px;">
                         <button id="popular-generate-btn" class="primary-btn" style="background: #FF9800;">
-                            🔥 Tạo prompt Popular Topic
+                            🔥 Tạo prompt
                         </button>
                         <button id="popular-copy-btn" class="secondary-btn" style="border-color: #FF9800; color: #E65100;">
                             📋 Copy prompt
@@ -175,21 +164,13 @@ const ReviewPage = {
             });
         });
 
-        const generateBtn = document.getElementById('review-generate-btn');
-        if (generateBtn) {
-            generateBtn.addEventListener('click', () => {
-                this.generatePrompt();
-            });
-        }
-
         const lengthSelect = document.getElementById('review-length');
         if (lengthSelect) {
             lengthSelect.addEventListener('change', () => {
-                this.generatePrompt();
+                this.generatePopularTopicPrompt();
             });
         }
 
-        // Popular Topics event listeners
         const popularGenerateBtn = document.getElementById('popular-generate-btn');
         if (popularGenerateBtn) {
             popularGenerateBtn.addEventListener('click', () => {
@@ -232,7 +213,8 @@ const ReviewPage = {
 
         this.masteredVocabs = await this.loadMasteredVocabs();
         this.renderWords();
-        this.generatePrompt();
+        this.loadPopularVocabPreview();
+        this.generatePopularTopicPrompt();
     },
 
     async loadMasteredVocabs() {
@@ -282,85 +264,6 @@ const ReviewPage = {
         return { processedWords, synonymGroups };
     },
 
-    generatePrompt() {
-        const promptTextarea = document.getElementById('review-prompt');
-        if (!promptTextarea) return;
-
-        if (!this.masteredVocabs || this.masteredVocabs.length === 0) {
-            promptTextarea.value = 'Chưa có từ nào trong nhóm này để tạo prompt.';
-            return;
-        }
-
-        const words = this.masteredVocabs
-            .map(v => v.word)
-            .filter(Boolean)
-            .sort((a, b) => a.localeCompare(b));
-
-        const { processedWords, synonymGroups } = this.processWordList(words);
-
-        const lengthSelect = document.getElementById('review-length');
-        const lengthValue = lengthSelect ? parseInt(lengthSelect.value || '5', 10) : 5;
-
-        const categoryLabel = (() => {
-            switch (this.selectedCategory) {
-                case 'VSTEP':
-                    return 'VSTEP';
-                case 'TOEIC':
-                    return 'TOEIC';
-                case 'GENERAL':
-                    return 'general English';
-                case 'SPEAKING':
-                    return 'speaking practice';
-                case 'WRITING':
-                    return 'writing practice';
-                case 'POPULAR_TOPICS':
-                    return 'popular topics';
-                default:
-                    return this.selectedCategory;
-            }
-        })();
-
-        const wordsListText = processedWords.join(', ');
-
-        let synonymSection = '';
-        if (synonymGroups.length > 0) {
-            const synonymLines = synonymGroups.map(group => `- ${group.join(' / ')}`).join('\n');
-            synonymSection = `\n**SYNONYM/ALTERNATIVE GROUPS (can write as word1/word2):**\n${synonymLines}\n`;
-        }
-
-        const promptText =
-            'You are an English teacher helping a learner review previously learned vocabulary for the ' +
-            categoryLabel +
-            ' exam.\n\n' +
-            '**TASK:** Write one coherent English paragraph of about ' +
-            lengthValue +
-            ' sentences (approximately 500 words) at CEFR B2/B2+ reading level, followed by 20 multiple-choice comprehension questions.\n\n' +
-            '**VOCABULARY TO USE:**\n' +
-            wordsListText +
-            synonymSection +
-            '\n**CRITICAL REQUIREMENTS (in order of priority):**\n' +
-            '1. COHERENCE FIRST: The paragraph MUST read naturally and make logical sense. Every sentence should connect smoothly to the next.\n' +
-            '2. MEANINGFUL CONTENT: Tell a realistic story or describe a plausible scenario. The content should be interesting and make sense in real life.\n' +
-            '3. DO NOT FORCE WORDS: Only use vocabulary that fits naturally. SKIP any word that would make the paragraph awkward, illogical, or unnatural.\n' +
-            '4. B2/B2+ LEVEL: Use appropriate grammar structures (conditionals, passive voice, relative clauses) and maintain readability for upper-intermediate learners.\n' +
-            '5. For synonym pairs (e.g., hamper/prevent), you may write "hamper/prevent" to show both alternatives.\n' +
-            '6. Bold each target vocabulary word when used (e.g., **word** or **word1/word2**).\n\n' +
-            '**OUTPUT FORMAT:**\n\n' +
-            '**Paragraph:**\n[Your paragraph here]\n\n' +
-            '**Comprehension Questions (20 MCQs about the paragraph content):**\n' +
-            '1. [Question]\n' +
-            '   A) ...\n' +
-            '   B) ...\n' +
-            '   C) ...\n' +
-            '   D) ...\n\n' +
-            '[Continue for questions 2-20]\n\n' +
-            '---\n' +
-            '**Answer Key (hidden below):**\n' +
-            '1. [letter] | 2. [letter] | 3. [letter] | 4. [letter] | 5. [letter] | 6. [letter] | 7. [letter] | 8. [letter] | 9. [letter] | 10. [letter] | 11. [letter] | 12. [letter] | 13. [letter] | 14. [letter] | 15. [letter] | 16. [letter] | 17. [letter] | 18. [letter] | 19. [letter] | 20. [letter]';
-
-        promptTextarea.value = promptText;
-    },
-
     cleanup() {
     },
 
@@ -378,19 +281,17 @@ const ReviewPage = {
         if (!previewContainer) return;
 
         try {
-            const allVocabs = await db.getAllVocabularies();
-            const popularVocabs = allVocabs.filter(v => v.category === 'POPULAR_TOPICS');
-            const words = popularVocabs.map(v => v.word).filter(Boolean).sort((a, b) => a.localeCompare(b));
+            const words = (this.masteredVocabs || []).map(v => v.word).filter(Boolean).sort((a, b) => a.localeCompare(b));
 
             if (words.length === 0) {
-                previewContainer.innerHTML = '<span style="color: #999;">Chưa có từ nào. Thêm từ vào category "Popular Topics" ở tab Edit.</span>';
+                previewContainer.innerHTML = '<span style="color: #999;">Chưa có từ nào trong nhóm này.</span>';
             } else {
                 previewContainer.innerHTML = words
                     .map(w => `<span style="display:inline-block; padding:3px 8px; border-radius:999px; background:#FFE0B2; color:#E65100; font-size:12px; margin:2px;">${this.escapeHtml(w)}</span>`)
                     .join(' ');
             }
         } catch (error) {
-            console.error('Error loading popular vocab preview:', error);
+            console.error('Error loading vocab preview:', error);
             previewContainer.innerHTML = '<span style="color: #d32f2f;">Lỗi tải từ vựng</span>';
         }
     },
@@ -399,29 +300,26 @@ const ReviewPage = {
         const promptTextarea = document.getElementById('popular-prompt');
         if (!promptTextarea) return;
 
-        // Get topic
         const topicInput = document.getElementById('popular-topic-select');
         const topic = topicInput ? topicInput.value.trim() || 'education' : 'education';
 
-        // Get user ideas
         const userIdeasTextarea = document.getElementById('popular-user-ideas');
         const userIdeas = userIdeasTextarea ? userIdeasTextarea.value.trim() : '';
 
-        // Get ALL words from POPULAR_TOPICS (no learning required)
-        const allVocabs = await db.getAllVocabularies();
-        const popularVocabs = allVocabs.filter(v => v.category === 'POPULAR_TOPICS');
-        const words = popularVocabs.map(v => v.word).filter(Boolean);
+        const lengthSelect = document.getElementById('review-length');
+        const lengthValue = lengthSelect ? parseInt(lengthSelect.value || '50', 10) : 50;
 
-        // Build prompt
-        const prompt = this.buildPopularTopicPrompt(topic, words, userIdeas);
+        const words = (this.masteredVocabs || []).map(v => v.word).filter(Boolean);
+
+        const prompt = this.buildPopularTopicPrompt(topic, words, userIdeas, lengthValue);
         promptTextarea.value = prompt;
     },
 
-    buildPopularTopicPrompt(topic, words, userIdeas) {
+    buildPopularTopicPrompt(topic, words, userIdeas, lengthValue = 50) {
         const topicDescription = topic;
 
         // Task-specific instructions
-        const taskInstruction = 'Write one coherent English reading passage of approximately 500 words at CEFR B2/B2+ level, followed by 20 multiple-choice comprehension questions.';
+        const taskInstruction = `Write one coherent English reading passage of about ${lengthValue} sentences (approximately 500 words) at CEFR B2/B2+ level, followed by 20 multiple-choice comprehension questions.`;
 
         const roleDescription = 'You are an English teacher helping a B2/B2+ level student review vocabulary through a reading passage.';
 
