@@ -242,6 +242,30 @@ class Database {
      * @param {Object} vocab - Vocabulary object
      * @returns {number} - Effective score (0-1)
      */
+    /**
+     * Check if a vocab matches a category filter (supports virtual SPEAKING_PART1 etc.)
+     * Virtual categories (SPEAKING_PART1/2/3, WRITING_PART1/2) are resolved via
+     * the 'vocab_parts' localStorage map stored by editPage.
+     */
+    matchesCategory(vocab, category) {
+        if (!category) return true;
+        if (!category.includes('_PART')) {
+            return (vocab.category || 'GENERAL') === category;
+        }
+        // Virtual: e.g. SPEAKING_PART2 → base=SPEAKING, part=PART2
+        const underscorePartIdx = category.lastIndexOf('_PART');
+        const base = category.slice(0, underscorePartIdx);         // SPEAKING or WRITING
+        const part = 'PART' + category.slice(underscorePartIdx + 5); // PART1/2/3
+        if ((vocab.category || 'GENERAL') !== base) return false;
+        try {
+            const partsMap = JSON.parse(localStorage.getItem('vocab_parts') || '{}');
+            const vocabPart = partsMap[String(vocab.id)] || 'PART1';
+            return vocabPart === part;
+        } catch {
+            return part === 'PART1'; // default fallback
+        }
+    }
+
     calculateEffectiveScore(vocab) {
         const memoryScore = vocab.memoryScore || 0;
         const lastStudied = vocab.lastStudiedAt || vocab.createdAt || Date.now();
@@ -271,7 +295,7 @@ class Database {
 
         return vocabsWithEffectiveScore
             .filter(v => !excludeIds.includes(v.id))
-            .filter(v => !category || (v.category || 'GENERAL') === category)
+            .filter(v => !category || this.matchesCategory(v, category))
             .sort((a, b) => a.effectiveScore - b.effectiveScore)  // Lowest first
             .slice(0, limit);
     }
@@ -296,7 +320,7 @@ class Database {
                 daysSinceLastStudy: (Date.now() - (v.lastStudiedAt || v.createdAt || Date.now())) / (1000 * 60 * 60 * 24)
             }))
             .filter(v => !excludeIds.includes(v.id))
-            .filter(v => !category || (v.category || 'GENERAL') === category);
+            .filter(v => !category || this.matchesCategory(v, category));
 
         // Split into NEW and REVIEW groups
         const NEW_WORDS = vocabsWithScore.filter(v => {

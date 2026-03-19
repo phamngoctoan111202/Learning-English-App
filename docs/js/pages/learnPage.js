@@ -18,7 +18,7 @@ const LearnPage = {
     QUEUE_SIZE: 30,
     STORAGE_KEY: 'learning_focus',
 
-    // Category filter
+    // Category filter (supports virtual: SPEAKING_PART1/2/3, WRITING_PART1/2)
     selectedCategory: localStorage.getItem('learnpage_filter_category') || 'GENERAL',
 
     // Track last words learned for logging
@@ -65,12 +65,24 @@ const LearnPage = {
                             <span>VSTEP <span class="category-count-pill" data-category-count="VSTEP"></span></span>
                         </label>
                         <label class="filter-radio">
-                            <input type="radio" name="learn-category-filter" value="SPEAKING" ${savedCategory === 'SPEAKING' ? 'checked' : ''}>
-                            <span>SPEAKING <span class="category-count-pill" data-category-count="SPEAKING"></span></span>
+                            <input type="radio" name="learn-category-filter" value="SPEAKING_PART1" ${savedCategory === 'SPEAKING_PART1' ? 'checked' : ''}>
+                            <span>Speaking P1 <span class="category-count-pill" data-category-count="SPEAKING_PART1"></span></span>
                         </label>
                         <label class="filter-radio">
-                            <input type="radio" name="learn-category-filter" value="WRITING" ${savedCategory === 'WRITING' ? 'checked' : ''}>
-                            <span>WRITING <span class="category-count-pill" data-category-count="WRITING"></span></span>
+                            <input type="radio" name="learn-category-filter" value="SPEAKING_PART2" ${savedCategory === 'SPEAKING_PART2' ? 'checked' : ''}>
+                            <span>Speaking P2 <span class="category-count-pill" data-category-count="SPEAKING_PART2"></span></span>
+                        </label>
+                        <label class="filter-radio">
+                            <input type="radio" name="learn-category-filter" value="SPEAKING_PART3" ${savedCategory === 'SPEAKING_PART3' ? 'checked' : ''}>
+                            <span>Speaking P3 <span class="category-count-pill" data-category-count="SPEAKING_PART3"></span></span>
+                        </label>
+                        <label class="filter-radio">
+                            <input type="radio" name="learn-category-filter" value="WRITING_PART1" ${savedCategory === 'WRITING_PART1' ? 'checked' : ''}>
+                            <span>Writing P1 <span class="category-count-pill" data-category-count="WRITING_PART1"></span></span>
+                        </label>
+                        <label class="filter-radio">
+                            <input type="radio" name="learn-category-filter" value="WRITING_PART2" ${savedCategory === 'WRITING_PART2' ? 'checked' : ''}>
+                            <span>Writing P2 <span class="category-count-pill" data-category-count="WRITING_PART2"></span></span>
                         </label>
                         <label class="filter-radio">
                             <input type="radio" name="learn-category-filter" value="POPULAR_TOPICS" ${savedCategory === 'POPULAR_TOPICS' ? 'checked' : ''}>
@@ -175,6 +187,22 @@ const LearnPage = {
                         <li>Complete 7/10 correct in last 10 attempts to master a word</li>
                     </ul>
                 </div>
+
+                <!-- Algorithm Card -->
+                <div class="instructions-card" style="margin-top:8px; border-left: 4px solid #FF9800;">
+                    <div class="instructions-title">
+                        <i class="fas fa-brain"></i> Review Algorithm
+                    </div>
+                    <ul class="instructions-list">
+                        <li><strong>Queue: 70% new + 30% review</strong> — mỗi phiên học có 21 từ mới và 9 từ ôn lại.</li>
+                        <li><strong>Điểm nhớ (memory score)</strong> = tỉ lệ đúng trong 10 lần thử gần nhất (0–1).</li>
+                        <li><strong>Điểm hiệu quả (effective score)</strong> = memoryScore × e<sup>−t/0.83</sup>
+                            — giảm theo thời gian với <em>half-life ≈ 20 giờ</em>. Sau 20 giờ không học, điểm còn 50%; sau 40 giờ còn 25%.</li>
+                        <li><strong>Từ được ưu tiên học lại</strong> khi điểm hiệu quả thấp nhất (không học lâu hoặc hay sai).</li>
+                        <li><strong>Ôn lại (review)</strong>: từ đã master (≥7/10) và không học &gt;1 ngày — ưu tiên theo <em>số ngày × (1 − memoryScore)</em>.</li>
+                        <li><strong>Xen kẽ khó–dễ</strong>: queue sắp xếp luân phiên từ dễ → khó → dễ → khó để tăng hiệu quả ghi nhớ.</li>
+                    </ul>
+                </div>
             </div>
         `;
 
@@ -186,10 +214,19 @@ const LearnPage = {
         try {
             const allVocabs = await db.getAllVocabularies();
             const counts = {};
+            let partsMap = {};
+            try { partsMap = JSON.parse(localStorage.getItem('vocab_parts') || '{}'); } catch {}
 
             for (const vocab of (allVocabs || [])) {
                 const category = vocab?.category || 'GENERAL';
                 counts[category] = (counts[category] || 0) + 1;
+
+                // Count virtual speaking/writing parts
+                if (category === 'SPEAKING' || category === 'WRITING') {
+                    const part = partsMap[String(vocab.id)] || 'PART1';
+                    const virtualKey = `${category}_${part}`;
+                    counts[virtualKey] = (counts[virtualKey] || 0) + 1;
+                }
             }
 
             document.querySelectorAll('[data-category-count]').forEach(el => {
@@ -325,7 +362,7 @@ const LearnPage = {
                 for (const id of savedIds) {
                     const vocab = await db.getVocabularyWithExamples(id);
                     // Check both existence AND category match
-                    if (vocab && (vocab.vocabulary.category || 'GENERAL') === this.selectedCategory) {
+                    if (vocab && db.matchesCategory(vocab.vocabulary, this.selectedCategory)) {
                         validWords.push(vocab);
                     }
                 }
