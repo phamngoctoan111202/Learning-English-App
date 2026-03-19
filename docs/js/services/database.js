@@ -271,8 +271,9 @@ class Database {
         const lastStudied = vocab.lastStudiedAt || vocab.createdAt || Date.now();
         const daysSinceLastStudy = (Date.now() - lastStudied) / (1000 * 60 * 60 * 24);
 
-        // Exponential decay factor: giảm dần theo thời gian nhưng không bao giờ về 0
-        const HALF_LIFE_DAYS = 0.83;
+        // Exponential decay: half-life ≈ 5h → sau 10h còn 25%, sau 20h còn ~6%
+        // H = 5h = 5/24 ngày; công thức: e^(-t / H)
+        const HALF_LIFE_DAYS = 5 / 24; // ≈ 0.208 ngày
         const decayFactor = Math.exp(-daysSinceLastStudy / HALF_LIFE_DAYS);
 
         const effectiveScore = memoryScore * decayFactor;

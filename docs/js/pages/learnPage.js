@@ -196,8 +196,8 @@ const LearnPage = {
                     <ul class="instructions-list">
                         <li><strong>Queue: 70% new + 30% review</strong> — mỗi phiên học có 21 từ mới và 9 từ ôn lại.</li>
                         <li><strong>Điểm nhớ (memory score)</strong> = tỉ lệ đúng trong 10 lần thử gần nhất (0–1).</li>
-                        <li><strong>Điểm hiệu quả (effective score)</strong> = memoryScore × e<sup>−t/0.83</sup>
-                            — giảm theo thời gian với <em>half-life ≈ 20 giờ</em>. Sau 20 giờ không học, điểm còn 50%; sau 40 giờ còn 25%.</li>
+                        <li><strong>Điểm hiệu quả (effective score)</strong> = memoryScore × e<sup>−t/0.208</sup>
+                            — giảm nhanh với <em>half-life = 5 giờ</em>. Sau 5h còn 50%; sau 10h còn 25%; sau 20h còn ~6%.</li>
                         <li><strong>Từ được ưu tiên học lại</strong> khi điểm hiệu quả thấp nhất (không học lâu hoặc hay sai).</li>
                         <li><strong>Ôn lại (review)</strong>: từ đã master (≥7/10) và không học &gt;1 ngày — ưu tiên theo <em>số ngày × (1 − memoryScore)</em>.</li>
                         <li><strong>Xen kẽ khó–dễ</strong>: queue sắp xếp luân phiên từ dễ → khó → dễ → khó để tăng hiệu quả ghi nhớ.</li>
