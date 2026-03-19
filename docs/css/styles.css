@@ -1417,3 +1417,8 @@ body {
 ::-webkit-scrollbar-thumb:hover {
     background: #9E9E9E;
 }
+
+/* ==================== UTILITY ==================== */
+.hidden {
+    display: none !important;
+}

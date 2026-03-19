@@ -1,6 +1,10 @@
 /**
  * Edit Page - Vocabulary management page
  * Tương đương với EditFragment trong Android
+ *
+ * Speaking/Writing part info is stored in localStorage (key: 'vocab_parts')
+ * as { [vocabId]: 'PART1'|'PART2'|'PART3' }
+ * DB category remains SPEAKING or WRITING unchanged.
  */
 const EditPage = {
     vocabularies: [],
@@ -8,6 +12,35 @@ const EditPage = {
     currentEditId: null,
     selectedCategory: localStorage.getItem('editpage_filter_category') || 'ALL',
     searchQuery: '',
+
+    // Virtual categories that map to DB categories + part filter
+    VIRTUAL_SPEAKING: ['SPEAKING_PART1', 'SPEAKING_PART2', 'SPEAKING_PART3'],
+    VIRTUAL_WRITING: ['WRITING_PART1', 'WRITING_PART2'],
+
+    // localStorage key for parts map
+    PARTS_KEY: 'vocab_parts',
+
+    getPartsMap() {
+        try {
+            return JSON.parse(localStorage.getItem(this.PARTS_KEY) || '{}');
+        } catch {
+            return {};
+        }
+    },
+
+    setVocabPart(vocabId, part) {
+        const map = this.getPartsMap();
+        if (part) {
+            map[String(vocabId)] = part;
+        } else {
+            delete map[String(vocabId)];
+        }
+        localStorage.setItem(this.PARTS_KEY, JSON.stringify(map));
+    },
+
+    getVocabPart(vocabId) {
+        return this.getPartsMap()[String(vocabId)] || null;
+    },
 
     /**
      * Render the edit page
@@ -38,12 +71,24 @@ const EditPage = {
                         <span>VSTEP <span class="category-count-pill" data-category-count="VSTEP"></span></span>
                     </label>
                     <label class="filter-radio">
-                        <input type="radio" name="category-filter" value="SPEAKING" ${savedCategory === 'SPEAKING' ? 'checked' : ''}>
-                        <span>SPEAKING <span class="category-count-pill" data-category-count="SPEAKING"></span></span>
+                        <input type="radio" name="category-filter" value="SPEAKING_PART1" ${savedCategory === 'SPEAKING_PART1' ? 'checked' : ''}>
+                        <span>Speaking P1 <span class="category-count-pill" data-category-count="SPEAKING_PART1"></span></span>
                     </label>
                     <label class="filter-radio">
-                        <input type="radio" name="category-filter" value="WRITING" ${savedCategory === 'WRITING' ? 'checked' : ''}>
-                        <span>WRITING <span class="category-count-pill" data-category-count="WRITING"></span></span>
+                        <input type="radio" name="category-filter" value="SPEAKING_PART2" ${savedCategory === 'SPEAKING_PART2' ? 'checked' : ''}>
+                        <span>Speaking P2 <span class="category-count-pill" data-category-count="SPEAKING_PART2"></span></span>
+                    </label>
+                    <label class="filter-radio">
+                        <input type="radio" name="category-filter" value="SPEAKING_PART3" ${savedCategory === 'SPEAKING_PART3' ? 'checked' : ''}>
+                        <span>Speaking P3 <span class="category-count-pill" data-category-count="SPEAKING_PART3"></span></span>
+                    </label>
+                    <label class="filter-radio">
+                        <input type="radio" name="category-filter" value="WRITING_PART1" ${savedCategory === 'WRITING_PART1' ? 'checked' : ''}>
+                        <span>Writing P1 <span class="category-count-pill" data-category-count="WRITING_PART1"></span></span>
+                    </label>
+                    <label class="filter-radio">
+                        <input type="radio" name="category-filter" value="WRITING_PART2" ${savedCategory === 'WRITING_PART2' ? 'checked' : ''}>
+                        <span>Writing P2 <span class="category-count-pill" data-category-count="WRITING_PART2"></span></span>
                     </label>
                     <label class="filter-radio">
                         <input type="radio" name="category-filter" value="POPULAR_TOPICS" ${savedCategory === 'POPULAR_TOPICS' ? 'checked' : ''}>
@@ -67,6 +112,7 @@ const EditPage = {
     },
 
     updateCategoryCounts() {
+        const partsMap = this.getPartsMap();
         const counts = {
             ALL: this.vocabularies.length
         };
@@ -74,6 +120,13 @@ const EditPage = {
         for (const item of (this.vocabularies || [])) {
             const category = item?.vocabulary?.category || 'GENERAL';
             counts[category] = (counts[category] || 0) + 1;
+
+            // Count virtual speaking/writing parts
+            if (category === 'SPEAKING' || category === 'WRITING') {
+                const part = partsMap[String(item.vocabulary.id)] || 'PART1';
+                const virtualKey = `${category}_${part}`;
+                counts[virtualKey] = (counts[virtualKey] || 0) + 1;
+            }
         }
 
         document.querySelectorAll('[data-category-count]').forEach(el => {
@@ -140,13 +193,27 @@ const EditPage = {
      */
     applyFilters() {
         let filtered = [...this.vocabularies];
+        const partsMap = this.getPartsMap();
 
         // Apply category filter
         if (this.selectedCategory !== 'ALL') {
-            filtered = filtered.filter(({ vocabulary }) => {
-                const category = vocabulary.category || 'GENERAL';
-                return category === this.selectedCategory;
-            });
+            const sel = this.selectedCategory;
+            // Check if it's a virtual speaking/writing part filter
+            if (sel.startsWith('SPEAKING_') || sel.startsWith('WRITING_')) {
+                const [baseCategory, part] = sel.split('_PART');
+                const partKey = `PART${part}`;
+                filtered = filtered.filter(({ vocabulary }) => {
+                    const category = vocabulary.category || 'GENERAL';
+                    if (category !== baseCategory) return false;
+                    const vocabPart = partsMap[String(vocabulary.id)] || 'PART1';
+                    return vocabPart === partKey;
+                });
+            } else {
+                filtered = filtered.filter(({ vocabulary }) => {
+                    const category = vocabulary.category || 'GENERAL';
+                    return category === sel;
+                });
+            }
         }
 
         // Apply search filter
@@ -181,6 +248,7 @@ const EditPage = {
      */
     renderVocabularyList() {
         const listContainer = document.getElementById('vocabulary-list');
+        const partsMap = this.getPartsMap();
 
         if (this.filteredVocabularies.length === 0) {
             listContainer.innerHTML = `
@@ -194,30 +262,32 @@ const EditPage = {
 
         listContainer.innerHTML = this.filteredVocabularies.map(({ vocabulary, examples }) => {
             const category = vocabulary.category || 'GENERAL';
-            const categoryClass =
-                category === 'TOEIC'
-                    ? 'category-badge-toeic'
-                    : category === 'VSTEP'
-                        ? 'category-badge-vstep'
-                        : category === 'SPEAKING'
-                            ? 'category-badge-speaking'
-                            : category === 'WRITING'
-                                ? 'category-badge-writing'
-                                : category === 'POPULAR_TOPICS'
-                                    ? 'category-badge-popular'
-                                    : 'category-badge-general';
-            const categoryLabel =
-                category === 'TOEIC'
-                    ? 'TOEIC'
-                    : category === 'VSTEP'
-                        ? 'VSTEP'
-                        : category === 'SPEAKING'
-                            ? 'SPEAKING'
-                            : category === 'WRITING'
-                                ? 'WRITING'
-                                : category === 'POPULAR_TOPICS'
-                                    ? 'Popular topics'
-                                    : 'General';
+            const part = (category === 'SPEAKING' || category === 'WRITING')
+                ? (partsMap[String(vocabulary.id)] || 'PART1')
+                : null;
+
+            let categoryClass, categoryLabel;
+            if (category === 'TOEIC') {
+                categoryClass = 'category-badge-toeic';
+                categoryLabel = 'TOEIC';
+            } else if (category === 'VSTEP') {
+                categoryClass = 'category-badge-vstep';
+                categoryLabel = 'VSTEP';
+            } else if (category === 'SPEAKING') {
+                categoryClass = 'category-badge-speaking';
+                const partNum = part ? part.replace('PART', '') : '1';
+                categoryLabel = `Speaking P${partNum}`;
+            } else if (category === 'WRITING') {
+                categoryClass = 'category-badge-writing';
+                const partNum = part ? part.replace('PART', '') : '1';
+                categoryLabel = `Writing P${partNum}`;
+            } else if (category === 'POPULAR_TOPICS') {
+                categoryClass = 'category-badge-popular';
+                categoryLabel = 'Popular topics';
+            } else {
+                categoryClass = 'category-badge-general';
+                categoryLabel = 'General';
+            }
 
             return `
                 <div class="vocab-item" data-id="${vocabulary.id}">
@@ -301,6 +371,13 @@ const EditPage = {
             if (word) ttsService.speakWord(word);
         });
 
+        // Category change -> show/hide part selectors
+        dialog.querySelectorAll('input[name="vocab-category"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                this._updateAddPartVisibility(e.target.value);
+            });
+        });
+
         // Click outside to close
         dialog.addEventListener('click', (e) => {
             if (e.target === dialog) {
@@ -309,10 +386,45 @@ const EditPage = {
         });
     },
 
+    _updateAddPartVisibility(category) {
+        const speakingGroup = document.getElementById('speaking-part-group');
+        const writingGroup = document.getElementById('writing-part-group');
+        if (category === 'SPEAKING') {
+            speakingGroup.classList.remove('hidden');
+            writingGroup.classList.add('hidden');
+        } else if (category === 'WRITING') {
+            writingGroup.classList.remove('hidden');
+            speakingGroup.classList.add('hidden');
+        } else {
+            speakingGroup.classList.add('hidden');
+            writingGroup.classList.add('hidden');
+        }
+    },
+
+    _updateEditPartVisibility(category) {
+        const speakingGroup = document.getElementById('edit-speaking-part-group');
+        const writingGroup = document.getElementById('edit-writing-part-group');
+        if (category === 'SPEAKING') {
+            speakingGroup.classList.remove('hidden');
+            writingGroup.classList.add('hidden');
+        } else if (category === 'WRITING') {
+            writingGroup.classList.remove('hidden');
+            speakingGroup.classList.add('hidden');
+        } else {
+            speakingGroup.classList.add('hidden');
+            writingGroup.classList.add('hidden');
+        }
+    },
+
     showAddDialog() {
         const dialog = document.getElementById('add-vocab-dialog');
         document.getElementById('vocab-word').value = '';
         document.getElementById('examples-list').innerHTML = '';
+
+        // Reset category to GENERAL and hide part groups
+        const generalRadio = dialog.querySelector('input[name="vocab-category"][value="GENERAL"]');
+        if (generalRadio) generalRadio.checked = true;
+        this._updateAddPartVisibility('GENERAL');
 
         // Add initial example field
         this.addExampleField('examples-list');
@@ -352,13 +464,22 @@ const EditPage = {
                 return;
             }
 
-            // Insert vocabulary
+            // Insert vocabulary (DB stores SPEAKING or WRITING, not the part)
             const vocabId = await db.insertVocabulary({
                 word: word,
                 category: category,
                 createdAt: Date.now(),
                 lastStudiedAt: Date.now()
             });
+
+            // Save part info locally
+            if (category === 'SPEAKING') {
+                const part = document.querySelector('input[name="vocab-speaking-part"]:checked')?.value || 'PART1';
+                this.setVocabPart(vocabId, part);
+            } else if (category === 'WRITING') {
+                const part = document.querySelector('input[name="vocab-writing-part"]:checked')?.value || 'PART1';
+                this.setVocabPart(vocabId, part);
+            }
 
             // Insert examples
             for (const example of examples) {
@@ -420,6 +541,13 @@ const EditPage = {
             if (word) ttsService.speakWord(word);
         });
 
+        // Category change -> show/hide part selectors
+        dialog.querySelectorAll('input[name="edit-vocab-category"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                this._updateEditPartVisibility(e.target.value);
+            });
+        });
+
         // Click outside to close
         dialog.addEventListener('click', (e) => {
             if (e.target === dialog) {
@@ -432,20 +560,33 @@ const EditPage = {
         this.currentEditId = id;
 
         const vocabWithExamples = await db.getVocabularyWithExamples(id);
-        
+
         if (!vocabWithExamples) {
             App.showToast('Vocabulary not found', 'error');
             return;
         }
 
         const { vocabulary, examples } = vocabWithExamples;
-      
+
         document.getElementById('edit-vocab-word').value = vocabulary.word;
 
         // Set category radio button
         const categoryRadio = document.querySelector(`input[name="edit-vocab-category"][value="${vocabulary.category || 'GENERAL'}"]`);
         if (categoryRadio) {
             categoryRadio.checked = true;
+        }
+
+        // Show/hide part groups based on category
+        this._updateEditPartVisibility(vocabulary.category || 'GENERAL');
+
+        // Set current part selection
+        const currentPart = this.getVocabPart(id) || 'PART1';
+        if (vocabulary.category === 'SPEAKING') {
+            const partRadio = document.querySelector(`input[name="edit-vocab-speaking-part"][value="${currentPart}"]`);
+            if (partRadio) partRadio.checked = true;
+        } else if (vocabulary.category === 'WRITING') {
+            const partRadio = document.querySelector(`input[name="edit-vocab-writing-part"][value="${currentPart}"]`);
+            if (partRadio) partRadio.checked = true;
         }
 
         const examplesList = document.getElementById('edit-examples-list');
@@ -497,11 +638,23 @@ const EditPage = {
                 return;
             }
 
-            // Update vocabulary
+            // Update vocabulary (DB stores SPEAKING or WRITING)
             existing.word = word;
             existing.category = category;
             existing.lastStudiedAt = Date.now();
             await db.updateVocabulary(existing);
+
+            // Save part info locally
+            if (category === 'SPEAKING') {
+                const part = document.querySelector('input[name="edit-vocab-speaking-part"]:checked')?.value || 'PART1';
+                this.setVocabPart(this.currentEditId, part);
+            } else if (category === 'WRITING') {
+                const part = document.querySelector('input[name="edit-vocab-writing-part"]:checked')?.value || 'PART1';
+                this.setVocabPart(this.currentEditId, part);
+            } else {
+                // Clear part for non-speaking/writing categories
+                this.setVocabPart(this.currentEditId, null);
+            }
 
             // Update existing examples and insert new ones
             for (const example of examples) {
@@ -560,6 +713,9 @@ const EditPage = {
 
             // Delete from local database
             await db.deleteVocabulary(vocabulary.id);
+
+            // Clean up part info from localStorage
+            this.setVocabPart(vocabulary.id, null);
 
             App.showToast('Vocabulary deleted', 'success');
             await this.loadVocabularies();
