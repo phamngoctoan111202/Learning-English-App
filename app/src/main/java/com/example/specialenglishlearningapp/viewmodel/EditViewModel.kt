@@ -45,6 +45,8 @@ class EditViewModel(application: Application) : AndroidViewModel(application) {
 
     private var currentCategoryFilter: String? = null // null = All, "GENERAL", "TOEIC"
     private var currentSearchQuery: String = ""
+    private var currentPage: Int = 1
+    private val pageSize: Int = 10
 
     init {
         viewModelScope.launch {
@@ -78,6 +80,7 @@ class EditViewModel(application: Application) : AndroidViewModel(application) {
 
     fun filterByCategory(category: String?) {
         currentCategoryFilter = category
+        currentPage = 1
         applyFilters()
     }
 
@@ -93,8 +96,10 @@ class EditViewModel(application: Application) : AndroidViewModel(application) {
 
         // Then filter by search query
         val filtered = if (currentSearchQuery.isBlank()) {
-            categoryFiltered
+            // No search: apply pagination (show newest first, paginated)
+            categoryFiltered.take(currentPage * pageSize)
         } else {
+            // Searching: bypass pagination, show all matching results
             categoryFiltered.filter { vocab ->
                 fuzzyMatch(vocab.vocabulary.word, currentSearchQuery) ||
                 vocab.examples.any { example ->
@@ -115,7 +120,22 @@ class EditViewModel(application: Application) : AndroidViewModel(application) {
 
     fun searchVocabularies(query: String) {
         currentSearchQuery = query
+        currentPage = 1
         applyFilters()
+    }
+
+    fun loadNextPage() {
+        val allVocabs = _allVocabularies.value ?: return
+        val categoryFiltered = if (currentCategoryFilter != null) {
+            allVocabs.filter { it.vocabulary.category == currentCategoryFilter }
+        } else {
+            allVocabs
+        }
+        // Only load more if not searching and there are more items
+        if (currentSearchQuery.isBlank() && currentPage * pageSize < categoryFiltered.size) {
+            currentPage++
+            applyFilters()
+        }
     }
 
     private fun fuzzyMatch(text: String, query: String): Boolean {

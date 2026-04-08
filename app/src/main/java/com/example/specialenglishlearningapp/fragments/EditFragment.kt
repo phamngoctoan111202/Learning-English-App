@@ -8,6 +8,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.specialenglishlearningapp.R
 import com.example.specialenglishlearningapp.adapters.VocabularyAdapter
 import com.example.specialenglishlearningapp.data.AppDatabase
@@ -81,6 +82,17 @@ class EditFragment : Fragment() {
         binding.recyclerViewVocabularies.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = vocabularyAdapter
+            addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    if (dy <= 0) return
+                    val lm = layoutManager as LinearLayoutManager
+                    val lastVisible = lm.findLastVisibleItemPosition()
+                    val total = lm.itemCount
+                    if (lastVisible >= total - 3) {
+                        editViewModel.loadNextPage()
+                    }
+                }
+            })
         }
     }
 
