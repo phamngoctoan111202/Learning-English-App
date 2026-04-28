@@ -118,10 +118,7 @@ class EditFragment : Fragment() {
         // Setup Category Filter
         binding.radioGroupCategoryFilter.setOnCheckedChangeListener { _, checkedId ->
             val category = when (checkedId) {
-                R.id.radioFilterGeneral -> "GENERAL"
-                R.id.radioFilterToeic -> "TOEIC"
-                R.id.radioFilterVstep -> "VSTEP"
-                R.id.radioFilterSpeaking -> "SPEAKING"
+                R.id.radioFilterGeneral -> "VSTEP"
                 R.id.radioFilterWriting -> "WRITING"
                 else -> null // All
             }
@@ -162,17 +159,8 @@ class EditFragment : Fragment() {
         statsMap["ALL"]?.let { stats ->
             binding.textStatsAll.text = "${stats.learned}/${stats.total}"
         }
-        statsMap["GENERAL"]?.let { stats ->
-            binding.textStatsGeneral.text = "${stats.learned}/${stats.total}"
-        }
-        statsMap["TOEIC"]?.let { stats ->
-            binding.textStatsToeic.text = "${stats.learned}/${stats.total}"
-        }
         statsMap["VSTEP"]?.let { stats ->
-            binding.textStatsVstep.text = "${stats.learned}/${stats.total}"
-        }
-        statsMap["SPEAKING"]?.let { stats ->
-            binding.textStatsSpeaking.text = "${stats.learned}/${stats.total}"
+            binding.textStatsGeneral.text = "${stats.learned}/${stats.total}"
         }
         statsMap["WRITING"]?.let { stats ->
             binding.textStatsWriting.text = "${stats.learned}/${stats.total}"

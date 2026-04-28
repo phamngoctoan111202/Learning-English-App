@@ -81,19 +81,9 @@ class LearnFragment : Fragment() {
 
         setupClickListeners()
 
-        // FIXED: Ensure LearningProgressManager is initialized before updating UI
-        lifecycleScope.launch {
-            // Re-initialize if needed (in case MainActivity's init failed or Fragment recreated)
-            val initResult = LearningProgressManager.initialize(requireContext())
-            if (initResult.isFailure) {
-                Logger.e("⚠️ LearningProgressManager initialization failed in LearnFragment: ${initResult.exceptionOrNull()?.message}")
-            }
-
-            // Now update UI with loaded data
-            withContext(Dispatchers.Main) {
-                updateDailyGoalUI() // Initialize daily goal UI
-            }
-        }
+        // Initialize using manager's own scope (won't cancel if user navigates away)
+        LearningProgressManager.initializeInBackground(requireContext())
+        updateDailyGoalUI() // Update UI immediately with cached values (may be defaults on first launch)
 
         startUIUpdateTimer() // Start UI update timer (đếm lên)
         startAutoSyncTimer() // Start auto-sync timer
@@ -168,11 +158,8 @@ class LearnFragment : Fragment() {
         // Category filter
         binding.radioGroupCategory.setOnCheckedChangeListener { _, checkedId ->
             val category = when (checkedId) {
-                R.id.radioToeic -> "TOEIC"
-                R.id.radioVstep -> "VSTEP"
-                R.id.radioSpeaking -> "SPEAKING"
                 R.id.radioWriting -> "WRITING"
-                else -> "GENERAL"
+                else -> "VSTEP"
             }
             onCategoryChanged(category)
         }
@@ -311,21 +298,10 @@ class LearnFragment : Fragment() {
                 if (_binding == null) return // Fragment bị destroy
 
                 Logger.d("🔄 [Auto-Sync] Syncing progress to Appwrite...")
-                lifecycleScope.launch {
-                    try {
-                        val result = LearningProgressManager.syncToAppwrite(requireContext())
-                        if (result.isSuccess) {
-                            Logger.d("✅ [Auto-Sync] Sync successful")
-                        } else {
-                            Logger.e("❌ [Auto-Sync] Sync failed: ${result.exceptionOrNull()?.message}")
-                        }
-                    } catch (e: Exception) {
-                        Logger.e("❌ [Auto-Sync] Exception: ${e.message}", e)
-                    }
-                }
+                LearningProgressManager.syncInBackground(requireContext())
 
-                // Lặp lại sau 30 giây
-                handler.postDelayed(this, 30000)
+                // Lặp lại sau 5 phút
+                handler.postDelayed(this, 5 * 60 * 1000L)
             }
         }
 
@@ -429,7 +405,7 @@ class LearnFragment : Fragment() {
         }
     }
 
-    private var selectedCategory: String = "GENERAL"
+    private var selectedCategory: String = "VSTEP"
 
     private fun buildLearningQueueAndStart(category: String = selectedCategory) {
         selectedCategory = category
@@ -885,13 +861,9 @@ class LearnFragment : Fragment() {
             // Check if ALL unique Vietnamese sentences are completed
             isVocabularyCompleted = (completedVietnamese.size >= totalSentences)
 
-            lifecycleScope.launch {
-                Logger.d("📚 Sentence completed! Incrementing words learned counter...")
-                LearningProgressManager.addCompletedVocabulary(requireContext())
-                withContext(Dispatchers.Main) {
-                    updateDailyGoalUI()
-                }
-            }
+            Logger.d("📚 Sentence completed! Incrementing words learned counter...")
+            LearningProgressManager.addCompletedVocabularyInBackground(requireContext())
+            updateDailyGoalUI()
 
             // Update learning statistics in database (each correct sentence = 1 correct attempt)
             lifecycleScope.launch {
@@ -1018,13 +990,9 @@ class LearnFragment : Fragment() {
                 isVocabularyCompleted = (completedVietnamese.size >= totalSentences)
                 Logger.d("✅ [100% similarity] Correct! Completed Vietnamese: '${currentDisplayedExample.vietnamese}' (${completedVietnamese.size}/$totalSentences)")
 
-                lifecycleScope.launch {
-                    Logger.d("📚 [100% similarity] Sentence completed! Incrementing words learned counter...")
-                    LearningProgressManager.addCompletedVocabulary(requireContext())
-                    withContext(Dispatchers.Main) {
-                        updateDailyGoalUI()
-                    }
-                }
+                Logger.d("📚 [100% similarity] Sentence completed! Incrementing words learned counter...")
+                LearningProgressManager.addCompletedVocabularyInBackground(requireContext())
+                updateDailyGoalUI()
 
                 // Update learning statistics
                 lifecycleScope.launch {

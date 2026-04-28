@@ -98,7 +98,8 @@ class AddVocabularyDialog(
         super.onStart()
         val dm = resources.displayMetrics
         val targetWidth = (dm.widthPixels * 0.95f).toInt()
-        dialog?.window?.setLayout(targetWidth, ViewGroup.LayoutParams.WRAP_CONTENT)
+        val targetHeight = (dm.heightPixels * 0.90f).toInt()
+        dialog?.window?.setLayout(targetWidth, targetHeight)
     }
 
     override fun onDestroy() {
@@ -273,11 +274,8 @@ class AddVocabularyDialog(
         // Get selected category
         val selectedCategoryId = radioGroupCategory.checkedRadioButtonId
         val category = when (selectedCategoryId) {
-            R.id.radioToeic -> "TOEIC"
-            R.id.radioVstep -> "VSTEP"
-            R.id.radioSpeaking -> "SPEAKING"
             R.id.radioWriting -> "WRITING"
-            else -> "GENERAL"
+            else -> "VSTEP"
         }
 
         val exampleList = exampleInputs.mapNotNull { exampleInput ->
@@ -300,6 +298,7 @@ class AddVocabularyDialog(
 
         if (exampleList.isEmpty()) {
             Logger.d("No valid examples, please add at least one English sentence")
+            android.widget.Toast.makeText(requireContext(), "Vui lòng nhập ít nhất một câu ví dụ tiếng Anh", android.widget.Toast.LENGTH_SHORT).show()
             return
         }
 

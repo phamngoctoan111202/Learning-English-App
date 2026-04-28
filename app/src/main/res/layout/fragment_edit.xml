@@ -92,66 +92,6 @@
                     android:gravity="center"
                     android:paddingHorizontal="4dp">
                     <RadioButton
-                        android:id="@+id/radioFilterToeic"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="TOEIC" />
-                    <TextView
-                        android:id="@+id/textStatsToeic"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0/0"
-                        android:textSize="10sp"
-                        android:textColor="@android:color/darker_gray" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:paddingHorizontal="4dp">
-                    <RadioButton
-                        android:id="@+id/radioFilterVstep"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="VSTEP" />
-                    <TextView
-                        android:id="@+id/textStatsVstep"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0/0"
-                        android:textSize="10sp"
-                        android:textColor="@android:color/darker_gray" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:paddingHorizontal="4dp">
-                    <RadioButton
-                        android:id="@+id/radioFilterSpeaking"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="SPEAKING" />
-                    <TextView
-                        android:id="@+id/textStatsSpeaking"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0/0"
-                        android:textSize="10sp"
-                        android:textColor="@android:color/darker_gray" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:paddingHorizontal="4dp">
-                    <RadioButton
                         android:id="@+id/radioFilterWriting"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
