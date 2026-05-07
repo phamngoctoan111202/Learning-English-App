@@ -5,7 +5,10 @@ import com.example.specialenglishlearningapp.constants.AppwriteConfig
 import io.appwrite.ID
 import io.appwrite.Query
 import io.appwrite.services.Databases
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 object LearningProgressManager {
@@ -13,40 +16,41 @@ object LearningProgressManager {
     private const val WORDS_PER_HOUR = 60 / MINUTES_PER_WORD
     private const val PROGRESS_DOCUMENT_ID = "user_learning_progress" // Fixed ID for single-user progress
 
+    // Scope không bị tied vào fragment/activity lifecycle — tồn tại suốt vòng đời process
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
     private var cachedStartTime: Long? = null
     private var cachedWordsLearned: Int? = null
     private var lastSyncTime: Long = 0
-    private const val SYNC_INTERVAL_MS = 30000L // Sync every 30 seconds
+    private const val SYNC_INTERVAL_MS = 5 * 60 * 1000L // Sync every 5 minutes
+
+    // Flag: chỉ fetch từ Appwrite một lần duy nhất mỗi session
+    @Volatile private var isInitialized: Boolean = false
 
     /**
      * Initialize learning progress from Appwrite
      * Call this when app starts
      */
     suspend fun initialize(context: Context): Result<Unit> = withContext(Dispatchers.IO) {
+        // Chỉ fetch từ Appwrite một lần mỗi session để tiết kiệm quota
+        if (isInitialized) {
+            Logger.d("✅ [LearningProgress] Already initialized, skipping Appwrite fetch")
+            return@withContext Result.success(Unit)
+        }
+
         try {
             Logger.d("🔄 [LearningProgress] Initializing...")
             val appwriteHelper = AppwriteHelper.getInstance(context)
 
             // Ensure authentication
             Logger.d("🔐 [LearningProgress] Checking authentication...")
-            val currentUser = appwriteHelper.getCurrentUser()
-            if (currentUser == null) {
-                Logger.d("🔐 [LearningProgress] No session, logging in anonymously...")
-                val session = appwriteHelper.loginAnonymously()
-                Logger.d("✅ [LearningProgress] Login successful: userId=${session.userId}")
-            } else {
-                Logger.d("✅ [LearningProgress] Already authenticated: userId=${currentUser.id}")
-            }
+            appwriteHelper.ensureSession()
 
             val databases = appwriteHelper.databases
 
             // Try to fetch existing progress
             try {
                 Logger.d("📥 [LearningProgress] Fetching from Appwrite...")
-                Logger.d("   Database: ${AppwriteConfig.DATABASE_ID}")
-                Logger.d("   Collection: ${AppwriteConfig.LEARNING_PROGRESS_COLLECTION_ID}")
-                Logger.d("   Document: $PROGRESS_DOCUMENT_ID")
-
                 val document = databases.getDocument(
                     databaseId = AppwriteConfig.DATABASE_ID,
                     collectionId = AppwriteConfig.LEARNING_PROGRESS_COLLECTION_ID,
@@ -58,40 +62,57 @@ object LearningProgressManager {
                 cachedWordsLearned = (data["wordsLearned"] as? String)?.toIntOrNull() ?: 0
                 lastSyncTime = System.currentTimeMillis()
 
-                Logger.d("✅ [LearningProgress] Loaded from Appwrite successfully!")
-                Logger.d("   📅 startTime: $cachedStartTime")
-                Logger.d("   📚 wordsLearned: $cachedWordsLearned")
-                Logger.d("   ⏱️ elapsed: ${formatElapsedTime()}")
-                Logger.d("   🎯 currentGoal: ${getCurrentGoal()}")
-                Logger.d("   💳 debt: ${getDebt()}")
+                Logger.d("✅ [LearningProgress] Loaded from Appwrite: startTime=$cachedStartTime, wordsLearned=$cachedWordsLearned")
             } catch (e: Exception) {
-                // Document doesn't exist, create new one
-                Logger.d("⚠️ [LearningProgress] Document not found: ${e.message}")
-                Logger.d("📝 [LearningProgress] Creating new document...")
+                val isNotFound = e.message?.contains("not found", ignoreCase = true) == true ||
+                    e.message?.contains("404") == true
+                val alreadyExists = e.message?.contains("already exists", ignoreCase = true) == true
 
-                val startTime = System.currentTimeMillis()
-                val data = mapOf(
-                    "startTime" to startTime.toString(),
-                    "wordsLearned" to "0",
-                    "lastUpdated" to startTime.toString()
-                )
-
-                databases.createDocument(
-                    databaseId = AppwriteConfig.DATABASE_ID,
-                    collectionId = AppwriteConfig.LEARNING_PROGRESS_COLLECTION_ID,
-                    documentId = PROGRESS_DOCUMENT_ID,
-                    data = data
-                )
-
-                cachedStartTime = startTime
-                cachedWordsLearned = 0
+                if (alreadyExists) {
+                    // Document exists but getDocument failed (race/permission issue) — treat as loaded with defaults
+                    Logger.d("⚠️ [LearningProgress] Document exists but fetch failed, using cached/defaults")
+                    cachedStartTime = cachedStartTime ?: System.currentTimeMillis()
+                    cachedWordsLearned = cachedWordsLearned ?: 0
+                } else if (isNotFound) {
+                    // Document truly doesn't exist — create it
+                    Logger.d("📝 [LearningProgress] Document not found, creating new document...")
+                    val startTime = System.currentTimeMillis()
+                    val data = mapOf(
+                        "startTime" to startTime.toString(),
+                        "wordsLearned" to "0",
+                        "lastUpdated" to startTime.toString()
+                    )
+                    try {
+                        databases.createDocument(
+                            databaseId = AppwriteConfig.DATABASE_ID,
+                            collectionId = AppwriteConfig.LEARNING_PROGRESS_COLLECTION_ID,
+                            documentId = PROGRESS_DOCUMENT_ID,
+                            data = data
+                        )
+                        cachedStartTime = startTime
+                        cachedWordsLearned = 0
+                        lastSyncTime = System.currentTimeMillis()
+                        Logger.d("✅ [LearningProgress] Document created successfully!")
+                    } catch (ce: Exception) {
+                        if (ce.message?.contains("already exists", ignoreCase = true) == true) {
+                            // Another coroutine created it first — that's fine
+                            Logger.d("⚠️ [LearningProgress] Document created by concurrent call, using defaults")
+                            cachedStartTime = cachedStartTime ?: startTime
+                            cachedWordsLearned = cachedWordsLearned ?: 0
+                        } else {
+                            throw ce
+                        }
+                    }
+                } else {
+                    // Other error — log and use local fallback
+                    Logger.e("⚠️ [LearningProgress] Fetch failed with unexpected error: ${e.message}")
+                    cachedStartTime = cachedStartTime ?: System.currentTimeMillis()
+                    cachedWordsLearned = cachedWordsLearned ?: 0
+                }
                 lastSyncTime = System.currentTimeMillis()
-
-                Logger.d("✅ [LearningProgress] Document created successfully!")
-                Logger.d("   📅 startTime: $startTime")
-                Logger.d("   📚 wordsLearned: 0")
             }
 
+            isInitialized = true
             Logger.d("🎉 [LearningProgress] Initialization complete!")
             Result.success(Unit)
         } catch (e: Exception) {
@@ -221,14 +242,7 @@ object LearningProgressManager {
             val appwriteHelper = AppwriteHelper.getInstance(context)
 
             // Ensure authentication
-            val currentUser = appwriteHelper.getCurrentUser()
-            if (currentUser == null) {
-                Logger.d("🔐 [LearningProgress] Re-authenticating...")
-                val session = appwriteHelper.loginAnonymously()
-                Logger.d("✅ [LearningProgress] Login successful: userId=${session.userId}")
-            } else {
-                Logger.d("✅ [LearningProgress] Already authenticated: userId=${currentUser.id}")
-            }
+            appwriteHelper.ensureSession()
 
             val databases = appwriteHelper.databases
 
@@ -332,6 +346,27 @@ object LearningProgressManager {
     }
 
     /**
+     * Fire-and-forget: initialize using the manager's own scope (won't be cancelled by fragment lifecycle)
+     */
+    fun initializeInBackground(context: Context) {
+        scope.launch { initialize(context) }
+    }
+
+    /**
+     * Fire-and-forget: sync using the manager's own scope (won't be cancelled by fragment lifecycle)
+     */
+    fun syncInBackground(context: Context) {
+        scope.launch { syncToAppwrite(context) }
+    }
+
+    /**
+     * Fire-and-forget: add completed vocabulary using the manager's own scope
+     */
+    fun addCompletedVocabularyInBackground(context: Context) {
+        scope.launch { addCompletedVocabulary(context, forceSync = true) }
+    }
+
+    /**
      * Test Appwrite connection and permissions
      */
     suspend fun testAppwriteConnection(context: Context): Result<String> = withContext(Dispatchers.IO) {
@@ -341,14 +376,8 @@ object LearningProgressManager {
 
             // Test 1: Check authentication
             Logger.d("🧪 [Test] Step 1: Checking authentication...")
-            val currentUser = appwriteHelper.getCurrentUser()
-            if (currentUser == null) {
-                Logger.d("🧪 [Test] No user, logging in anonymously...")
-                val session = appwriteHelper.loginAnonymously()
-                Logger.d("✅ [Test] Logged in: userId=${session.userId}")
-            } else {
-                Logger.d("✅ [Test] Already logged in: userId=${currentUser.id}")
-            }
+            appwriteHelper.ensureSession()
+            Logger.d("✅ [Test] Session active")
 
             // Test 2: Try to read document
             Logger.d("🧪 [Test] Step 2: Reading document...")

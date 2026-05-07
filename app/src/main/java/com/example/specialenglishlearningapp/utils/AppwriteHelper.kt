@@ -55,9 +55,19 @@ class AppwriteHelper private constructor(context: Context) {
         account.deleteSession(sessionId = "current")
     }
 
-    // Anonymous login for public access
+    // Anonymous login for public access — safe to call even when a session is active
     suspend fun loginAnonymously(): Session {
-        return account.createAnonymousSession()
+        return try {
+            account.createAnonymousSession()
+        } catch (e: AppwriteException) {
+            // If a session is already active, just return the current one
+            if (e.message?.contains("session is active", ignoreCase = true) == true ||
+                e.message?.contains("session is prohibited", ignoreCase = true) == true) {
+                account.getSession("current")
+            } else {
+                throw e
+            }
+        }
     }
 
     // Check if user is logged in
@@ -66,6 +76,14 @@ class AppwriteHelper private constructor(context: Context) {
             account.get()
         } catch (e: AppwriteException) {
             null
+        }
+    }
+
+    // Ensure there is an active session (anonymous or otherwise)
+    suspend fun ensureSession() {
+        val user = getCurrentUser()
+        if (user == null) {
+            loginAnonymously()
         }
     }
 }
