@@ -59,40 +59,12 @@ const EditPage = {
                         <span>All <span class="category-count-pill" data-category-count="ALL"></span></span>
                     </label>
                     <label class="filter-radio">
-                        <input type="radio" name="category-filter" value="GENERAL" ${savedCategory === 'GENERAL' ? 'checked' : ''}>
-                        <span>General <span class="category-count-pill" data-category-count="GENERAL"></span></span>
-                    </label>
-                    <label class="filter-radio">
-                        <input type="radio" name="category-filter" value="TOEIC" ${savedCategory === 'TOEIC' ? 'checked' : ''}>
-                        <span>TOEIC <span class="category-count-pill" data-category-count="TOEIC"></span></span>
-                    </label>
-                    <label class="filter-radio">
                         <input type="radio" name="category-filter" value="VSTEP" ${savedCategory === 'VSTEP' ? 'checked' : ''}>
-                        <span>VSTEP <span class="category-count-pill" data-category-count="VSTEP"></span></span>
+                        <span>General <span class="category-count-pill" data-category-count="VSTEP"></span></span>
                     </label>
                     <label class="filter-radio">
-                        <input type="radio" name="category-filter" value="SPEAKING_PART1" ${savedCategory === 'SPEAKING_PART1' ? 'checked' : ''}>
-                        <span>Speaking P1 <span class="category-count-pill" data-category-count="SPEAKING_PART1"></span></span>
-                    </label>
-                    <label class="filter-radio">
-                        <input type="radio" name="category-filter" value="SPEAKING_PART2" ${savedCategory === 'SPEAKING_PART2' ? 'checked' : ''}>
-                        <span>Speaking P2 <span class="category-count-pill" data-category-count="SPEAKING_PART2"></span></span>
-                    </label>
-                    <label class="filter-radio">
-                        <input type="radio" name="category-filter" value="SPEAKING_PART3" ${savedCategory === 'SPEAKING_PART3' ? 'checked' : ''}>
-                        <span>Speaking P3 <span class="category-count-pill" data-category-count="SPEAKING_PART3"></span></span>
-                    </label>
-                    <label class="filter-radio">
-                        <input type="radio" name="category-filter" value="WRITING_PART1" ${savedCategory === 'WRITING_PART1' ? 'checked' : ''}>
-                        <span>Writing P1 <span class="category-count-pill" data-category-count="WRITING_PART1"></span></span>
-                    </label>
-                    <label class="filter-radio">
-                        <input type="radio" name="category-filter" value="WRITING_PART2" ${savedCategory === 'WRITING_PART2' ? 'checked' : ''}>
-                        <span>Writing P2 <span class="category-count-pill" data-category-count="WRITING_PART2"></span></span>
-                    </label>
-                    <label class="filter-radio">
-                        <input type="radio" name="category-filter" value="POPULAR_TOPICS" ${savedCategory === 'POPULAR_TOPICS' ? 'checked' : ''}>
-                        <span>Popular topics <span class="category-count-pill" data-category-count="POPULAR_TOPICS"></span></span>
+                        <input type="radio" name="category-filter" value="WRITING" ${savedCategory === 'WRITING' ? 'checked' : ''}>
+                        <span>Writing <span class="category-count-pill" data-category-count="WRITING"></span></span>
                     </label>
                 </div>
             </div>
@@ -267,23 +239,9 @@ const EditPage = {
                 : null;
 
             let categoryClass, categoryLabel;
-            if (category === 'TOEIC') {
-                categoryClass = 'category-badge-toeic';
-                categoryLabel = 'TOEIC';
-            } else if (category === 'VSTEP') {
-                categoryClass = 'category-badge-vstep';
-                categoryLabel = 'VSTEP';
-            } else if (category === 'SPEAKING') {
-                categoryClass = 'category-badge-speaking';
-                const partNum = part ? part.replace('PART', '') : '1';
-                categoryLabel = `Speaking P${partNum}`;
-            } else if (category === 'WRITING') {
+            if (category === 'WRITING') {
                 categoryClass = 'category-badge-writing';
-                const partNum = part ? part.replace('PART', '') : '1';
-                categoryLabel = `Writing P${partNum}`;
-            } else if (category === 'POPULAR_TOPICS') {
-                categoryClass = 'category-badge-popular';
-                categoryLabel = 'Popular topics';
+                categoryLabel = 'Writing';
             } else {
                 categoryClass = 'category-badge-general';
                 categoryLabel = 'General';
@@ -421,10 +379,9 @@ const EditPage = {
         document.getElementById('vocab-word').value = '';
         document.getElementById('examples-list').innerHTML = '';
 
-        // Reset category to GENERAL and hide part groups
-        const generalRadio = dialog.querySelector('input[name="vocab-category"][value="GENERAL"]');
+        // Reset category to VSTEP (General)
+        const generalRadio = dialog.querySelector('input[name="vocab-category"][value="VSTEP"]');
         if (generalRadio) generalRadio.checked = true;
-        this._updateAddPartVisibility('GENERAL');
 
         // Add initial example field
         this.addExampleField('examples-list');
@@ -471,15 +428,6 @@ const EditPage = {
                 createdAt: Date.now(),
                 lastStudiedAt: Date.now()
             });
-
-            // Save part info locally
-            if (category === 'SPEAKING') {
-                const part = document.querySelector('input[name="vocab-speaking-part"]:checked')?.value || 'PART1';
-                this.setVocabPart(vocabId, part);
-            } else if (category === 'WRITING') {
-                const part = document.querySelector('input[name="vocab-writing-part"]:checked')?.value || 'PART1';
-                this.setVocabPart(vocabId, part);
-            }
 
             // Insert examples
             for (const example of examples) {
@@ -570,24 +518,10 @@ const EditPage = {
 
         document.getElementById('edit-vocab-word').value = vocabulary.word;
 
-        // Set category radio button
-        const categoryRadio = document.querySelector(`input[name="edit-vocab-category"][value="${vocabulary.category || 'GENERAL'}"]`);
-        if (categoryRadio) {
-            categoryRadio.checked = true;
-        }
-
-        // Show/hide part groups based on category
-        this._updateEditPartVisibility(vocabulary.category || 'GENERAL');
-
-        // Set current part selection
-        const currentPart = this.getVocabPart(id) || 'PART1';
-        if (vocabulary.category === 'SPEAKING') {
-            const partRadio = document.querySelector(`input[name="edit-vocab-speaking-part"][value="${currentPart}"]`);
-            if (partRadio) partRadio.checked = true;
-        } else if (vocabulary.category === 'WRITING') {
-            const partRadio = document.querySelector(`input[name="edit-vocab-writing-part"][value="${currentPart}"]`);
-            if (partRadio) partRadio.checked = true;
-        }
+        // Set category radio button (VSTEP/GENERAL/others → General; WRITING → Writing)
+        const effectiveCategory = vocabulary.category === 'WRITING' ? 'WRITING' : 'VSTEP';
+        const categoryRadio = document.querySelector(`input[name="edit-vocab-category"][value="${effectiveCategory}"]`);
+        if (categoryRadio) categoryRadio.checked = true;
 
         const examplesList = document.getElementById('edit-examples-list');
         examplesList.innerHTML = '';
@@ -643,18 +577,6 @@ const EditPage = {
             existing.category = category;
             existing.lastStudiedAt = Date.now();
             await db.updateVocabulary(existing);
-
-            // Save part info locally
-            if (category === 'SPEAKING') {
-                const part = document.querySelector('input[name="edit-vocab-speaking-part"]:checked')?.value || 'PART1';
-                this.setVocabPart(this.currentEditId, part);
-            } else if (category === 'WRITING') {
-                const part = document.querySelector('input[name="edit-vocab-writing-part"]:checked')?.value || 'PART1';
-                this.setVocabPart(this.currentEditId, part);
-            } else {
-                // Clear part for non-speaking/writing categories
-                this.setVocabPart(this.currentEditId, null);
-            }
 
             // Update existing examples and insert new ones
             for (const example of examples) {

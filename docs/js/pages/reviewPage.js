@@ -1,5 +1,5 @@
 const ReviewPage = {
-    selectedCategory: localStorage.getItem('reviewpage_filter_category') || 'GENERAL',
+    selectedCategory: localStorage.getItem('reviewpage_filter_category') || 'VSTEP',
     masteredVocabs: [],
 
     render() {
@@ -14,28 +14,12 @@ const ReviewPage = {
                     </div>
                     <div class="category-filter">
                         <label class="filter-radio">
-                            <input type="radio" name="review-category-filter" value="GENERAL" ${savedCategory === 'GENERAL' ? 'checked' : ''}>
-                            <span>General <span class="category-count-pill" data-category-count="GENERAL"></span></span>
-                        </label>
-                        <label class="filter-radio">
-                            <input type="radio" name="review-category-filter" value="TOEIC" ${savedCategory === 'TOEIC' ? 'checked' : ''}>
-                            <span>TOEIC <span class="category-count-pill" data-category-count="TOEIC"></span></span>
-                        </label>
-                        <label class="filter-radio">
                             <input type="radio" name="review-category-filter" value="VSTEP" ${savedCategory === 'VSTEP' ? 'checked' : ''}>
-                            <span>VSTEP <span class="category-count-pill" data-category-count="VSTEP"></span></span>
-                        </label>
-                        <label class="filter-radio">
-                            <input type="radio" name="review-category-filter" value="SPEAKING" ${savedCategory === 'SPEAKING' ? 'checked' : ''}>
-                            <span>SPEAKING <span class="category-count-pill" data-category-count="SPEAKING"></span></span>
+                            <span>General <span class="category-count-pill" data-category-count="VSTEP"></span></span>
                         </label>
                         <label class="filter-radio">
                             <input type="radio" name="review-category-filter" value="WRITING" ${savedCategory === 'WRITING' ? 'checked' : ''}>
-                            <span>WRITING <span class="category-count-pill" data-category-count="WRITING"></span></span>
-                        </label>
-                        <label class="filter-radio">
-                            <input type="radio" name="review-category-filter" value="POPULAR_TOPICS" ${savedCategory === 'POPULAR_TOPICS' ? 'checked' : ''}>
-                            <span>Popular topics <span class="category-count-pill" data-category-count="POPULAR_TOPICS"></span></span>
+                            <span>Writing <span class="category-count-pill" data-category-count="WRITING"></span></span>
                         </label>
                     </div>
                 </div>

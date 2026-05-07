@@ -19,7 +19,7 @@ const LearnPage = {
     STORAGE_KEY: 'learning_focus',
 
     // Category filter (supports virtual: SPEAKING_PART1/2/3, WRITING_PART1/2)
-    selectedCategory: localStorage.getItem('learnpage_filter_category') || 'GENERAL',
+    selectedCategory: localStorage.getItem('learnpage_filter_category') || 'VSTEP',
 
     // Track last words learned for logging
     _lastWordsLearned: null,
@@ -53,40 +53,12 @@ const LearnPage = {
                     </div>
                     <div class="category-filter">
                         <label class="filter-radio">
-                            <input type="radio" name="learn-category-filter" value="GENERAL" ${savedCategory === 'GENERAL' ? 'checked' : ''}>
-                            <span>General <span class="category-count-pill" data-category-count="GENERAL"></span></span>
-                        </label>
-                        <label class="filter-radio">
-                            <input type="radio" name="learn-category-filter" value="TOEIC" ${savedCategory === 'TOEIC' ? 'checked' : ''}>
-                            <span>TOEIC <span class="category-count-pill" data-category-count="TOEIC"></span></span>
-                        </label>
-                        <label class="filter-radio">
                             <input type="radio" name="learn-category-filter" value="VSTEP" ${savedCategory === 'VSTEP' ? 'checked' : ''}>
-                            <span>VSTEP <span class="category-count-pill" data-category-count="VSTEP"></span></span>
+                            <span>General <span class="category-count-pill" data-category-count="VSTEP"></span></span>
                         </label>
                         <label class="filter-radio">
-                            <input type="radio" name="learn-category-filter" value="SPEAKING_PART1" ${savedCategory === 'SPEAKING_PART1' ? 'checked' : ''}>
-                            <span>Speaking P1 <span class="category-count-pill" data-category-count="SPEAKING_PART1"></span></span>
-                        </label>
-                        <label class="filter-radio">
-                            <input type="radio" name="learn-category-filter" value="SPEAKING_PART2" ${savedCategory === 'SPEAKING_PART2' ? 'checked' : ''}>
-                            <span>Speaking P2 <span class="category-count-pill" data-category-count="SPEAKING_PART2"></span></span>
-                        </label>
-                        <label class="filter-radio">
-                            <input type="radio" name="learn-category-filter" value="SPEAKING_PART3" ${savedCategory === 'SPEAKING_PART3' ? 'checked' : ''}>
-                            <span>Speaking P3 <span class="category-count-pill" data-category-count="SPEAKING_PART3"></span></span>
-                        </label>
-                        <label class="filter-radio">
-                            <input type="radio" name="learn-category-filter" value="WRITING_PART1" ${savedCategory === 'WRITING_PART1' ? 'checked' : ''}>
-                            <span>Writing P1 <span class="category-count-pill" data-category-count="WRITING_PART1"></span></span>
-                        </label>
-                        <label class="filter-radio">
-                            <input type="radio" name="learn-category-filter" value="WRITING_PART2" ${savedCategory === 'WRITING_PART2' ? 'checked' : ''}>
-                            <span>Writing P2 <span class="category-count-pill" data-category-count="WRITING_PART2"></span></span>
-                        </label>
-                        <label class="filter-radio">
-                            <input type="radio" name="learn-category-filter" value="POPULAR_TOPICS" ${savedCategory === 'POPULAR_TOPICS' ? 'checked' : ''}>
-                            <span>Popular topics <span class="category-count-pill" data-category-count="POPULAR_TOPICS"></span></span>
+                            <input type="radio" name="learn-category-filter" value="WRITING" ${savedCategory === 'WRITING' ? 'checked' : ''}>
+                            <span>Writing <span class="category-count-pill" data-category-count="WRITING"></span></span>
                         </label>
                     </div>
                 </div>
