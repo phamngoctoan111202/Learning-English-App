@@ -16,7 +16,9 @@
       "Bash(git push)",
       "Bash(git commit:*)",
       "Bash(git restore:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(ssh -T git@github.com)",
+      "Bash(git remote *)"
     ],
     "deny": [],
     "ask": []
