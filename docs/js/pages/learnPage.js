@@ -192,13 +192,8 @@ const LearnPage = {
             for (const vocab of (allVocabs || [])) {
                 const category = vocab?.category || 'GENERAL';
                 counts[category] = (counts[category] || 0) + 1;
-
-                // Count virtual speaking/writing parts
-                if (category === 'SPEAKING' || category === 'WRITING') {
-                    const part = partsMap[String(vocab.id)] || 'PART1';
-                    const virtualKey = `${category}_${part}`;
-                    counts[virtualKey] = (counts[virtualKey] || 0) + 1;
-                }
+                // GENERAL words count under VSTEP (same "General" tab)
+                if (category === 'GENERAL') counts['VSTEP'] = (counts['VSTEP'] || 0) + 1;
             }
 
             document.querySelectorAll('[data-category-count]').forEach(el => {

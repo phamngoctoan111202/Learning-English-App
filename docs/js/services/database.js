@@ -250,7 +250,10 @@ class Database {
     matchesCategory(vocab, category) {
         if (!category) return true;
         if (!category.includes('_PART')) {
-            return (vocab.category || 'GENERAL') === category;
+            const vocabCategory = vocab.category || 'GENERAL';
+            // VSTEP filter includes legacy GENERAL words (same "General" task)
+            if (category === 'VSTEP') return vocabCategory === 'VSTEP' || vocabCategory === 'GENERAL';
+            return vocabCategory === category;
         }
         // Virtual: e.g. SPEAKING_PART2 → base=SPEAKING, part=PART2
         const underscorePartIdx = category.lastIndexOf('_PART');

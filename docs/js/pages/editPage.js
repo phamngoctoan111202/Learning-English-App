@@ -92,13 +92,8 @@ const EditPage = {
         for (const item of (this.vocabularies || [])) {
             const category = item?.vocabulary?.category || 'GENERAL';
             counts[category] = (counts[category] || 0) + 1;
-
-            // Count virtual speaking/writing parts
-            if (category === 'SPEAKING' || category === 'WRITING') {
-                const part = partsMap[String(item.vocabulary.id)] || 'PART1';
-                const virtualKey = `${category}_${part}`;
-                counts[virtualKey] = (counts[virtualKey] || 0) + 1;
-            }
+            // GENERAL words count under VSTEP (same "General" tab)
+            if (category === 'GENERAL') counts['VSTEP'] = (counts['VSTEP'] || 0) + 1;
         }
 
         document.querySelectorAll('[data-category-count]').forEach(el => {
@@ -183,6 +178,7 @@ const EditPage = {
             } else {
                 filtered = filtered.filter(({ vocabulary }) => {
                     const category = vocabulary.category || 'GENERAL';
+                    if (sel === 'VSTEP') return category === 'VSTEP' || category === 'GENERAL';
                     return category === sel;
                 });
             }

@@ -421,8 +421,10 @@ class LearnFragment : Fragment() {
                 Logger.d("📊 Total vocabularies: ${list.size}")
 
                 // Filter by category AND examples
+                // VSTEP filter includes legacy GENERAL words (same "General" task)
                 val filtered = list.filter {
-                    it.examples.isNotEmpty() && it.vocabulary.category == category
+                    it.examples.isNotEmpty() && (it.vocabulary.category == category ||
+                        (category == "VSTEP" && it.vocabulary.category == "GENERAL"))
                 }
                 Logger.d("Filtered vocabularies with examples: ${filtered.size}")
 

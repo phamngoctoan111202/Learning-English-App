@@ -60,15 +60,16 @@ class EditViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private suspend fun loadCategoryStats() {
-        val categories = listOf("GENERAL", "TOEIC", "VSTEP", "SPEAKING", "WRITING")
         val statsMap = mutableMapOf<String, CategoryStats>()
 
-        // Stats for each category
-        for (category in categories) {
-            val total = database.vocabularyDao().countByCategory(category)
-            val learned = database.vocabularyDao().countLearnedByCategory(category)
-            statsMap[category] = CategoryStats(total, learned)
-        }
+        // VSTEP tab shows both VSTEP and GENERAL words
+        val vstepTotal = database.vocabularyDao().countByCategory("VSTEP") + database.vocabularyDao().countByCategory("GENERAL")
+        val vstepLearned = database.vocabularyDao().countLearnedByCategory("VSTEP") + database.vocabularyDao().countLearnedByCategory("GENERAL")
+        statsMap["VSTEP"] = CategoryStats(vstepTotal, vstepLearned)
+
+        val writingTotal = database.vocabularyDao().countByCategory("WRITING")
+        val writingLearned = database.vocabularyDao().countLearnedByCategory("WRITING")
+        statsMap["WRITING"] = CategoryStats(writingTotal, writingLearned)
 
         // Stats for "ALL"
         val allTotal = database.vocabularyDao().countAll()
@@ -77,6 +78,10 @@ class EditViewModel(application: Application) : AndroidViewModel(application) {
 
         _categoryStatsMap.postValue(statsMap)
     }
+
+    private fun matchesCategory(vocabCategory: String, filter: String): Boolean =
+        if (filter == "VSTEP") vocabCategory == "VSTEP" || vocabCategory == "GENERAL"
+        else vocabCategory == filter
 
     fun filterByCategory(category: String?) {
         currentCategoryFilter = category
@@ -89,7 +94,7 @@ class EditViewModel(application: Application) : AndroidViewModel(application) {
 
         // First filter by category
         val categoryFiltered = if (currentCategoryFilter != null) {
-            allVocabs.filter { it.vocabulary.category == currentCategoryFilter }
+            allVocabs.filter { matchesCategory(it.vocabulary.category, currentCategoryFilter!!) }
         } else {
             allVocabs
         }
@@ -127,7 +132,7 @@ class EditViewModel(application: Application) : AndroidViewModel(application) {
     fun loadNextPage() {
         val allVocabs = _allVocabularies.value ?: return
         val categoryFiltered = if (currentCategoryFilter != null) {
-            allVocabs.filter { it.vocabulary.category == currentCategoryFilter }
+            allVocabs.filter { matchesCategory(it.vocabulary.category, currentCategoryFilter!!) }
         } else {
             allVocabs
         }
