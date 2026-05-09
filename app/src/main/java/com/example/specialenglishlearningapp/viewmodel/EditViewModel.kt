@@ -62,10 +62,12 @@ class EditViewModel(application: Application) : AndroidViewModel(application) {
     private suspend fun loadCategoryStats() {
         val statsMap = mutableMapOf<String, CategoryStats>()
 
-        // VSTEP tab shows both VSTEP and GENERAL words
-        val vstepTotal = database.vocabularyDao().countByCategory("VSTEP") + database.vocabularyDao().countByCategory("GENERAL")
-        val vstepLearned = database.vocabularyDao().countLearnedByCategory("VSTEP") + database.vocabularyDao().countLearnedByCategory("GENERAL")
-        statsMap["VSTEP"] = CategoryStats(vstepTotal, vstepLearned)
+        // VSTEP (General tab) = all words except Writing
+        val allTotal = database.vocabularyDao().countAll()
+        val allLearned = database.vocabularyDao().countAllLearned()
+        val writingTotal = database.vocabularyDao().countByCategory("WRITING")
+        val writingLearned = database.vocabularyDao().countLearnedByCategory("WRITING")
+        statsMap["VSTEP"] = CategoryStats(allTotal - writingTotal, allLearned - writingLearned)
 
         val writingTotal = database.vocabularyDao().countByCategory("WRITING")
         val writingLearned = database.vocabularyDao().countLearnedByCategory("WRITING")
@@ -80,7 +82,7 @@ class EditViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun matchesCategory(vocabCategory: String, filter: String): Boolean =
-        if (filter == "VSTEP") vocabCategory == "VSTEP" || vocabCategory == "GENERAL"
+        if (filter == "VSTEP") vocabCategory != "WRITING"
         else vocabCategory == filter
 
     fun filterByCategory(category: String?) {

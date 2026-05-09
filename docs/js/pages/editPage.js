@@ -92,8 +92,8 @@ const EditPage = {
         for (const item of (this.vocabularies || [])) {
             const category = item?.vocabulary?.category || 'GENERAL';
             counts[category] = (counts[category] || 0) + 1;
-            // GENERAL words count under VSTEP (same "General" tab)
-            if (category === 'GENERAL') counts['VSTEP'] = (counts['VSTEP'] || 0) + 1;
+            // VSTEP (General tab) = all non-Writing words
+            if (category !== 'WRITING') counts['VSTEP'] = (counts['VSTEP'] || 0) + 1;
         }
 
         document.querySelectorAll('[data-category-count]').forEach(el => {
@@ -178,7 +178,7 @@ const EditPage = {
             } else {
                 filtered = filtered.filter(({ vocabulary }) => {
                     const category = vocabulary.category || 'GENERAL';
-                    if (sel === 'VSTEP') return category === 'VSTEP' || category === 'GENERAL';
+                    if (sel === 'VSTEP') return category !== 'WRITING';
                     return category === sel;
                 });
             }
