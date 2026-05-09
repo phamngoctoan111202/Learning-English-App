@@ -251,8 +251,8 @@ class Database {
         if (!category) return true;
         if (!category.includes('_PART')) {
             const vocabCategory = vocab.category || 'GENERAL';
-            // VSTEP (General tab) = all words except Writing
-            if (category === 'VSTEP') return vocabCategory !== 'WRITING';
+            // VSTEP (General tab) = VSTEP + GENERAL
+            if (category === 'VSTEP') return vocabCategory === 'VSTEP' || vocabCategory === 'GENERAL';
             return vocabCategory === category;
         }
         // Virtual: e.g. SPEAKING_PART2 → base=SPEAKING, part=PART2

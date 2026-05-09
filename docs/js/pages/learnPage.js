@@ -192,8 +192,8 @@ const LearnPage = {
             for (const vocab of (allVocabs || [])) {
                 const category = vocab?.category || 'GENERAL';
                 counts[category] = (counts[category] || 0) + 1;
-                // VSTEP (General tab) = all non-Writing words
-                if (category !== 'WRITING') counts['VSTEP'] = (counts['VSTEP'] || 0) + 1;
+                // VSTEP (General tab) = VSTEP + GENERAL
+                if (category === 'VSTEP' || category === 'GENERAL') counts['VSTEP'] = (counts['VSTEP'] || 0) + 1;
             }
 
             document.querySelectorAll('[data-category-count]').forEach(el => {

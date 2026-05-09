@@ -421,10 +421,10 @@ class LearnFragment : Fragment() {
                 Logger.d("📊 Total vocabularies: ${list.size}")
 
                 // Filter by category AND examples
-                // VSTEP (General tab) = all words except Writing
+                // VSTEP (General tab) = VSTEP + GENERAL
                 val filtered = list.filter {
                     it.examples.isNotEmpty() && (
-                        if (category == "VSTEP") it.vocabulary.category != "WRITING"
+                        if (category == "VSTEP") it.vocabulary.category == "VSTEP" || it.vocabulary.category == "GENERAL"
                         else it.vocabulary.category == category
                     )
                 }
