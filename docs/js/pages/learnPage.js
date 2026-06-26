@@ -40,6 +40,9 @@ const LearnPage = {
                         <i class="fas fa-volume-up"></i>
                     </div>
                     <div class="vietnamese-hint" id="vietnamese-hint">-</div>
+                    <button class="image-search-btn" id="image-search-btn" title="Mở Google Images với câu ví dụ này">
+                        <i class="fas fa-image"></i> Xem ảnh minh họa
+                    </button>
                     <div class="examples-count" id="examples-count">-</div>
                     <button class="settings-btn" id="settings-btn">
                         <i class="fas fa-cog"></i>
@@ -246,6 +249,10 @@ const LearnPage = {
 
         document.getElementById('settings-btn').addEventListener('click', () => {
             this.showSettings();
+        });
+
+        document.getElementById('image-search-btn').addEventListener('click', () => {
+            this.openImageSearch();
         });
 
         // Category filter
@@ -991,6 +998,21 @@ const LearnPage = {
         `;
         document.getElementById('vietnamese-hint').textContent =
             'Add some vocabulary in the Edit tab first';
+    },
+
+    /**
+     * Open Google Images search in a new tab for the current example sentence
+     * Giúp liên tưởng hình ảnh để ghi nhớ câu ví dụ tốt hơn
+     */
+    openImageSearch() {
+        if (!this.currentVocab) return;
+
+        const currentExample = this.currentVocab.examples[this.currentExampleIndex];
+        const sentences = currentExample ? ExampleUtils.getAllSentences(currentExample) : [];
+        const query = sentences[0] || this.currentVocab.vocabulary.word;
+
+        const url = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(query)}`;
+        window.open(url, '_blank', 'noopener');
     },
 
     /**

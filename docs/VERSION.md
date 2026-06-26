@@ -15,6 +15,19 @@ This forces browsers to load the new file instead of using cached version.
 
 ## Version Log
 
+### v1.4 (2026-06-26)
+**Added:** "Xem ảnh minh họa" button in Learn tab
+
+**Changes:**
+- `js/pages/learnPage.js`: New `openImageSearch()` opens a Google Images search (new tab) for the current example sentence, to help visual association/memorization
+- `css/styles.css`: Added `.image-search-btn` style
+- `index.html`: Bumped cache-busting version to v1.4
+
+**Impact:**
+- Free, no API key/backend needed — just builds a `google.com/search?tbm=isch` URL client-side
+
+---
+
 ### v1.1 (2025-11-26)
 **Fixed:** Daily Goal not updating after completing sentence
 

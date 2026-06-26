@@ -411,6 +411,25 @@ body {
     opacity: 0.7;
 }
 
+.image-search-btn {
+    align-self: flex-start;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: var(--white);
+    padding: 6px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.3s;
+}
+
+.image-search-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
 .settings-btn {
     position: absolute;
     top: 20px;
