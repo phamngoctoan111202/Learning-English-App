@@ -197,7 +197,6 @@ class Database {
         if (isCorrect) {
             vocab.correctAttempts = (vocab.correctAttempts || 0) + 1;
         }
-        vocab.memoryScore = vocab.correctAttempts / vocab.totalAttempts;
 
         // Update last 10 attempts
         let last10 = [];
@@ -211,6 +210,11 @@ class Database {
             last10 = last10.slice(-10);
         }
         vocab.last10Attempts = JSON.stringify(last10);
+
+        // memoryScore = tỉ lệ đúng trong 10 lần thử gần nhất (không phải lifetime)
+        vocab.memoryScore = last10.length > 0
+            ? last10.filter(x => x === true).length / last10.length
+            : 0;
 
         if (exampleId !== null && exampleId !== undefined) {
             let exampleStats = {};
@@ -605,15 +609,14 @@ class Database {
     }
 
     /**
-     * Check if vocabulary has passed (70%+ accuracy with at least 10 total attempts)
+     * Check if vocabulary has passed (7/10+ correct in the last 10 attempts)
      */
     static hasPassed(vocab, numExamples = 1) {
-        const totalAttempts = vocab.totalAttempts || 0;
-        const correctAttempts = vocab.correctAttempts || 0;
-        const memoryScore = totalAttempts > 0 ? (correctAttempts / totalAttempts) * 100 : 0;
+        const last10 = Database.getLast10AttemptsList(vocab);
+        const correctCount = last10.filter(x => x === true).length;
 
-        // 70%+ accuracy with at least 10 attempts
-        return totalAttempts >= 10 && memoryScore >= 70;
+        // 7/10+ correct in the last 10 attempts
+        return last10.length >= 10 && correctCount >= 7;
     }
 
     /**

@@ -122,7 +122,6 @@ class SyncManager {
         const serverLastStudied = parseInt(serverVocab.lastStudiedAt) || 0;
         const serverTotalAttempts = parseInt(serverVocab.totalAttempts) || 0;
         const serverCorrectAttempts = parseInt(serverVocab.correctAttempts) || 0;
-        const serverMemoryScore = parseFloat(serverVocab.memoryScore) || 0;
         const serverLast10 = serverVocab.last10Attempts || '[]';
         const serverSentences = serverVocab.sentences || '';
         const serverVietnamese = serverVocab.vietnamese || '';
@@ -132,7 +131,6 @@ class SyncManager {
         const localLastStudied = parseInt(localVocab.lastStudiedAt) || 0;
         const localTotalAttempts = parseInt(localVocab.totalAttempts) || 0;
         const localCorrectAttempts = parseInt(localVocab.correctAttempts) || 0;
-        const localMemoryScore = parseFloat(localVocab.memoryScore) || 0;
 
         // Merge: Lấy giá trị MAX (ai học nhiều hơn thì lấy)
         localVocab.word = serverWord;  // Server quyết định spelling
@@ -142,11 +140,17 @@ class SyncManager {
         // Merge stats: lấy max
         localVocab.totalAttempts = Math.max(localTotalAttempts, serverTotalAttempts);
         localVocab.correctAttempts = Math.max(localCorrectAttempts, serverCorrectAttempts);
-        localVocab.memoryScore = Math.max(localMemoryScore, serverMemoryScore);
         localVocab.lastStudiedAt = Math.max(localLastStudied, serverLastStudied);
 
         // Merge last10Attempts: lấy cái dài hơn
         localVocab.last10Attempts = this.mergeLast10(localVocab.last10Attempts, serverLast10);
+
+        // memoryScore = tỉ lệ đúng trong last10Attempts đã merge (không lấy max 2 điểm cũ,
+        // vì memoryScore có thể tăng/giảm theo thời gian, không phải số lifetime đơn điệu tăng)
+        const mergedLast10 = JSON.parse(localVocab.last10Attempts || '[]');
+        localVocab.memoryScore = mergedLast10.length > 0
+            ? mergedLast10.filter(x => x === true).length / mergedLast10.length
+            : 0;
 
         // Cập nhật vocabulary
         await db.updateVocabulary(localVocab);

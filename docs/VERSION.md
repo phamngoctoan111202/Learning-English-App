@@ -15,6 +15,20 @@ This forces browsers to load the new file instead of using cached version.
 
 ## Version Log
 
+### v1.5 (2026-06-27)
+**Fixed:** `memoryScore`/`hasPassed` were computed from lifetime totals instead of the last 10 attempts
+
+**Changes:**
+- `js/services/database.js`: `updateLearningStats()` now derives `memoryScore` from the (already tracked) `last10Attempts` sliding window instead of `correctAttempts/totalAttempts`; `Database.hasPassed()` now checks `last10Attempts.length >= 10 && correctCount >= 7` instead of the lifetime ratio — matches the algorithm already documented in the Learn tab's "Review Algorithm" card
+- `js/services/syncManager.js`: `mergeAndUpdateLocal()` now recomputes `memoryScore` from the merged `last10Attempts` array instead of `Math.max(local, server)`, since memoryScore can now legitimately go down (forgetting), not just up
+- `js/pages/learnPage.js`: Word Queue badge now also shows the last-10 ratio next to the lifetime stat, e.g. `39/61 · 7/10 gần nhất`
+- `index.html`: Bumped cache-busting version to v1.5
+
+**Impact:**
+- A word is only marked "mastered" (`.passed`, unlocks Next/Skip) based on its most recent 10 attempts, not its entire history — fixes cases like a word with poor lifetime accuracy that has since been learned, or a word with good lifetime accuracy that's currently being forgotten
+
+---
+
 ### v1.4 (2026-06-26)
 **Added:** "Xem ảnh minh họa" button in Learn tab
 

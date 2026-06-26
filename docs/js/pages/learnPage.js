@@ -465,6 +465,8 @@ const LearnPage = {
             const hasPassed = Database.hasPassed(vocab, examplesCount);
             const correctAttempts = vocab.correctAttempts || 0;
             const totalAttempts = vocab.totalAttempts || 0;
+            const last10Correct = Database.getLast10CorrectCount(vocab);
+            const last10Length = Database.getLast10AttemptsList(vocab).length;
 
             // Calculate days since last study
             const lastStudied = vocab.lastStudiedAt || vocab.createdAt || Date.now();
@@ -488,7 +490,7 @@ const LearnPage = {
                 <div class="${className}" data-index="${index}">
                     <span class="queue-item-word">${this.escapeHtml(vocab.word)}</span>
                     <span class="queue-item-stats">
-                        ${correctAttempts}/${totalAttempts}
+                        ${correctAttempts}/${totalAttempts} · ${last10Correct}/${last10Length} gần nhất
                         ${daysAgoBadge}
                     </span>
                 </div>
