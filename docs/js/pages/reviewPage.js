@@ -21,6 +21,10 @@ const ReviewPage = {
                             <input type="radio" name="review-category-filter" value="WRITING" ${savedCategory === 'WRITING' ? 'checked' : ''}>
                             <span>Writing <span class="category-count-pill" data-category-count="WRITING"></span></span>
                         </label>
+                        <label class="filter-radio">
+                            <input type="radio" name="review-category-filter" value="TECHNICAL" ${savedCategory === 'TECHNICAL' ? 'checked' : ''}>
+                            <span>Technical <span class="category-count-pill" data-category-count="TECHNICAL"></span></span>
+                        </label>
                     </div>
                 </div>
 

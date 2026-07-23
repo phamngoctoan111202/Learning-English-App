@@ -66,6 +66,10 @@ const EditPage = {
                         <input type="radio" name="category-filter" value="WRITING" ${savedCategory === 'WRITING' ? 'checked' : ''}>
                         <span>Writing <span class="category-count-pill" data-category-count="WRITING"></span></span>
                     </label>
+                    <label class="filter-radio">
+                        <input type="radio" name="category-filter" value="TECHNICAL" ${savedCategory === 'TECHNICAL' ? 'checked' : ''}>
+                        <span>Technical <span class="category-count-pill" data-category-count="TECHNICAL"></span></span>
+                    </label>
                 </div>
             </div>
             <div class="vocabulary-list" id="vocabulary-list">
@@ -238,6 +242,9 @@ const EditPage = {
             if (category === 'WRITING') {
                 categoryClass = 'category-badge-writing';
                 categoryLabel = 'Writing';
+            } else if (category === 'TECHNICAL') {
+                categoryClass = 'category-badge-technical';
+                categoryLabel = 'Technical';
             } else {
                 categoryClass = 'category-badge-general';
                 categoryLabel = 'General';
@@ -514,8 +521,13 @@ const EditPage = {
 
         document.getElementById('edit-vocab-word').value = vocabulary.word;
 
-        // Set category radio button (VSTEP/GENERAL/others → General; WRITING → Writing)
-        const effectiveCategory = vocabulary.category === 'WRITING' ? 'WRITING' : 'VSTEP';
+        // Set category radio button
+        let effectiveCategory = 'VSTEP';
+        if (vocabulary.category === 'WRITING') {
+            effectiveCategory = 'WRITING';
+        } else if (vocabulary.category === 'TECHNICAL') {
+            effectiveCategory = 'TECHNICAL';
+        }
         const categoryRadio = document.querySelector(`input[name="edit-vocab-category"][value="${effectiveCategory}"]`);
         if (categoryRadio) categoryRadio.checked = true;
 

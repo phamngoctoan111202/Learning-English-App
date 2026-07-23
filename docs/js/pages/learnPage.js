@@ -21,6 +21,8 @@ const LearnPage = {
     // Category filter (supports virtual: SPEAKING_PART1/2/3, WRITING_PART1/2)
     selectedCategory: localStorage.getItem('learnpage_filter_category') || 'VSTEP',
 
+    selectedMcqOption: null,
+
     // Track last words learned for logging
     _lastWordsLearned: null,
 
@@ -62,6 +64,10 @@ const LearnPage = {
                         <label class="filter-radio">
                             <input type="radio" name="learn-category-filter" value="WRITING" ${savedCategory === 'WRITING' ? 'checked' : ''}>
                             <span>Writing <span class="category-count-pill" data-category-count="WRITING"></span></span>
+                        </label>
+                        <label class="filter-radio">
+                            <input type="radio" name="learn-category-filter" value="TECHNICAL" ${savedCategory === 'TECHNICAL' ? 'checked' : ''}>
+                            <span>Technical <span class="category-count-pill" data-category-count="TECHNICAL"></span></span>
                         </label>
                     </div>
                 </div>
@@ -107,7 +113,8 @@ const LearnPage = {
                 <!-- Input Card -->
                 <div class="input-card">
                     <textarea class="answer-input" id="answer-input"
-                              placeholder="Type English translation here..."></textarea>
+                               placeholder="Type English translation here..."></textarea>
+                    <div id="mcq-container" class="hidden" style="width: 100%; display: flex; flex-direction: column; gap: 12px; margin-top: 10px;"></div>
                 </div>
 
                 <!-- Action Buttons -->
@@ -190,7 +197,7 @@ const LearnPage = {
             const allVocabs = await db.getAllVocabularies();
             const counts = {};
             let partsMap = {};
-            try { partsMap = JSON.parse(localStorage.getItem('vocab_parts') || '{}'); } catch {}
+            try { partsMap = JSON.parse(localStorage.getItem('vocab_parts') || '{}'); } catch { }
 
             for (const vocab of (allVocabs || [])) {
                 const category = vocab?.category || 'GENERAL';
@@ -262,6 +269,19 @@ const LearnPage = {
                 this.onCategoryChanged(e.target.value);
             });
         });
+
+        // MCQ options Click
+        const mcqContainer = document.getElementById('mcq-container');
+        if (mcqContainer) {
+            mcqContainer.addEventListener('click', (e) => {
+                const optionBtn = e.target.closest('.mcq-option-btn');
+                if (optionBtn) {
+                    mcqContainer.querySelectorAll('.mcq-option-btn').forEach(btn => btn.classList.remove('active'));
+                    optionBtn.classList.add('active');
+                    this.selectedMcqOption = optionBtn.dataset.option;
+                }
+            });
+        }
     },
 
     /**
@@ -564,6 +584,24 @@ const LearnPage = {
             this.currentExampleIndex + 1;
         document.getElementById('sentence-total').textContent =
             examples.length;
+
+        // Toggle MCQ or Text mode
+        const isTechnical = this.selectedCategory === 'TECHNICAL';
+        const answerInput = document.getElementById('answer-input');
+        const mcqContainer = document.getElementById('mcq-container');
+
+        if (isTechnical) {
+            if (answerInput) answerInput.classList.add('hidden');
+            if (mcqContainer) {
+                mcqContainer.classList.remove('hidden');
+                if (currentExample) {
+                    this.generateMcqOptions(currentExample);
+                }
+            }
+        } else {
+            if (answerInput) answerInput.classList.remove('hidden');
+            if (mcqContainer) mcqContainer.classList.add('hidden');
+        }
     },
 
     /**
@@ -678,11 +716,16 @@ const LearnPage = {
      * Check answer
      */
     async checkAnswer() {
-        const input = document.getElementById('answer-input');
-        const userAnswer = input.value.trim();
+        let userAnswer = '';
+        if (this.selectedCategory === 'TECHNICAL') {
+            userAnswer = this.selectedMcqOption || '';
+        } else {
+            const input = document.getElementById('answer-input');
+            userAnswer = input ? input.value.trim() : '';
+        }
 
         if (!userAnswer) {
-            App.showToast('Please enter an answer', 'error');
+            App.showToast(this.selectedCategory === 'TECHNICAL' ? 'Please select an option' : 'Please enter an answer', 'error');
             return;
         }
 
@@ -987,8 +1030,19 @@ const LearnPage = {
      * Clear input
      */
     clearInput() {
-        document.getElementById('answer-input').value = '';
-        document.getElementById('answer-input').focus();
+        if (this.selectedCategory === 'TECHNICAL') {
+            const mcqContainer = document.getElementById('mcq-container');
+            if (mcqContainer) {
+                mcqContainer.querySelectorAll('.mcq-option-btn').forEach(btn => btn.classList.remove('active'));
+            }
+            this.selectedMcqOption = null;
+        } else {
+            const input = document.getElementById('answer-input');
+            if (input) {
+                input.value = '';
+                input.focus();
+            }
+        }
     },
 
     /**
@@ -1022,6 +1076,71 @@ const LearnPage = {
      */
     showSettings() {
         alert('Session reset is disabled.\n\nGoals must never be reset.');
+    },
+
+    /**
+     * Generate MCQ options for current example
+     */
+    async generateMcqOptions(currentExample) {
+        if (!currentExample) return;
+        const parsed = ExampleUtils.parseSentences(currentExample.sentences);
+        const correctSentence = parsed[0];
+        if (!correctSentence) return;
+
+        try {
+            const allVocabs = await db.getAllVocabulariesWithExamples();
+            const otherSentences = [];
+            for (const item of allVocabs) {
+                if (item.vocabulary.id !== this.currentVocab.vocabulary.id) {
+                    for (const ex of item.examples) {
+                        const parsedEx = ExampleUtils.parseSentences(ex.sentences);
+                        if (parsedEx.length > 0) {
+                            const s = parsedEx[0].trim();
+                            if (s && !otherSentences.includes(s) && s !== correctSentence) {
+                                otherSentences.push(s);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Shuffle
+            const shuffledOthers = otherSentences.sort(() => 0.5 - Math.random());
+            const distractors = shuffledOthers.slice(0, 3);
+
+            // Fallback options
+            const fallbacks = [
+                "We need to analyze the technical specifications of the API.",
+                "This software architecture uses a microservices pattern.",
+                "The compiler optimizes the code for faster execution.",
+                "Database queries should be indexed for optimal performance."
+            ];
+            let fallbackIdx = 0;
+            while (distractors.length < 3 && fallbackIdx < fallbacks.length) {
+                const fb = fallbacks[fallbackIdx++];
+                if (fb !== correctSentence && !distractors.includes(fb)) {
+                    distractors.push(fb);
+                }
+            }
+
+            // Combine and shuffle
+            const choices = [correctSentence, ...distractors].sort(() => 0.5 - Math.random());
+
+            const mcqContainer = document.getElementById('mcq-container');
+            if (mcqContainer) {
+                mcqContainer.innerHTML = choices.map((choice, idx) => {
+                    const label = String.fromCharCode(65 + idx); // A, B, C, D
+                    return `
+                        <button class="mcq-option-btn" data-option="${this.escapeHtml(choice)}">
+                            <strong>${label}.</strong> ${this.escapeHtml(choice)}
+                        </button>
+                    `;
+                }).join('');
+            }
+            this.selectedMcqOption = null;
+        } catch (e) {
+            console.error('Error generating MCQ options:', e);
+        }
     },
 
     /**

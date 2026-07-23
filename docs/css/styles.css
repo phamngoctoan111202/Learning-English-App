@@ -166,7 +166,7 @@ body {
     cursor: pointer;
 }
 
-.filter-radio input[type="radio"]:checked + span {
+.filter-radio input[type="radio"]:checked+span {
     font-weight: 600;
 }
 
@@ -295,6 +295,11 @@ body {
 
 .category-badge-popular {
     background: #E91E63;
+    color: var(--white);
+}
+
+.category-badge-technical {
+    background: #009688;
     color: var(--white);
 }
 
@@ -479,6 +484,32 @@ body {
     border-color: var(--primary-color);
 }
 
+.mcq-option-btn {
+    width: 100%;
+    padding: 14px 20px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-size: 16px;
+    text-align: left;
+    background: var(--white);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+.mcq-option-btn:hover {
+    border-color: var(--primary-color);
+    background: #f0f7ff;
+}
+
+.mcq-option-btn.active {
+    border-color: var(--primary-color);
+    background: #e3f2fd;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(33, 150, 243, 0.25);
+}
+
 /* Action Buttons */
 .action-buttons {
     grid-column: 1;
@@ -627,9 +658,12 @@ body {
 }
 
 @keyframes pulse {
-    0%, 100% {
+
+    0%,
+    100% {
         opacity: 1;
     }
+
     50% {
         opacity: 0.7;
     }
@@ -729,7 +763,8 @@ body {
     padding: 16px 24px;
     box-shadow: var(--shadow);
     text-align: center;
-    display: none; /* Hidden on desktop, show in header instead */
+    display: none;
+    /* Hidden on desktop, show in header instead */
 }
 
 .sentence-progress {
