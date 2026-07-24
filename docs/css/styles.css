@@ -510,6 +510,35 @@ body {
     box-shadow: 0 2px 4px rgba(33, 150, 243, 0.25);
 }
 
+.mode-toggle-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    background: var(--white);
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    outline: none;
+}
+
+.mode-toggle-btn:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background: #f0f7ff;
+}
+
+.mode-toggle-btn.active {
+    background: var(--primary-color);
+    color: var(--white);
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 4px rgba(33, 150, 243, 0.25);
+}
+
 /* Action Buttons */
 .action-buttons {
     grid-column: 1;

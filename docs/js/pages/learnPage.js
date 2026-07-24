@@ -23,6 +23,9 @@ const LearnPage = {
 
     selectedMcqOption: null,
 
+    // Study mode: 'type' (typing) or 'mcq' (multiple choice selection)
+    studyMode: localStorage.getItem('learnpage_study_mode') || 'type',
+
     // Track last words learned for logging
     _lastWordsLearned: null,
 
@@ -32,6 +35,7 @@ const LearnPage = {
     render() {
         const mainContent = document.getElementById('main-content');
         const savedCategory = this.selectedCategory;
+        const savedStudyMode = this.studyMode;
 
         mainContent.innerHTML = `
             <div class="learn-container">
@@ -112,6 +116,15 @@ const LearnPage = {
 
                 <!-- Input Card -->
                 <div class="input-card">
+                    <div class="study-mode-toggle" style="display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-bottom: 16px; font-size: 14px;">
+                        <span style="color: #666; font-weight: 500; margin-right: 4px;">Study Mode:</span>
+                        <button id="mode-type-btn" class="mode-toggle-btn ${savedStudyMode === 'type' ? 'active' : ''}">
+                            <i class="fas fa-keyboard"></i> Type
+                        </button>
+                        <button id="mode-mcq-btn" class="mode-toggle-btn ${savedStudyMode === 'mcq' ? 'active' : ''}">
+                            <i class="fas fa-list-ul"></i> MCQ
+                        </button>
+                    </div>
                     <textarea class="answer-input" id="answer-input"
                                placeholder="Type English translation here..."></textarea>
                     <div id="mcq-container" class="hidden" style="width: 100%; display: flex; flex-direction: column; gap: 12px; margin-top: 10px;"></div>
@@ -280,6 +293,18 @@ const LearnPage = {
                     optionBtn.classList.add('active');
                     this.selectedMcqOption = optionBtn.dataset.option;
                 }
+            });
+        }
+
+        // Study Mode Toggle Click
+        const modeTypeBtn = document.getElementById('mode-type-btn');
+        const modeMcqBtn = document.getElementById('mode-mcq-btn');
+        if (modeTypeBtn && modeMcqBtn) {
+            modeTypeBtn.addEventListener('click', () => {
+                this.switchStudyMode('type');
+            });
+            modeMcqBtn.addEventListener('click', () => {
+                this.switchStudyMode('mcq');
             });
         }
     },
@@ -586,11 +611,11 @@ const LearnPage = {
             examples.length;
 
         // Toggle MCQ or Text mode
-        const isTechnical = this.selectedCategory === 'TECHNICAL';
+        const isMcqMode = this.studyMode === 'mcq';
         const answerInput = document.getElementById('answer-input');
         const mcqContainer = document.getElementById('mcq-container');
 
-        if (isTechnical) {
+        if (isMcqMode) {
             if (answerInput) answerInput.classList.add('hidden');
             if (mcqContainer) {
                 mcqContainer.classList.remove('hidden');
@@ -717,7 +742,7 @@ const LearnPage = {
      */
     async checkAnswer() {
         let userAnswer = '';
-        if (this.selectedCategory === 'TECHNICAL') {
+        if (this.studyMode === 'mcq') {
             userAnswer = this.selectedMcqOption || '';
         } else {
             const input = document.getElementById('answer-input');
@@ -725,7 +750,7 @@ const LearnPage = {
         }
 
         if (!userAnswer) {
-            App.showToast(this.selectedCategory === 'TECHNICAL' ? 'Please select an option' : 'Please enter an answer', 'error');
+            App.showToast(this.studyMode === 'mcq' ? 'Please select an option' : 'Please enter an answer', 'error');
             return;
         }
 
@@ -1030,7 +1055,7 @@ const LearnPage = {
      * Clear input
      */
     clearInput() {
-        if (this.selectedCategory === 'TECHNICAL') {
+        if (this.studyMode === 'mcq') {
             const mcqContainer = document.getElementById('mcq-container');
             if (mcqContainer) {
                 mcqContainer.querySelectorAll('.mcq-option-btn').forEach(btn => btn.classList.remove('active'));
@@ -1042,6 +1067,53 @@ const LearnPage = {
                 input.value = '';
                 input.focus();
             }
+        }
+    },
+
+    /**
+     * Switch study mode between 'type' and 'mcq'
+     */
+    switchStudyMode(mode) {
+        if (this.studyMode === mode) return;
+        this.studyMode = mode;
+        localStorage.setItem('learnpage_study_mode', mode);
+
+        // Update button active classes
+        const modeTypeBtn = document.getElementById('mode-type-btn');
+        const modeMcqBtn = document.getElementById('mode-mcq-btn');
+        if (modeTypeBtn && modeMcqBtn) {
+            if (mode === 'type') {
+                modeTypeBtn.classList.add('active');
+                modeMcqBtn.classList.remove('active');
+            } else {
+                modeMcqBtn.classList.add('active');
+                modeTypeBtn.classList.remove('active');
+            }
+        }
+
+        // Toggle display of inputs
+        const answerInput = document.getElementById('answer-input');
+        const mcqContainer = document.getElementById('mcq-container');
+
+        if (mode === 'mcq') {
+            if (answerInput) answerInput.classList.add('hidden');
+            if (mcqContainer) {
+                mcqContainer.classList.remove('hidden');
+                // Generate choices for the current example sentence
+                const examples = this.currentVocab?.examples;
+                const currentExample = examples ? examples[this.currentExampleIndex] : null;
+                if (currentExample) {
+                    this.generateMcqOptions(currentExample);
+                }
+            }
+        } else {
+            if (answerInput) {
+                answerInput.classList.remove('hidden');
+                answerInput.value = '';
+                answerInput.focus();
+            }
+            if (mcqContainer) mcqContainer.classList.add('hidden');
+            this.selectedMcqOption = null;
         }
     },
 
