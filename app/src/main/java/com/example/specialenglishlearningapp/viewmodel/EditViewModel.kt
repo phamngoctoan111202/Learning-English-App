@@ -323,12 +323,17 @@ class EditViewModel(application: Application) : AndroidViewModel(application) {
                 Logger.d("✅ [EditViewModel] Full sync successful!")
                 _syncStatus.postValue("✅ Đồng bộ hóa thành công!\n📚 Từ vựng + 📊 Tiến độ học tập")
             } else {
-                val errors = mutableListOf<String>()
-                vocabResult.onFailure { errors.add("Từ vựng: ${it.message}") }
-                progressResult.onFailure { errors.add("Tiến độ: ${it.message}") }
+                val exception = vocabResult.exceptionOrNull() ?: progressResult.exceptionOrNull()
+                if (syncManager.isQuotaExceeded(exception)) {
+                    _syncStatus.postValue("⚠️ Máy chủ Appwrite hết hạn ngạch đọc (Free Quota).\n📱 Đã tự động chuyển sang chế độ Offline trên máy.")
+                } else {
+                    val errors = mutableListOf<String>()
+                    vocabResult.onFailure { errors.add("Từ vựng: ${it.message}") }
+                    progressResult.onFailure { errors.add("Tiến độ: ${it.message}") }
 
-                Logger.e("❌ [EditViewModel] Sync failed: ${errors.joinToString(", ")}")
-                _syncStatus.postValue("⚠️ Đồng bộ hóa thất bại:\n${errors.joinToString("\n")}")
+                    Logger.e("❌ [EditViewModel] Sync failed: ${errors.joinToString(", ")}")
+                    _syncStatus.postValue("⚠️ Đồng bộ hóa thất bại:\n${errors.joinToString("\n")}")
+                }
             }
         }
     }

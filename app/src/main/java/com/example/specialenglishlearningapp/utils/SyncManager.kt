@@ -24,6 +24,15 @@ class SyncManager(context: Context, private val database: AppDatabase) {
     private val databaseId = AppwriteConfig.DATABASE_ID
     private val vocabularyCollectionId = AppwriteConfig.VOCABULARY_COLLECTION_ID
 
+    fun isQuotaExceeded(e: Throwable?): Boolean {
+        val msg = e?.message.orEmpty().lowercase()
+        return msg.contains("database reads limit") ||
+               msg.contains("billing cycle") ||
+               msg.contains("budget cap") ||
+               msg.contains("quota") ||
+               msg.contains("rate_limit")
+    }
+
     suspend fun syncData(): Result<Unit> = withContext(Dispatchers.IO) {
         try {
             Logger.d("Starting sync with anonymous authentication...")

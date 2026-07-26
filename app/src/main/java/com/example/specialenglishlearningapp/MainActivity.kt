@@ -47,7 +47,17 @@ class MainActivity : AppCompatActivity() {
             if (result.isSuccess) {
                 Logger.d("✅ App startup sync completed successfully")
             } else {
-                Logger.e("⚠️ App startup sync failed: ${result.exceptionOrNull()?.message}")
+                val exception = result.exceptionOrNull()
+                if (syncManager.isQuotaExceeded(exception)) {
+                    Logger.w("⚠️ Appwrite billing quota exceeded during startup sync.")
+                    android.widget.Toast.makeText(
+                        this@MainActivity,
+                        "⚠️ Máy chủ Appwrite hết hạn ngạch đọc Free Quota. App hoạt động ở chế độ Offline từ cơ sở dữ liệu trên máy.",
+                        android.widget.Toast.LENGTH_LONG
+                    ).show()
+                } else {
+                    Logger.e("⚠️ App startup sync failed: ${exception?.message}")
+                }
             }
         }
     }
