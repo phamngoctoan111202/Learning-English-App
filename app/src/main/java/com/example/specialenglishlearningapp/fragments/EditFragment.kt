@@ -107,6 +107,12 @@ class EditFragment : Fragment() {
             showBulkImportDialog()
         }
 
+        binding.fabSync.setOnClickListener {
+            Logger.d("Sync button clicked")
+            Toast.makeText(context, "🔄 Đang tải dữ liệu từ máy chủ...", Toast.LENGTH_SHORT).show()
+            editViewModel.syncData()
+        }
+
         // Setup SearchView
         binding.searchView.setOnQueryTextListener(object : androidx.appcompat.widget.SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {

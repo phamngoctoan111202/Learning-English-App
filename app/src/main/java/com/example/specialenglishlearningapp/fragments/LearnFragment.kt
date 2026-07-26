@@ -54,6 +54,7 @@ class LearnFragment : Fragment() {
     private var studyMode: String = "type" // "type" or "mcq"
     private var selectedMcqOptionText: String? = null
     private var currentMcqOptions: List<String> = emptyList()
+    private var isMcqAnswered: Boolean = false
 
     // Text-to-Speech helper
     private var ttsHelper: TextToSpeechHelper? = null
@@ -898,6 +899,9 @@ class LearnFragment : Fragment() {
             completedVietnamese.add(matchedExample.vietnamese)
             Logger.d("✅ Correct! Completed Vietnamese: '${matchedExample.vietnamese}' (${completedVietnamese.size}/$totalSentences)")
 
+            val targetSentence = currentSentences.firstOrNull() ?: ""
+            highlightMcqAnswerResult(userAnswer, targetSentence)
+
             // Check if ALL unique Vietnamese sentences are completed
             isVocabularyCompleted = (completedVietnamese.size >= totalSentences)
 
@@ -1168,8 +1172,12 @@ class LearnFragment : Fragment() {
                     }
                 }
             }
+
+            val targetSentence = currentSentences.firstOrNull() ?: ""
+            highlightMcqAnswerResult(userAnswer, targetSentence)
+            binding.buttonNext.isEnabled = true
+
             // FIXED: Use the current displayed example for error display
-            // (already found at the beginning of checkAnswer())
             showDetailedError(userAnswer, listOf(currentDisplayedExample))
         }
     }
@@ -1328,12 +1336,15 @@ class LearnFragment : Fragment() {
 
         buttons.forEachIndexed { index, button ->
             button.setOnClickListener {
+                if (isMcqAnswered) return@setOnClickListener
+
                 if (index < currentMcqOptions.size) {
                     selectedMcqOptionText = currentMcqOptions[index]
                     highlightSelectedMcqOption(index)
                     Logger.d("Selected MCQ option $index: '$selectedMcqOptionText'")
 
-                    // Auto check answer on option select for smooth UX
+                    // Check answer on selection
+                    isMcqAnswered = true
                     checkAnswer()
                 }
             }
@@ -1355,6 +1366,39 @@ class LearnFragment : Fragment() {
             } else {
                 button.setBackgroundColor(android.graphics.Color.TRANSPARENT)
                 button.setTextColor(android.graphics.Color.parseColor("#333333"))
+            }
+        }
+    }
+
+    private fun highlightMcqAnswerResult(userAnswer: String, targetSentence: String) {
+        if (studyMode != "mcq") return
+
+        val buttons = listOf(
+            binding.buttonMcqOptionA,
+            binding.buttonMcqOptionB,
+            binding.buttonMcqOptionC,
+            binding.buttonMcqOptionD
+        )
+
+        val normUser = normalize(userAnswer)
+        val normTarget = normalize(targetSentence)
+
+        buttons.forEachIndexed { idx, btn ->
+            btn.isEnabled = false // Lock buttons after answer is evaluated
+            if (idx < currentMcqOptions.size) {
+                val optText = normalize(currentMcqOptions[idx])
+                if (optText == normTarget) {
+                    // Correct option: Green
+                    btn.setBackgroundColor(android.graphics.Color.parseColor("#C8E6C9"))
+                    btn.setTextColor(android.graphics.Color.parseColor("#2E7D32"))
+                } else if (optText == normUser) {
+                    // Wrong selected option: Red
+                    btn.setBackgroundColor(android.graphics.Color.parseColor("#FFCDD2"))
+                    btn.setTextColor(android.graphics.Color.parseColor("#C62828"))
+                } else {
+                    btn.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+                    btn.setTextColor(android.graphics.Color.parseColor("#888888"))
+                }
             }
         }
     }
@@ -1381,7 +1425,21 @@ class LearnFragment : Fragment() {
         }.orEmpty()
 
         selectedMcqOptionText = null
-        highlightSelectedMcqOption(-1)
+        isMcqAnswered = false
+
+        val buttons = listOf(
+            binding.buttonMcqOptionA,
+            binding.buttonMcqOptionB,
+            binding.buttonMcqOptionC,
+            binding.buttonMcqOptionD
+        )
+
+        // Reset and enable all buttons
+        buttons.forEach { btn ->
+            btn.isEnabled = true
+            btn.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+            btn.setTextColor(android.graphics.Color.parseColor("#333333"))
+        }
 
         lifecycleScope.launch {
             try {
@@ -1401,12 +1459,6 @@ class LearnFragment : Fragment() {
                 currentMcqOptions = options
 
                 val labels = listOf("A", "B", "C", "D")
-                val buttons = listOf(
-                    binding.buttonMcqOptionA,
-                    binding.buttonMcqOptionB,
-                    binding.buttonMcqOptionC,
-                    binding.buttonMcqOptionD
-                )
 
                 buttons.forEachIndexed { i, btn ->
                     if (i < options.size) {

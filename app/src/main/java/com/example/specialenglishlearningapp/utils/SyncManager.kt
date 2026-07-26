@@ -151,11 +151,25 @@ class SyncManager(context: Context, private val database: AppDatabase) {
     }
 
     private suspend fun fetchAppwriteData(): List<Document<Map<String, Any>>> {
-        return databases.listDocuments(
-            databaseId = databaseId,
-            collectionId = vocabularyCollectionId,
-            queries = listOf(Query.limit(100))
-        ).documents
+        val allDocuments = mutableListOf<Document<Map<String, Any>>>()
+        var offset = 0
+        val limit = 100
+
+        while (true) {
+            val batch = databases.listDocuments(
+                databaseId = databaseId,
+                collectionId = vocabularyCollectionId,
+                queries = listOf(Query.limit(limit), Query.offset(offset))
+            ).documents
+
+            allDocuments.addAll(batch)
+            if (batch.size < limit) {
+                break
+            }
+            offset += limit
+        }
+        Logger.d("Total documents fetched from Appwrite: ${allDocuments.size}")
+        return allDocuments
     }
 
     private suspend fun syncAppwriteToRoom(appwriteData: List<Document<Map<String, Any>>>) {
@@ -307,6 +321,62 @@ class SyncManager(context: Context, private val database: AppDatabase) {
             appwriteDocumentId = appwriteIdToSet
         )
         vocabularyDao.updateVocabulary(updatedVocab)
+
+        // Ensure examples are also populated if local has no examples
+        val exampleDao = database.exampleDao()
+        val localExamples = exampleDao.getExamplesByVocabularyIdSync(localVocab.id)
+        if (localExamples.isEmpty()) {
+            val extractedExamples = extractExamplesFromAppwriteDocData(serverData)
+            for ((formattedSentences, vi, gr) in extractedExamples) {
+                exampleDao.insertExample(
+                    Example(
+                        vocabularyId = localVocab.id,
+                        sentences = formattedSentences,
+                        vietnamese = vi,
+                        grammar = gr,
+                        createdAt = System.currentTimeMillis(),
+                        appwriteDocumentId = null
+                    )
+                )
+            }
+            Logger.d("Populated ${extractedExamples.size} example(s) for local vocabulary ID ${localVocab.id}")
+        }
+    }
+
+    private fun extractExamplesFromAppwriteDocData(data: Map<String, Any>): List<Triple<String, String?, String?>> {
+        val list = mutableListOf<Triple<String, String?, String?>>()
+
+        val examplesRaw = data["examples"]
+        if (examplesRaw != null) {
+            val examplesStr = examplesRaw.toString()
+            if (examplesStr.isNotBlank() && examplesStr != "[]") {
+                try {
+                    val jsonArray = org.json.JSONArray(examplesStr)
+                    for (i in 0 until jsonArray.length()) {
+                        val item = jsonArray.getJSONObject(i)
+                        val sentences = item.optString("sentences", "")
+                        val vi = item.optString("vietnamese", "").ifEmpty { null }
+                        val gr = item.optString("grammar", "").ifEmpty { null }
+                        if (sentences.isNotBlank()) {
+                            list.add(Triple(formatSentencesForStorage(sentences), vi, gr))
+                        }
+                    }
+                } catch (e: Exception) {
+                    Logger.w("Failed to parse examples JSONArray from Appwrite doc: ${e.message}")
+                }
+            }
+        }
+
+        if (list.isEmpty()) {
+            val rootSentences = data["sentences"] as? String
+            val rootVi = data["vietnamese"] as? String
+            val rootGrammar = data["grammar"] as? String
+            if (!rootSentences.isNullOrBlank()) {
+                list.add(Triple(formatSentencesForStorage(rootSentences), rootVi?.ifEmpty { null }, rootGrammar?.ifEmpty { null }))
+            }
+        }
+
+        return list
     }
 
     /**
@@ -335,27 +405,20 @@ class SyncManager(context: Context, private val database: AppDatabase) {
         // Insert new vocabulary
         val newVocabId = vocabularyDao.insertVocabulary(vocabulary)
 
-        // Create example if provided
-        val sentences = data["sentences"] as String?
-        val vietnamese = data["vietnamese"] as String?
-        val grammar = data["grammar"] as String?
-        Logger.d("Processing example data - sentences: '$sentences', vietnamese: '$vietnamese', grammar: '$grammar'")
-
-        if (!sentences.isNullOrEmpty()) {
-            // Ensure sentences is in proper JSON format
-            val formattedSentences = formatSentencesForStorage(sentences)
-            Logger.d("Formatted sentences: '$formattedSentences'")
-
-            val example = Example(
-                vocabularyId = newVocabId,
-                sentences = formattedSentences,
-                vietnamese = vietnamese,
-                grammar = grammar,
-                createdAt = (data["createdAt"] as String?)?.toLongOrNull() ?: System.currentTimeMillis(),
-                appwriteDocumentId = null
-            )
-            exampleDao.insertExample(example)
-            Logger.d("Successfully created example for vocabulary: ${data["word"]}")
+        val extractedExamples = extractExamplesFromAppwriteDocData(data)
+        if (extractedExamples.isNotEmpty()) {
+            for ((formattedSentences, vi, gr) in extractedExamples) {
+                val example = Example(
+                    vocabularyId = newVocabId,
+                    sentences = formattedSentences,
+                    vietnamese = vi,
+                    grammar = gr,
+                    createdAt = (data["createdAt"] as String?)?.toLongOrNull() ?: System.currentTimeMillis(),
+                    appwriteDocumentId = null
+                )
+                exampleDao.insertExample(example)
+            }
+            Logger.d("Successfully created ${extractedExamples.size} example(s) for vocabulary: ${data["word"]}")
         } else {
             Logger.d("No sentences data found for vocabulary: ${data["word"]}")
         }
