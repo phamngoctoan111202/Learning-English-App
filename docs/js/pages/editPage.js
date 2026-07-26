@@ -67,8 +67,12 @@ const EditPage = {
                         <span>Writing <span class="category-count-pill" data-category-count="WRITING"></span></span>
                     </label>
                     <label class="filter-radio">
-                        <input type="radio" name="category-filter" value="TECHNICAL" ${savedCategory === 'TECHNICAL' ? 'checked' : ''}>
-                        <span>Technical <span class="category-count-pill" data-category-count="TECHNICAL"></span></span>
+                        <input type="radio" name="category-filter" value="TECHNICAL_BACKEND" ${savedCategory === 'TECHNICAL_BACKEND' ? 'checked' : ''}>
+                        <span>Backend <span class="category-count-pill" data-category-count="TECHNICAL_BACKEND"></span></span>
+                    </label>
+                    <label class="filter-radio">
+                        <input type="radio" name="category-filter" value="TECHNICAL_MOBILE" ${savedCategory === 'TECHNICAL_MOBILE' ? 'checked' : ''}>
+                        <span>Mobile <span class="category-count-pill" data-category-count="TECHNICAL_MOBILE"></span></span>
                     </label>
                 </div>
             </div>
@@ -78,9 +82,14 @@ const EditPage = {
                     <p>Loading vocabularies...</p>
                 </div>
             </div>
-            <button class="fab" id="add-vocab-fab">
-                <i class="fas fa-plus"></i>
-            </button>
+            <div class="fab-container" style="position: fixed; bottom: 24px; right: 24px; display: flex; flex-direction: column; gap: 12px; z-index: 100;">
+                <button class="fab" id="bulk-vocab-fab" title="Bulk Import Data" style="background: #009688;">
+                    <i class="fas fa-file-import"></i>
+                </button>
+                <button class="fab" id="add-vocab-fab" title="Add Single Vocabulary">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
         `;
 
         this.setupEventListeners();
@@ -130,15 +139,25 @@ const EditPage = {
             });
         });
 
-        // FAB button
+        // FAB buttons
         const fab = document.getElementById('add-vocab-fab');
-        fab.addEventListener('click', () => {
-            this.showAddDialog();
-        });
+        if (fab) {
+            fab.addEventListener('click', () => {
+                this.showAddDialog();
+            });
+        }
 
-        // Add dialog events
+        const bulkFab = document.getElementById('bulk-vocab-fab');
+        if (bulkFab) {
+            bulkFab.addEventListener('click', () => {
+                this.showBulkImportDialog();
+            });
+        }
+
+        // Dialog events
         this.setupAddDialogEvents();
         this.setupEditDialogEvents();
+        this.setupBulkDialogEvents();
     },
 
     /**
@@ -242,9 +261,12 @@ const EditPage = {
             if (category === 'WRITING') {
                 categoryClass = 'category-badge-writing';
                 categoryLabel = 'Writing';
-            } else if (category === 'TECHNICAL') {
-                categoryClass = 'category-badge-technical';
-                categoryLabel = 'Technical';
+            } else if (category === 'TECHNICAL_BACKEND' || category === 'BACKEND' || category === 'TECHNICAL') {
+                categoryClass = 'category-badge-technical_backend';
+                categoryLabel = 'Backend';
+            } else if (category === 'TECHNICAL_MOBILE' || category === 'MOBILE') {
+                categoryClass = 'category-badge-technical_mobile';
+                categoryLabel = 'Mobile';
             } else {
                 categoryClass = 'category-badge-general';
                 categoryLabel = 'General';
@@ -525,8 +547,10 @@ const EditPage = {
         let effectiveCategory = 'VSTEP';
         if (vocabulary.category === 'WRITING') {
             effectiveCategory = 'WRITING';
-        } else if (vocabulary.category === 'TECHNICAL') {
-            effectiveCategory = 'TECHNICAL';
+        } else if (vocabulary.category === 'TECHNICAL_BACKEND' || vocabulary.category === 'BACKEND' || vocabulary.category === 'TECHNICAL') {
+            effectiveCategory = 'TECHNICAL_BACKEND';
+        } else if (vocabulary.category === 'TECHNICAL_MOBILE' || vocabulary.category === 'MOBILE') {
+            effectiveCategory = 'TECHNICAL_MOBILE';
         }
         const categoryRadio = document.querySelector(`input[name="edit-vocab-category"][value="${effectiveCategory}"]`);
         if (categoryRadio) categoryRadio.checked = true;
@@ -735,5 +759,167 @@ const EditPage = {
                 <p>${message}</p>
             </div>
         `;
+    },
+
+    // ==================== BULK IMPORT DIALOG ====================
+
+    setupBulkDialogEvents() {
+        const dialog = document.getElementById('bulk-import-dialog');
+        if (!dialog) return;
+
+        // Close button
+        const closeBtn = dialog.querySelector('.close-btn');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => this.hideBulkImportDialog());
+        }
+
+        // Cancel button
+        const cancelBtn = dialog.querySelector('.cancel-btn');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => this.hideBulkImportDialog());
+        }
+
+        // Save / Import button
+        const saveBtn = document.getElementById('bulk-import-save-btn');
+        if (saveBtn) {
+            saveBtn.addEventListener('click', () => this.importBulkData());
+        }
+
+        // Preset buttons
+        const loadBackendBtn = document.getElementById('bulk-load-backend');
+        if (loadBackendBtn) {
+            loadBackendBtn.addEventListener('click', () => this.loadPresetData('BACKEND'));
+        }
+
+        const loadMobileBtn = document.getElementById('bulk-load-mobile');
+        if (loadMobileBtn) {
+            loadMobileBtn.addEventListener('click', () => this.loadPresetData('MOBILE'));
+        }
+
+        const clearBtn = document.getElementById('bulk-clear-input');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                const textarea = document.getElementById('bulk-import-textarea');
+                if (textarea) textarea.value = '';
+            });
+        }
+
+        // Click overlay to close
+        dialog.addEventListener('click', (e) => {
+            if (e.target === dialog) {
+                this.hideBulkImportDialog();
+            }
+        });
+    },
+
+    showBulkImportDialog() {
+        const dialog = document.getElementById('bulk-import-dialog');
+        if (!dialog) return;
+
+        const textarea = document.getElementById('bulk-import-textarea');
+        if (textarea && !textarea.value.trim()) {
+            this.loadPresetData('BACKEND');
+        }
+
+        dialog.classList.remove('hidden');
+    },
+
+    hideBulkImportDialog() {
+        const dialog = document.getElementById('bulk-import-dialog');
+        if (dialog) dialog.classList.add('hidden');
+    },
+
+    loadPresetData(presetType) {
+        const textarea = document.getElementById('bulk-import-textarea');
+        if (!textarea) return;
+
+        if (presetType === 'BACKEND') {
+            textarea.value = [
+                'Middleware | The middleware intercepts incoming HTTP requests in the pipeline. | Middleware can thiệp vào các yêu cầu HTTP đang đến trong đường ống xử lý. | Noun - Software component handling HTTP request pipeline.',
+                'Repository | The repository pattern abstracts database operations from business logic. | Pattern repository tách biệt thao tác cơ sở dữ liệu khỏi logic nghiệp vụ. | Noun - Design pattern for data access layer abstraction.',
+                'Endpoint | The API endpoint receives payload and returns JSON response. | Endpoint API nhận dữ liệu payload và trả về phản hồi JSON. | Noun - Specific URL where an API service can be accessed.',
+                'ORM | Object-relational mapping simplifies interaction with relational databases. | Ánh xạ đối tượng - quan hệ giúp đơn giản hóa tương tác với CSDL. | Noun - Technique for converting data between incompatible type systems.',
+                'Microservices | Microservices architecture decomposes an application into independent services. | Kiến trúc microservices chia nhỏ ứng dụng thành các dịch vụ độc lập. | Noun - Architectural style structuring an application as loose services.'
+            ].join('\n');
+
+            const backendRadio = document.querySelector('input[name="bulk-category"][value="TECHNICAL_BACKEND"]');
+            if (backendRadio) backendRadio.checked = true;
+        } else if (presetType === 'MOBILE') {
+            textarea.value = [
+                'Activity | An activity represents a single screen with a user interface in Android. | Component activity đại diện cho một màn hình đơn với UI trong Android. | Noun - Core Android application component for UI screens.',
+                'Fragment | A fragment represents a reusable portion of a user interface in an activity. | Fragment đại diện cho một phần UI có thể tái sử dụng trong một activity. | Noun - Modular UI block within an Android activity.',
+                'State | State management ensures UI components automatically react to data changes. | Quản lý state đảm bảo các UI component tự động phản ứng với thay đổi dữ liệu. | Noun - Current data status driving UI representation.',
+                'Composable | Composable functions declare UI elements declaratively in Jetpack Compose. | Các hàm composable khai báo phần tử UI theo phong cách khai báo trong Compose. | Noun - Building block function in modern Android UI toolkit.',
+                'Lifecycle | Understanding the component lifecycle prevents memory leaks and crashes. | Hiểu rõ vòng đời của component giúp tránh rò rỉ bộ nhớ và crash app. | Noun - Series of states a component passes through from creation to destruction.'
+            ].join('\n');
+
+            const mobileRadio = document.querySelector('input[name="bulk-category"][value="TECHNICAL_MOBILE"]');
+            if (mobileRadio) mobileRadio.checked = true;
+        }
+    },
+
+    async importBulkData() {
+        const textarea = document.getElementById('bulk-import-textarea');
+        const rawContent = textarea ? textarea.value.trim() : '';
+
+        if (!rawContent) {
+            App.showToast('Please enter or select batch data to import', 'error');
+            return;
+        }
+
+        const categoryRadio = document.querySelector('input[name="bulk-category"]:checked');
+        const defaultCategory = categoryRadio ? categoryRadio.value : 'TECHNICAL_BACKEND';
+
+        const lines = rawContent.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        let importedCount = 0;
+        let skippedCount = 0;
+
+        for (const line of lines) {
+            const parts = line.split('|').map(p => p.trim());
+            if (parts.length < 2) continue;
+
+            const word = parts[0];
+            const sentence = parts[1] || '';
+            const vietnamese = parts[2] || '';
+            const grammar = parts[3] || '';
+
+            if (!word) continue;
+
+            try {
+                let vocab = await db.getVocabularyByWord(word);
+                let vocabId;
+
+                if (!vocab) {
+                    vocabId = await db.insertVocabulary({
+                        word: word,
+                        category: defaultCategory,
+                        createdAt: Date.now(),
+                        lastStudiedAt: Date.now()
+                    });
+                } else {
+                    vocabId = vocab.id;
+                }
+
+                if (sentence) {
+                    await db.insertExample({
+                        vocabularyId: vocabId,
+                        sentences: sentence,
+                        vietnamese: vietnamese,
+                        grammar: grammar,
+                        createdAt: Date.now()
+                    });
+                }
+
+                await syncManager.syncSingleVocabulary(vocabId);
+                importedCount++;
+            } catch (err) {
+                console.error(`Error importing word ${word}:`, err);
+                skippedCount++;
+            }
+        }
+
+        this.hideBulkImportDialog();
+        App.showToast(`Imported ${importedCount} item(s) successfully!`, 'success');
+        await this.loadVocabularies();
     }
 };

@@ -70,8 +70,12 @@ const LearnPage = {
                             <span>Writing <span class="category-count-pill" data-category-count="WRITING"></span></span>
                         </label>
                         <label class="filter-radio">
-                            <input type="radio" name="learn-category-filter" value="TECHNICAL" ${savedCategory === 'TECHNICAL' ? 'checked' : ''}>
-                            <span>Technical <span class="category-count-pill" data-category-count="TECHNICAL"></span></span>
+                            <input type="radio" name="learn-category-filter" value="TECHNICAL_BACKEND" ${savedCategory === 'TECHNICAL_BACKEND' ? 'checked' : ''}>
+                            <span>Backend <span class="category-count-pill" data-category-count="TECHNICAL_BACKEND"></span></span>
+                        </label>
+                        <label class="filter-radio">
+                            <input type="radio" name="learn-category-filter" value="TECHNICAL_MOBILE" ${savedCategory === 'TECHNICAL_MOBILE' ? 'checked' : ''}>
+                            <span>Mobile <span class="category-count-pill" data-category-count="TECHNICAL_MOBILE"></span></span>
                         </label>
                     </div>
                 </div>
@@ -307,6 +311,42 @@ const LearnPage = {
                 this.switchStudyMode('mcq');
             });
         }
+
+        // Global Keyboard Shortcuts for MCQ Mode and Navigation
+        document.addEventListener('keydown', (e) => {
+            const learnPage = document.getElementById('learn-page');
+            if (!learnPage || !learnPage.classList.contains('active')) return;
+
+            // Ignore when typing inside input or textarea except answer-input
+            const activeElem = document.activeElement;
+            if (activeElem && (activeElem.tagName === 'TEXTAREA' || (activeElem.tagName === 'INPUT' && activeElem.id !== 'answer-input'))) {
+                return;
+            }
+
+            if (this.studyMode === 'mcq') {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (this.selectedMcqOption) {
+                        this.checkAnswer();
+                    } else {
+                        const nextBtn = document.getElementById('next-btn');
+                        if (nextBtn && !nextBtn.disabled) {
+                            this.nextWord();
+                        }
+                    }
+                }
+                // Number keys 1, 2, 3, 4 select MCQ options A, B, C, D
+                if (['1', '2', '3', '4'].includes(e.key)) {
+                    const idx = parseInt(e.key) - 1;
+                    const optionBtns = document.querySelectorAll('#mcq-container .mcq-option-btn');
+                    if (optionBtns[idx]) {
+                        optionBtns.forEach(btn => btn.classList.remove('active'));
+                        optionBtns[idx].classList.add('active');
+                        this.selectedMcqOption = optionBtns[idx].dataset.option;
+                    }
+                }
+            }
+        });
     },
 
     /**

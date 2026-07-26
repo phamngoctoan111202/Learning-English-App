@@ -298,8 +298,16 @@ body {
     color: var(--white);
 }
 
-.category-badge-technical {
+.category-badge-technical,
+.category-badge-technical_backend,
+.category-badge-backend {
     background: #009688;
+    color: var(--white);
+}
+
+.category-badge-technical_mobile,
+.category-badge-mobile {
+    background: #3F51B5;
     color: var(--white);
 }
 
@@ -1504,4 +1512,112 @@ body {
 /* ==================== UTILITY ==================== */
 .hidden {
     display: none !important;
+}
+
+/* ==================== BULK IMPORT DIALOG ==================== */
+.dialog.bulk-dialog {
+    max-width: 680px;
+    width: 90%;
+}
+
+.template-presets {
+    margin: 12px 0;
+    padding: 10px 14px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.template-presets label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    display: block;
+    margin-bottom: 8px;
+}
+
+.template-btns {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.preset-btn {
+    padding: 6px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    background: #ffffff;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.preset-btn.backend-preset {
+    color: #00796b;
+    border-color: #b2dfdb;
+    background: #e0f2f1;
+}
+
+.preset-btn.backend-preset:hover {
+    background: #b2dfdb;
+}
+
+.preset-btn.mobile-preset {
+    color: #303f9f;
+    border-color: #c5cae9;
+    background: #e8eaf6;
+}
+
+.preset-btn.mobile-preset:hover {
+    background: #c5cae9;
+}
+
+.preset-btn.clear-preset {
+    color: #d32f2f;
+    border-color: #ffcdd2;
+    background: #ffebee;
+}
+
+.preset-btn.clear-preset:hover {
+    background: #ffcdd2;
+}
+
+.format-help {
+    margin: 10px 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+    background: #eef7ff;
+    padding: 8px 12px;
+    border-left: 4px solid var(--primary-color);
+    border-radius: 4px;
+}
+
+.format-help code {
+    background: #d0e7ff;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 12px;
+    color: #004085;
+}
+
+.format-subtext {
+    font-size: 11px;
+    margin-top: 4px;
+    color: #6c757d;
+}
+
+#bulk-import-textarea {
+    width: 100%;
+    font-family: monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    resize: vertical;
 }

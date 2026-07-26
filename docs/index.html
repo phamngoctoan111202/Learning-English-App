@@ -63,8 +63,12 @@
                             <span>Writing</span>
                         </label>
                         <label class="radio-label">
-                            <input type="radio" name="vocab-category" value="TECHNICAL">
-                            <span>Technical</span>
+                            <input type="radio" name="vocab-category" value="TECHNICAL_BACKEND">
+                            <span>Backend</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="vocab-category" value="TECHNICAL_MOBILE">
+                            <span>Mobile</span>
                         </label>
                     </div>
                 </div>
@@ -114,8 +118,12 @@
                             <span>Writing</span>
                         </label>
                         <label class="radio-label">
-                            <input type="radio" name="edit-vocab-category" value="TECHNICAL">
-                            <span>Technical</span>
+                            <input type="radio" name="edit-vocab-category" value="TECHNICAL_BACKEND">
+                            <span>Backend</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="edit-vocab-category" value="TECHNICAL_MOBILE">
+                            <span>Mobile</span>
                         </label>
                     </div>
                 </div>
@@ -133,6 +141,67 @@
                 <button class="delete-btn">Delete</button>
                 <button class="cancel-btn">Cancel</button>
                 <button class="save-btn">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Import Dialog -->
+    <div id="bulk-import-dialog" class="dialog-overlay hidden">
+        <div class="dialog bulk-dialog">
+            <div class="dialog-header">
+                <h2><i class="fas fa-file-import"></i> Bulk Import Vocabulary</h2>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="dialog-content">
+                <div class="input-group">
+                    <label>Default Category for Imported Words</label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="bulk-category" value="TECHNICAL_BACKEND" checked>
+                            <span>Backend</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="bulk-category" value="TECHNICAL_MOBILE">
+                            <span>Mobile</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="bulk-category" value="VSTEP">
+                            <span>General</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="bulk-category" value="WRITING">
+                            <span>Writing</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="template-presets">
+                    <label>Quick Pre-filled Samples:</label>
+                    <div class="template-btns">
+                        <button id="bulk-load-backend" class="preset-btn backend-preset">
+                            <i class="fas fa-server"></i> Backend Sample (5 words)
+                        </button>
+                        <button id="bulk-load-mobile" class="preset-btn mobile-preset">
+                            <i class="fas fa-mobile-alt"></i> Mobile Sample (5 words)
+                        </button>
+                        <button id="bulk-clear-input" class="preset-btn clear-preset">
+                            <i class="fas fa-trash-alt"></i> Clear
+                        </button>
+                    </div>
+                </div>
+
+                <div class="format-help">
+                    <p><strong>Format per line:</strong> <code>Word | English Sentence | Vietnamese Translation | Grammar Note</code></p>
+                    <p class="format-subtext">You can also import JSON array format or multiple lines per word.</p>
+                </div>
+
+                <div class="input-group">
+                    <textarea id="bulk-import-textarea" rows="12" placeholder="Paste or type bulk data here...&#10;Example:&#10;Middleware | The middleware intercepts incoming HTTP requests. | Middleware xử lý các yêu cầu HTTP đến. | Noun - Component handling request pipeline.&#10;Repository | The repository pattern abstracts data access logic. | Pattern repository tách biệt logic truy cập dữ liệu. | Noun - Design pattern for database abstraction."></textarea>
+                </div>
+            </div>
+            <div class="dialog-actions">
+                <button class="cancel-btn">Cancel</button>
+                <button class="save-btn" id="bulk-import-save-btn"><i class="fas fa-upload"></i> Import Batch</button>
             </div>
         </div>
     </div>
