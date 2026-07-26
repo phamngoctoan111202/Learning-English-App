@@ -71,6 +71,14 @@ class EditViewModel(application: Application) : AndroidViewModel(application) {
         val writingLearned = database.vocabularyDao().countLearnedByCategory("WRITING")
         statsMap["WRITING"] = CategoryStats(writingTotal, writingLearned)
 
+        val mobileTotal = database.vocabularyDao().countByCategory("TECHNICAL_MOBILE") + database.vocabularyDao().countByCategory("MOBILE")
+        val mobileLearned = database.vocabularyDao().countLearnedByCategory("TECHNICAL_MOBILE") + database.vocabularyDao().countLearnedByCategory("MOBILE")
+        statsMap["TECHNICAL_MOBILE"] = CategoryStats(mobileTotal, mobileLearned)
+
+        val webTotal = database.vocabularyDao().countByCategory("TECHNICAL_WEB") + database.vocabularyDao().countByCategory("WEB") + database.vocabularyDao().countByCategory("TECHNICAL_BACKEND") + database.vocabularyDao().countByCategory("BACKEND") + database.vocabularyDao().countByCategory("TECHNICAL")
+        val webLearned = database.vocabularyDao().countLearnedByCategory("TECHNICAL_WEB") + database.vocabularyDao().countLearnedByCategory("WEB") + database.vocabularyDao().countLearnedByCategory("TECHNICAL_BACKEND") + database.vocabularyDao().countLearnedByCategory("BACKEND") + database.vocabularyDao().countLearnedByCategory("TECHNICAL")
+        statsMap["TECHNICAL_WEB"] = CategoryStats(webTotal, webLearned)
+
         // Stats for "ALL"
         val allTotal = database.vocabularyDao().countAll()
         val allLearned = database.vocabularyDao().countAllLearned()
@@ -80,8 +88,12 @@ class EditViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun matchesCategory(vocabCategory: String, filter: String): Boolean =
-        if (filter == "VSTEP") vocabCategory == "VSTEP" || vocabCategory == "GENERAL"
-        else vocabCategory == filter
+        when (filter) {
+            "VSTEP" -> vocabCategory == "VSTEP" || vocabCategory == "GENERAL"
+            "TECHNICAL_MOBILE", "MOBILE" -> vocabCategory == "TECHNICAL_MOBILE" || vocabCategory == "MOBILE"
+            "TECHNICAL_WEB", "WEB" -> vocabCategory == "TECHNICAL_WEB" || vocabCategory == "WEB" || vocabCategory == "TECHNICAL_BACKEND" || vocabCategory == "BACKEND" || vocabCategory == "TECHNICAL"
+            else -> vocabCategory == filter
+        }
 
     fun filterByCategory(category: String?) {
         currentCategoryFilter = category

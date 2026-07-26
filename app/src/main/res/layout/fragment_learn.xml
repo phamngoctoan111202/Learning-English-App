@@ -157,6 +157,55 @@
                         android:layout_weight="1"
                         android:text="Writing" />
 
+                    <RadioButton
+                        android:id="@+id/radioMobile"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Mobile" />
+
+                    <RadioButton
+                        android:id="@+id/radioWeb"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Web" />
+
+                </RadioGroup>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="🎯 Chế độ học tập"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/blue_700"
+                    android:layout_marginTop="12dp"
+                    android:layout_marginBottom="8dp"
+                    android:gravity="center" />
+
+                <RadioGroup
+                    android:id="@+id/radioGroupStudyMode"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center">
+
+                    <RadioButton
+                        android:id="@+id/radioModeType"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="⌨️ Tự gõ câu"
+                        android:checked="true" />
+
+                    <RadioButton
+                        android:id="@+id/radioModeMcq"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="🔘 Trắc nghiệm MCQ" />
+
                 </RadioGroup>
 
             </LinearLayout>
@@ -350,6 +399,7 @@
 
         <!-- Input Card -->
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardInput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="20dp"
@@ -384,6 +434,83 @@
                         android:textSize="16sp" />
 
                 </com.google.android.material.textfield.TextInputLayout>
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- MCQ Options Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardMcqContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:visibility="gone"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="@android:color/white">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🔘 Chọn đáp án đúng (Nhấn Enter hoặc chọn đáp án):"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/blue_700"
+                    android:layout_marginBottom="12dp" />
+
+                <Button
+                    android:id="@+id/buttonMcqOptionA"
+                    style="?attr/materialButtonOutlinedStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:gravity="start|center_vertical"
+                    android:padding="12dp"
+                    android:text="A. Option A"
+                    android:textAllCaps="false"
+                    android:textSize="14sp" />
+
+                <Button
+                    android:id="@+id/buttonMcqOptionB"
+                    style="?attr/materialButtonOutlinedStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:gravity="start|center_vertical"
+                    android:padding="12dp"
+                    android:text="B. Option B"
+                    android:textAllCaps="false"
+                    android:textSize="14sp" />
+
+                <Button
+                    android:id="@+id/buttonMcqOptionC"
+                    style="?attr/materialButtonOutlinedStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:gravity="start|center_vertical"
+                    android:padding="12dp"
+                    android:text="C. Option C"
+                    android:textAllCaps="false"
+                    android:textSize="14sp" />
+
+                <Button
+                    android:id="@+id/buttonMcqOptionD"
+                    style="?attr/materialButtonOutlinedStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="start|center_vertical"
+                    android:padding="12dp"
+                    android:text="D. Option D"
+                    android:textAllCaps="false"
+                    android:textSize="14sp" />
 
             </LinearLayout>
 

@@ -51,6 +51,10 @@ class LearnFragment : Fragment() {
     private var updateUIRunnable: Runnable? = null
     private var autoSyncRunnable: Runnable? = null
 
+    private var studyMode: String = "type" // "type" or "mcq"
+    private var selectedMcqOptionText: String? = null
+    private var currentMcqOptions: List<String> = emptyList()
+
     // Text-to-Speech helper
     private var ttsHelper: TextToSpeechHelper? = null
 
@@ -159,10 +163,22 @@ class LearnFragment : Fragment() {
         binding.radioGroupCategory.setOnCheckedChangeListener { _, checkedId ->
             val category = when (checkedId) {
                 R.id.radioWriting -> "WRITING"
+                R.id.radioMobile -> "TECHNICAL_MOBILE"
+                R.id.radioWeb -> "TECHNICAL_WEB"
                 else -> "VSTEP"
             }
             onCategoryChanged(category)
         }
+
+        // Study mode filter (Typing vs MCQ)
+        binding.radioGroupStudyMode.setOnCheckedChangeListener { _, checkedId ->
+            studyMode = if (checkedId == R.id.radioModeMcq) "mcq" else "type"
+            Logger.d("Study mode changed to: $studyMode")
+            updateUI()
+        }
+
+        setupMcqOptionClickListeners()
+        setupEnterKeySupport()
 
         // Setup TTS for answer EditText - pronounce word when user types space
         setupAnswerTTS()
@@ -423,10 +439,12 @@ class LearnFragment : Fragment() {
                 // Filter by category AND examples
                 // VSTEP (General tab) = VSTEP + GENERAL
                 val filtered = list.filter {
-                    it.examples.isNotEmpty() && (
-                        if (category == "VSTEP") it.vocabulary.category == "VSTEP" || it.vocabulary.category == "GENERAL"
-                        else it.vocabulary.category == category
-                    )
+                    it.examples.isNotEmpty() && when (category) {
+                        "VSTEP" -> it.vocabulary.category == "VSTEP" || it.vocabulary.category == "GENERAL"
+                        "TECHNICAL_MOBILE", "MOBILE" -> it.vocabulary.category == "TECHNICAL_MOBILE" || it.vocabulary.category == "MOBILE"
+                        "TECHNICAL_WEB", "WEB" -> it.vocabulary.category == "TECHNICAL_WEB" || it.vocabulary.category == "WEB" || it.vocabulary.category == "TECHNICAL_BACKEND" || it.vocabulary.category == "BACKEND" || it.vocabulary.category == "TECHNICAL"
+                        else -> it.vocabulary.category == category
+                    }
                 }
                 Logger.d("Filtered vocabularies with examples: ${filtered.size}")
 
@@ -767,6 +785,16 @@ class LearnFragment : Fragment() {
         binding.buttonNext.isEnabled = allDone
         binding.buttonSkip.isEnabled = true
 
+        // Update input vs MCQ container visibility
+        if (studyMode == "mcq") {
+            binding.cardInput.visibility = android.view.View.GONE
+            binding.cardMcqContainer.visibility = android.view.View.VISIBLE
+            generateMcqOptions(nextUncompletedExample)
+        } else {
+            binding.cardInput.visibility = android.view.View.VISIBLE
+            binding.cardMcqContainer.visibility = android.view.View.GONE
+        }
+
         // Hide error details card
         binding.cardErrorDetails.visibility = android.view.View.GONE
 
@@ -789,11 +817,19 @@ class LearnFragment : Fragment() {
 
     private fun checkAnswer() {
         val vocabulary = currentVocabulary ?: return
-        val rawUser = binding.editTextAnswer.text.toString()
+        val rawUser = if (studyMode == "mcq") {
+            selectedMcqOptionText ?: ""
+        } else {
+            binding.editTextAnswer.text.toString()
+        }
         val userAnswer = normalize(rawUser)
 
         if (userAnswer.isEmpty()) {
-            binding.editTextAnswer.error = "Vui lòng nhập câu trả lời"
+            if (studyMode == "mcq") {
+                Toast.makeText(context, "Vui lòng chọn một đáp án trắc nghiệm", Toast.LENGTH_SHORT).show()
+            } else {
+                binding.editTextAnswer.error = "Vui lòng nhập câu trả lời"
+            }
             return
         }
 
@@ -1279,6 +1315,110 @@ class LearnFragment : Fragment() {
             b.buttonCheck.isEnabled = false
             b.buttonNext.isEnabled = false
             b.buttonSkip.isEnabled = false
+        }
+    }
+
+    private fun setupMcqOptionClickListeners() {
+        val buttons = listOf(
+            binding.buttonMcqOptionA,
+            binding.buttonMcqOptionB,
+            binding.buttonMcqOptionC,
+            binding.buttonMcqOptionD
+        )
+
+        buttons.forEachIndexed { index, button ->
+            button.setOnClickListener {
+                if (index < currentMcqOptions.size) {
+                    selectedMcqOptionText = currentMcqOptions[index]
+                    highlightSelectedMcqOption(index)
+                    Logger.d("Selected MCQ option $index: '$selectedMcqOptionText'")
+
+                    // Auto check answer on option select for smooth UX
+                    checkAnswer()
+                }
+            }
+        }
+    }
+
+    private fun highlightSelectedMcqOption(selectedIndex: Int) {
+        val buttons = listOf(
+            binding.buttonMcqOptionA,
+            binding.buttonMcqOptionB,
+            binding.buttonMcqOptionC,
+            binding.buttonMcqOptionD
+        )
+
+        buttons.forEachIndexed { idx, button ->
+            if (idx == selectedIndex) {
+                button.setBackgroundColor(android.graphics.Color.parseColor("#E8EAF6"))
+                button.setTextColor(android.graphics.Color.parseColor("#3F51B5"))
+            } else {
+                button.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+                button.setTextColor(android.graphics.Color.parseColor("#333333"))
+            }
+        }
+    }
+
+    private fun setupEnterKeySupport() {
+        // Physical and soft keyboard Enter key on answer EditText
+        binding.editTextAnswer.setOnKeyListener { _, keyCode, event ->
+            if (keyCode == android.view.KeyEvent.KEYCODE_ENTER && event.action == android.view.KeyEvent.ACTION_DOWN) {
+                if (isVocabularyCompleted || binding.buttonNext.isEnabled) {
+                    loadNextFromQueue()
+                } else {
+                    checkAnswer()
+                }
+                true
+            } else {
+                false
+            }
+        }
+    }
+
+    private fun generateMcqOptions(currentExample: com.example.specialenglishlearningapp.data.Example?) {
+        val targetSentence = currentExample?.let {
+            ExampleUtils.jsonToSentences(it.sentences).firstOrNull()
+        }.orEmpty()
+
+        selectedMcqOptionText = null
+        highlightSelectedMcqOption(-1)
+
+        lifecycleScope.launch {
+            try {
+                val allVocabs = database.vocabularyWithExamplesDao()
+                    .getAllVocabulariesWithExamples()
+                    .first()
+
+                val distractors = allVocabs
+                    .flatMap { vwe -> vwe.examples }
+                    .flatMap { ex -> ExampleUtils.jsonToSentences(ex.sentences) }
+                    .filter { s -> s.isNotBlank() && s != targetSentence }
+                    .distinct()
+                    .shuffled()
+                    .take(3)
+
+                val options = (listOf(targetSentence) + distractors).filter { it.isNotBlank() }.shuffled()
+                currentMcqOptions = options
+
+                val labels = listOf("A", "B", "C", "D")
+                val buttons = listOf(
+                    binding.buttonMcqOptionA,
+                    binding.buttonMcqOptionB,
+                    binding.buttonMcqOptionC,
+                    binding.buttonMcqOptionD
+                )
+
+                buttons.forEachIndexed { i, btn ->
+                    if (i < options.size) {
+                        btn.visibility = android.view.View.VISIBLE
+                        btn.text = "${labels[i]}. ${options[i]}"
+                    } else {
+                        btn.visibility = android.view.View.GONE
+                    }
+                }
+            } catch (e: Exception) {
+                Logger.e("Failed to generate MCQ options", e)
+            }
         }
     }
 

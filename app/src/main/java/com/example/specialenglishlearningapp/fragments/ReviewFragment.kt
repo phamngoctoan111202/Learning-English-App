@@ -78,6 +78,8 @@ class ReviewFragment : Fragment() {
             "VSTEP" -> R.id.radioVstep
             "SPEAKING" -> R.id.radioSpeaking
             "WRITING" -> R.id.radioWriting
+            "TECHNICAL_MOBILE", "MOBILE" -> R.id.radioMobile
+            "TECHNICAL_WEB", "WEB", "TECHNICAL_BACKEND", "BACKEND", "TECHNICAL" -> R.id.radioWeb
             else -> R.id.radioGeneral
         }
         radioGroupCategory.check(radioId)
@@ -109,6 +111,8 @@ class ReviewFragment : Fragment() {
                 R.id.radioVstep -> "VSTEP"
                 R.id.radioSpeaking -> "SPEAKING"
                 R.id.radioWriting -> "WRITING"
+                R.id.radioMobile -> "TECHNICAL_MOBILE"
+                R.id.radioWeb -> "TECHNICAL_WEB"
                 else -> "GENERAL"
             }
 

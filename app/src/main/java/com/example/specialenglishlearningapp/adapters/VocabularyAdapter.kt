@@ -51,6 +51,8 @@ class VocabularyAdapter(
                 "VSTEP" -> "VSTEP"
                 "SPEAKING" -> "SPEAKING"
                 "WRITING" -> "WRITING"
+                "TECHNICAL_MOBILE", "MOBILE" -> "MOBILE"
+                "TECHNICAL_WEB", "WEB", "TECHNICAL_BACKEND", "BACKEND", "TECHNICAL" -> "WEB"
                 else -> "General"
             }
             categoryText.setBackgroundResource(
@@ -59,6 +61,8 @@ class VocabularyAdapter(
                     "VSTEP" -> R.drawable.bg_category_vstep
                     "SPEAKING" -> R.drawable.bg_category_speaking
                     "WRITING" -> R.drawable.bg_category_general
+                    "TECHNICAL_MOBILE", "MOBILE" -> R.drawable.bg_category_toeic
+                    "TECHNICAL_WEB", "WEB", "TECHNICAL_BACKEND", "BACKEND", "TECHNICAL" -> R.drawable.bg_category_vstep
                     else -> R.drawable.bg_category_general
                 }
             )

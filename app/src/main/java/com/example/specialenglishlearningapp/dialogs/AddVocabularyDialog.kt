@@ -275,6 +275,8 @@ class AddVocabularyDialog(
         val selectedCategoryId = radioGroupCategory.checkedRadioButtonId
         val category = when (selectedCategoryId) {
             R.id.radioWriting -> "WRITING"
+            R.id.radioMobile -> "TECHNICAL_MOBILE"
+            R.id.radioWeb -> "TECHNICAL_WEB"
             else -> "VSTEP"
         }
 

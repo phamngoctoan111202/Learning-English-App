@@ -102,6 +102,11 @@ class EditFragment : Fragment() {
             showAddDialog()
         }
 
+        binding.fabBulkImport.setOnClickListener {
+            Logger.d("Bulk import button clicked")
+            showBulkImportDialog()
+        }
+
         // Setup SearchView
         binding.searchView.setOnQueryTextListener(object : androidx.appcompat.widget.SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
@@ -120,6 +125,8 @@ class EditFragment : Fragment() {
             val category = when (checkedId) {
                 R.id.radioFilterGeneral -> "VSTEP"
                 R.id.radioFilterWriting -> "WRITING"
+                R.id.radioFilterMobile -> "TECHNICAL_MOBILE"
+                R.id.radioFilterWeb -> "TECHNICAL_WEB"
                 else -> null // All
             }
             Logger.d("Category filter changed: $category")
@@ -165,6 +172,12 @@ class EditFragment : Fragment() {
         statsMap["WRITING"]?.let { stats ->
             binding.textStatsWriting.text = "${stats.learned}/${stats.total}"
         }
+        statsMap["TECHNICAL_MOBILE"]?.let { stats ->
+            binding.textStatsMobile.text = "${stats.learned}/${stats.total}"
+        }
+        statsMap["TECHNICAL_WEB"]?.let { stats ->
+            binding.textStatsWeb.text = "${stats.learned}/${stats.total}"
+        }
     }
 
     private fun showAddDialog() {
@@ -179,6 +192,13 @@ class EditFragment : Fragment() {
             editViewModel.updateVocabulary(vocabularyWithExamples.vocabulary.id, word, examples, category, vocabularyGrammar)
         }
         dialog.show(parentFragmentManager, "EditVocabularyDialog")
+    }
+
+    private fun showBulkImportDialog() {
+        val dialog = com.example.specialenglishlearningapp.dialogs.BulkImportDialog { word, examples, category, vocabularyGrammar ->
+            editViewModel.addVocabulary(word, examples, category, vocabularyGrammar)
+        }
+        dialog.show(parentFragmentManager, "BulkImportDialog")
     }
 
     override fun onDestroyView() {

@@ -105,6 +105,46 @@
                         android:textColor="@android:color/darker_gray" />
                 </LinearLayout>
 
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:paddingHorizontal="4dp">
+                    <RadioButton
+                        android:id="@+id/radioFilterMobile"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="MOBILE" />
+                    <TextView
+                        android:id="@+id/textStatsMobile"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0/0"
+                        android:textSize="10sp"
+                        android:textColor="@android:color/darker_gray" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:paddingHorizontal="4dp">
+                    <RadioButton
+                        android:id="@+id/radioFilterWeb"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="WEB" />
+                    <TextView
+                        android:id="@+id/textStatsWeb"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0/0"
+                        android:textSize="10sp"
+                        android:textColor="@android:color/darker_gray" />
+                </LinearLayout>
+
             </RadioGroup>
 
         </HorizontalScrollView>
@@ -119,6 +159,17 @@
             android:clipToPadding="false" />
 
     </LinearLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabBulkImport"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="88dp"
+        android:src="@android:drawable/ic_menu_upload"
+        app:backgroundTint="#009688"
+        app:tint="@android:color/white" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabAddVocabulary"
