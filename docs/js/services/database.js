@@ -257,8 +257,8 @@ class Database {
             const vocabCategory = vocab.category || 'GENERAL';
             // VSTEP (General tab) = VSTEP + GENERAL
             if (category === 'VSTEP') return vocabCategory === 'VSTEP' || vocabCategory === 'GENERAL';
-            if (category === 'TECHNICAL_BACKEND') return vocabCategory === 'TECHNICAL_BACKEND' || vocabCategory === 'BACKEND' || vocabCategory === 'TECHNICAL';
             if (category === 'TECHNICAL_MOBILE') return vocabCategory === 'TECHNICAL_MOBILE' || vocabCategory === 'MOBILE';
+            if (category === 'TECHNICAL_WEB') return vocabCategory === 'TECHNICAL_WEB' || vocabCategory === 'WEB' || vocabCategory === 'TECHNICAL_BACKEND' || vocabCategory === 'BACKEND' || vocabCategory === 'TECHNICAL';
             return vocabCategory === category;
         }
         // Virtual: e.g. SPEAKING_PART2 → base=SPEAKING, part=PART2

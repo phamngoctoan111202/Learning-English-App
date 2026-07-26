@@ -298,16 +298,16 @@ body {
     color: var(--white);
 }
 
-.category-badge-technical,
-.category-badge-technical_backend,
-.category-badge-backend {
-    background: #009688;
-    color: var(--white);
-}
-
 .category-badge-technical_mobile,
 .category-badge-mobile {
     background: #3F51B5;
+    color: var(--white);
+}
+
+.category-badge-technical,
+.category-badge-technical_web,
+.category-badge-web {
+    background: #009688;
     color: var(--white);
 }
 
@@ -1556,13 +1556,13 @@ body {
     gap: 6px;
 }
 
-.preset-btn.backend-preset {
+.preset-btn.web-preset {
     color: #00796b;
     border-color: #b2dfdb;
     background: #e0f2f1;
 }
 
-.preset-btn.backend-preset:hover {
+.preset-btn.web-preset:hover {
     background: #b2dfdb;
 }
 

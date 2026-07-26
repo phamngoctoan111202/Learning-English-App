@@ -22,12 +22,12 @@ const ReviewPage = {
                             <span>Writing <span class="category-count-pill" data-category-count="WRITING"></span></span>
                         </label>
                         <label class="filter-radio">
-                            <input type="radio" name="review-category-filter" value="TECHNICAL_BACKEND" ${savedCategory === 'TECHNICAL_BACKEND' ? 'checked' : ''}>
-                            <span>Backend <span class="category-count-pill" data-category-count="TECHNICAL_BACKEND"></span></span>
-                        </label>
-                        <label class="filter-radio">
                             <input type="radio" name="review-category-filter" value="TECHNICAL_MOBILE" ${savedCategory === 'TECHNICAL_MOBILE' ? 'checked' : ''}>
                             <span>Mobile <span class="category-count-pill" data-category-count="TECHNICAL_MOBILE"></span></span>
+                        </label>
+                        <label class="filter-radio">
+                            <input type="radio" name="review-category-filter" value="TECHNICAL_WEB" ${savedCategory === 'TECHNICAL_WEB' ? 'checked' : ''}>
+                            <span>Web <span class="category-count-pill" data-category-count="TECHNICAL_WEB"></span></span>
                         </label>
                     </div>
                 </div>

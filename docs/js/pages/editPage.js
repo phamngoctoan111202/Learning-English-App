@@ -77,12 +77,12 @@ const EditPage = {
                         <span>Writing <span class="category-count-pill" data-category-count="WRITING"></span></span>
                     </label>
                     <label class="filter-radio">
-                        <input type="radio" name="category-filter" value="TECHNICAL_BACKEND" ${savedCategory === 'TECHNICAL_BACKEND' ? 'checked' : ''}>
-                        <span>Backend <span class="category-count-pill" data-category-count="TECHNICAL_BACKEND"></span></span>
-                    </label>
-                    <label class="filter-radio">
                         <input type="radio" name="category-filter" value="TECHNICAL_MOBILE" ${savedCategory === 'TECHNICAL_MOBILE' ? 'checked' : ''}>
                         <span>Mobile <span class="category-count-pill" data-category-count="TECHNICAL_MOBILE"></span></span>
+                    </label>
+                    <label class="filter-radio">
+                        <input type="radio" name="category-filter" value="TECHNICAL_WEB" ${savedCategory === 'TECHNICAL_WEB' ? 'checked' : ''}>
+                        <span>Web <span class="category-count-pill" data-category-count="TECHNICAL_WEB"></span></span>
                     </label>
                 </div>
             </div>
@@ -272,12 +272,12 @@ const EditPage = {
             if (category === 'WRITING') {
                 categoryClass = 'category-badge-writing';
                 categoryLabel = 'Writing';
-            } else if (category === 'TECHNICAL_BACKEND' || category === 'BACKEND' || category === 'TECHNICAL') {
-                categoryClass = 'category-badge-technical_backend';
-                categoryLabel = 'Backend';
             } else if (category === 'TECHNICAL_MOBILE' || category === 'MOBILE') {
                 categoryClass = 'category-badge-technical_mobile';
                 categoryLabel = 'Mobile';
+            } else if (category === 'TECHNICAL_WEB' || category === 'WEB' || category === 'TECHNICAL_BACKEND' || category === 'BACKEND' || category === 'TECHNICAL') {
+                categoryClass = 'category-badge-technical_web';
+                categoryLabel = 'Web';
             } else {
                 categoryClass = 'category-badge-general';
                 categoryLabel = 'General';
@@ -558,10 +558,10 @@ const EditPage = {
         let effectiveCategory = 'VSTEP';
         if (vocabulary.category === 'WRITING') {
             effectiveCategory = 'WRITING';
-        } else if (vocabulary.category === 'TECHNICAL_BACKEND' || vocabulary.category === 'BACKEND' || vocabulary.category === 'TECHNICAL') {
-            effectiveCategory = 'TECHNICAL_BACKEND';
         } else if (vocabulary.category === 'TECHNICAL_MOBILE' || vocabulary.category === 'MOBILE') {
             effectiveCategory = 'TECHNICAL_MOBILE';
+        } else if (vocabulary.category === 'TECHNICAL_WEB' || vocabulary.category === 'WEB' || vocabulary.category === 'TECHNICAL_BACKEND' || vocabulary.category === 'BACKEND' || vocabulary.category === 'TECHNICAL') {
+            effectiveCategory = 'TECHNICAL_WEB';
         }
         const categoryRadio = document.querySelector(`input[name="edit-vocab-category"][value="${effectiveCategory}"]`);
         if (categoryRadio) categoryRadio.checked = true;
@@ -797,14 +797,14 @@ const EditPage = {
         }
 
         // Preset buttons
-        const loadBackendBtn = document.getElementById('bulk-load-backend');
-        if (loadBackendBtn) {
-            loadBackendBtn.addEventListener('click', () => this.loadPresetData('BACKEND'));
-        }
-
         const loadMobileBtn = document.getElementById('bulk-load-mobile');
         if (loadMobileBtn) {
             loadMobileBtn.addEventListener('click', () => this.loadPresetData('MOBILE'));
+        }
+
+        const loadWebBtn = document.getElementById('bulk-load-web');
+        if (loadWebBtn) {
+            loadWebBtn.addEventListener('click', () => this.loadPresetData('WEB'));
         }
 
         const clearBtn = document.getElementById('bulk-clear-input');
@@ -829,7 +829,7 @@ const EditPage = {
 
         const textarea = document.getElementById('bulk-import-textarea');
         if (textarea && !textarea.value.trim()) {
-            this.loadPresetData('BACKEND');
+            this.loadPresetData('MOBILE');
         }
 
         dialog.classList.remove('hidden');
@@ -844,18 +844,7 @@ const EditPage = {
         const textarea = document.getElementById('bulk-import-textarea');
         if (!textarea) return;
 
-        if (presetType === 'BACKEND') {
-            textarea.value = [
-                'Middleware | The middleware intercepts incoming HTTP requests in the pipeline. | Middleware can thiệp vào các yêu cầu HTTP đang đến trong đường ống xử lý. | Noun - Software component handling HTTP request pipeline.',
-                'Repository | The repository pattern abstracts database operations from business logic. | Pattern repository tách biệt thao tác cơ sở dữ liệu khỏi logic nghiệp vụ. | Noun - Design pattern for data access layer abstraction.',
-                'Endpoint | The API endpoint receives payload and returns JSON response. | Endpoint API nhận dữ liệu payload và trả về phản hồi JSON. | Noun - Specific URL where an API service can be accessed.',
-                'ORM | Object-relational mapping simplifies interaction with relational databases. | Ánh xạ đối tượng - quan hệ giúp đơn giản hóa tương tác với CSDL. | Noun - Technique for converting data between incompatible type systems.',
-                'Microservices | Microservices architecture decomposes an application into independent services. | Kiến trúc microservices chia nhỏ ứng dụng thành các dịch vụ độc lập. | Noun - Architectural style structuring an application as loose services.'
-            ].join('\n');
-
-            const backendRadio = document.querySelector('input[name="bulk-category"][value="TECHNICAL_BACKEND"]');
-            if (backendRadio) backendRadio.checked = true;
-        } else if (presetType === 'MOBILE') {
+        if (presetType === 'MOBILE') {
             textarea.value = [
                 'Activity | An activity represents a single screen with a user interface in Android. | Component activity đại diện cho một màn hình đơn với UI trong Android. | Noun - Core Android application component for UI screens.',
                 'Fragment | A fragment represents a reusable portion of a user interface in an activity. | Fragment đại diện cho một phần UI có thể tái sử dụng trong một activity. | Noun - Modular UI block within an Android activity.',
@@ -866,6 +855,17 @@ const EditPage = {
 
             const mobileRadio = document.querySelector('input[name="bulk-category"][value="TECHNICAL_MOBILE"]');
             if (mobileRadio) mobileRadio.checked = true;
+        } else if (presetType === 'WEB') {
+            textarea.value = [
+                'DOM | The Document Object Model represents the web page structure as a logical tree. | Mô hình đối tượng tài liệu biểu diễn cấu trúc trang web dạng cây logic. | Noun - Programming interface for HTML documents.',
+                'Component | A reusable component encapsulates markup, styles, and state behavior. | Component có thể tái sử dụng đóng gói cấu trúc, kiểu dáng và hành vi. | Noun - Modular building block in modern web frameworks.',
+                'Hydration | Client-side hydration attaches event listeners to server-rendered HTML. | Hydration phía client gắn các trình lắng nghe sự kiện vào HTML được render từ server. | Noun - Process of adding interactivity to static HTML.',
+                'SSR | Server-side rendering renders web pages on the server before sending to the browser. | Render phía server tạo ra trang web trên server trước khi gửi tới trình duyệt. | Noun - Method of generating HTML on the server.',
+                'Responsive | Responsive web design ensures optimal viewing experience across device sizes. | Thiết kế web tương thích đảm bảo trải nghiệm hiển thị tối ưu trên mọi màn hình. | Adjective - Adapting layout dynamically to screen size.'
+            ].join('\n');
+
+            const webRadio = document.querySelector('input[name="bulk-category"][value="TECHNICAL_WEB"]');
+            if (webRadio) webRadio.checked = true;
         }
     },
 
@@ -879,7 +879,7 @@ const EditPage = {
         }
 
         const categoryRadio = document.querySelector('input[name="bulk-category"]:checked');
-        const defaultCategory = categoryRadio ? categoryRadio.value : 'TECHNICAL_BACKEND';
+        const defaultCategory = categoryRadio ? categoryRadio.value : 'TECHNICAL_MOBILE';
 
         const lines = rawContent.split('\n').map(l => l.trim()).filter(l => l.length > 0);
         let importedCount = 0;
