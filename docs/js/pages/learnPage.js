@@ -314,8 +314,7 @@ const LearnPage = {
 
         // Global Keyboard Shortcuts for MCQ Mode and Navigation
         document.addEventListener('keydown', (e) => {
-            const learnPage = document.getElementById('learn-page');
-            if (!learnPage || !learnPage.classList.contains('active')) return;
+            if (typeof App !== 'undefined' && App.currentPage !== 'learn') return;
 
             // Ignore when typing inside input or textarea except answer-input
             const activeElem = document.activeElement;
@@ -323,18 +322,35 @@ const LearnPage = {
                 return;
             }
 
-            if (this.studyMode === 'mcq') {
-                if (e.key === 'Enter' && !e.shiftKey) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                const errorCard = document.getElementById('error-card');
+                const successCard = document.getElementById('success-card');
+                const isResultShowing = (errorCard && !errorCard.classList.contains('hidden')) || (successCard && !successCard.classList.contains('hidden'));
+
+                if (isResultShowing) {
+                    e.preventDefault();
+                    this.hideErrorCard();
+                    this.hideSuccessCard();
+                    const nextBtn = document.getElementById('next-btn');
+                    if (nextBtn && !nextBtn.disabled) {
+                        this.nextWord();
+                    } else {
+                        this.moveToNextExample();
+                    }
+                    return;
+                }
+
+                if (this.studyMode === 'mcq') {
                     e.preventDefault();
                     if (this.selectedMcqOption) {
                         this.checkAnswer();
                     } else {
-                        const nextBtn = document.getElementById('next-btn');
-                        if (nextBtn && !nextBtn.disabled) {
-                            this.nextWord();
-                        }
+                        App.showToast('Vui lòng chọn 1 đáp án trước khi bấm Enter', 'warning');
                     }
                 }
+            }
+
+            if (this.studyMode === 'mcq') {
                 // Number keys 1, 2, 3, 4 select MCQ options A, B, C, D
                 if (['1', '2', '3', '4'].includes(e.key)) {
                     const idx = parseInt(e.key) - 1;

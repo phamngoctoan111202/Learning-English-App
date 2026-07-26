@@ -50,9 +50,19 @@ const EditPage = {
         const savedCategory = this.selectedCategory;
 
         mainContent.innerHTML = `
-            <div class="search-container">
-                <input type="text" class="search-input" id="search-input"
-                       placeholder="Search vocabularies...">
+            <div class="search-container" style="display: flex; flex-direction: column; gap: 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <input type="text" class="search-input" id="search-input"
+                           placeholder="Search vocabularies..." style="flex: 1; min-width: 220px;">
+                    <div style="display: flex; gap: 10px;">
+                        <button id="bulk-import-header-btn" class="primary-btn" style="background: #009688; color: white; border: none; padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,150,136,0.3);">
+                            <i class="fas fa-file-import"></i> Nhập hàng loạt
+                        </button>
+                        <button id="add-vocab-header-btn" class="primary-btn" style="background: var(--primary-color); color: white; border: none; padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.15);">
+                            <i class="fas fa-plus"></i> Thêm từ vựng
+                        </button>
+                    </div>
+                </div>
                 <div class="category-filter">
                     <label class="filter-radio">
                         <input type="radio" name="category-filter" value="ALL" ${savedCategory === 'ALL' ? 'checked' : ''}>
@@ -82,11 +92,11 @@ const EditPage = {
                     <p>Loading vocabularies...</p>
                 </div>
             </div>
-            <div class="fab-container" style="position: fixed; bottom: 24px; right: 24px; display: flex; flex-direction: column; gap: 12px; z-index: 100;">
-                <button class="fab" id="bulk-vocab-fab" title="Bulk Import Data" style="background: #009688;">
+            <div class="fab-container" style="position: fixed; bottom: 30px; right: 30px; display: flex; flex-direction: column; gap: 12px; z-index: 100;">
+                <button class="fab" id="bulk-vocab-fab" title="Nhập hàng loạt (Bulk Import)" style="position: relative; bottom: auto; right: auto; background: #009688;">
                     <i class="fas fa-file-import"></i>
                 </button>
-                <button class="fab" id="add-vocab-fab" title="Add Single Vocabulary">
+                <button class="fab" id="add-vocab-fab" title="Thêm từ vựng mới" style="position: relative; bottom: auto; right: auto;">
                     <i class="fas fa-plus"></i>
                 </button>
             </div>
@@ -123,10 +133,12 @@ const EditPage = {
     setupEventListeners() {
         // Search input
         const searchInput = document.getElementById('search-input');
-        searchInput.addEventListener('input', (e) => {
-            this.searchQuery = e.target.value;
-            this.applyFilters();
-        });
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                this.searchQuery = e.target.value;
+                this.applyFilters();
+            });
+        }
 
         // Category filter
         const categoryRadios = document.querySelectorAll('input[name="category-filter"]');
@@ -139,20 +151,19 @@ const EditPage = {
             });
         });
 
-        // FAB buttons
+        // Add vocabulary buttons (Header & FAB)
         const fab = document.getElementById('add-vocab-fab');
-        if (fab) {
-            fab.addEventListener('click', () => {
-                this.showAddDialog();
-            });
-        }
+        const headerAddBtn = document.getElementById('add-vocab-header-btn');
+        [fab, headerAddBtn].forEach(btn => {
+            if (btn) btn.addEventListener('click', () => this.showAddDialog());
+        });
 
+        // Bulk import buttons (Header & FAB)
         const bulkFab = document.getElementById('bulk-vocab-fab');
-        if (bulkFab) {
-            bulkFab.addEventListener('click', () => {
-                this.showBulkImportDialog();
-            });
-        }
+        const headerBulkBtn = document.getElementById('bulk-import-header-btn');
+        [bulkFab, headerBulkBtn].forEach(btn => {
+            if (btn) btn.addEventListener('click', () => this.showBulkImportDialog());
+        });
 
         // Dialog events
         this.setupAddDialogEvents();
