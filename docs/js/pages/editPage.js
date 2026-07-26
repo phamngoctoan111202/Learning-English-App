@@ -807,6 +807,11 @@ const EditPage = {
             loadWebBtn.addEventListener('click', () => this.loadPresetData('WEB'));
         }
 
+        const copyPromptBtn = document.getElementById('bulk-copy-prompt');
+        if (copyPromptBtn) {
+            copyPromptBtn.addEventListener('click', () => this.copyAiPrompt());
+        }
+
         const clearBtn = document.getElementById('bulk-clear-input');
         if (clearBtn) {
             clearBtn.addEventListener('click', () => {
@@ -819,6 +824,32 @@ const EditPage = {
         dialog.addEventListener('click', (e) => {
             if (e.target === dialog) {
                 this.hideBulkImportDialog();
+            }
+        });
+    },
+
+    copyAiPrompt() {
+        const categoryRadio = document.querySelector('input[name="bulk-category"]:checked');
+        const selectedCat = categoryRadio ? categoryRadio.parentElement.textContent.trim() : 'Technical';
+
+        const promptText = `Hãy tạo cho tôi danh sách từ vựng tiếng Anh theo chủ đề: ${selectedCat} (hoặc chủ đề mà tôi yêu cầu) theo đúng định dạng sau (mỗi từ trên 1 dòng, phân cách bởi dấu gạch đứng |):
+
+Từ vựng | Câu ví dụ tiếng Anh chứa từ đó | Dịch nghĩa tiếng Việt câu ví dụ | Giải thích ngữ pháp/Từ loại
+
+Ví dụ mẫu:
+Activity | An activity represents a single screen with a user interface in Android. | Component activity đại diện cho một màn hình đơn với UI trong Android. | Noun - Core Android application component for UI screens.
+DOM | The Document Object Model represents the web page structure as a logical tree. | Mô hình đối tượng tài liệu biểu diễn cấu trúc trang web dạng cây logic. | Noun - Programming interface for HTML documents.
+
+Vui lòng tạo 10 từ vựng hay và quan trọng nhất. Chỉ trả về dữ liệu kết quả theo đúng định dạng dòng ở trên, không cần thêm lời chào hay giải thích gì khác.`;
+
+        navigator.clipboard.writeText(promptText).then(() => {
+            App.showToast('Đã sao chép Prompt AI! Hãy dán vào ChatGPT/Gemini để tạo dữ liệu nhanh.', 'success');
+        }).catch(err => {
+            // Fallback for clipboard API block
+            const textarea = document.getElementById('bulk-import-textarea');
+            if (textarea) {
+                textarea.value = promptText;
+                App.showToast('Đã chèn Prompt AI vào ô văn bản bên dưới!', 'info');
             }
         });
     },
