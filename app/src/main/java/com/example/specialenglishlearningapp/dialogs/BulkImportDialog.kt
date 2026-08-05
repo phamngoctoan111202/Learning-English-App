@@ -110,24 +110,39 @@ class BulkImportDialog(
     }
 
     private fun copyAiPrompt() {
-        val selectedCategory = when (radioGroupCategory.checkedRadioButtonId) {
-            R.id.radioMobile -> "Mobile Development"
-            R.id.radioWeb -> "Web Development"
-            R.id.radioWriting -> "IELTS Writing"
-            else -> "General English"
+        val checkedId = radioGroupCategory.checkedRadioButtonId
+        val isTechnical = checkedId == R.id.radioMobile || checkedId == R.id.radioWeb
+
+        val promptText = if (isTechnical) {
+            val techCategory = if (checkedId == R.id.radioMobile) "Mobile Development" else "Web & Backend Development"
+            """
+                Hãy tạo cho tôi danh sách các kiến thức $techCategory theo đúng định dạng sau (mỗi từ trên 1 dòng, phân cách bởi dấu gạch đứng |):
+
+                Tên kiến thức | Câu tiếng Anh chứa các đáp án | câu hỏi tiếng anh | Giải thích đáp án bằng tiếng anh
+
+                Ví dụ mẫu:
+                Activity | An activity represents a single screen with a user interface in Android. | What component represents a single screen with a user interface in Android? | An Activity is a fundamental Android component that provides a window for the app to draw its UI.
+                DOM | The Document Object Model represents the web page structure as a logical tree. | What programming interface represents the web page structure as a logical tree? | The DOM (Document Object Model) connects web pages to scripts or programming languages by representing document structure.
+
+                Vui lòng tạo 10 kiến thức hay và quan trọng nhất. Chỉ trả về dữ liệu kết quả theo đúng định dạng dòng ở trên, không cần thêm lời chào hay giải thích gì khác.
+            """.trimIndent()
+        } else {
+            val selectedCategory = when (checkedId) {
+                R.id.radioWriting -> "IELTS Writing"
+                else -> "General English"
+            }
+            """
+                Hãy tạo cho tôi danh sách từ vựng tiếng Anh theo chủ đề: $selectedCategory (hoặc chủ đề mà tôi yêu cầu) theo đúng định dạng sau (mỗi từ trên 1 dòng, phân cách bởi dấu gạch đứng |):
+
+                Từ vựng | Câu ví dụ tiếng Anh chứa từ đó | Dịch nghĩa tiếng Việt câu ví dụ | Giải thích ngữ pháp/Từ loại
+
+                Ví dụ mẫu:
+                Activity | An activity represents a single screen with a user interface in Android. | Component activity đại diện cho một màn hình đơn với UI trong Android. | Noun - Core Android application component for UI screens.
+                DOM | The Document Object Model represents the web page structure as a logical tree. | Mô hình đối tượng tài liệu biểu diễn cấu trúc trang web dạng cây logic. | Noun - Programming interface for HTML documents.
+
+                Vui lòng tạo 10 từ vựng hay và quan trọng nhất. Chỉ trả về dữ liệu kết quả theo đúng định dạng dòng ở trên, không cần thêm lời chào hay giải thích gì khác.
+            """.trimIndent()
         }
-
-        val promptText = """
-            Hãy tạo cho tôi danh sách từ vựng tiếng Anh theo chủ đề: $selectedCategory (hoặc chủ đề mà tôi yêu cầu) theo đúng định dạng sau (mỗi từ trên 1 dòng, phân cách bởi dấu gạch đứng |):
-
-            Từ vựng | Câu ví dụ tiếng Anh chứa từ đó | Dịch nghĩa tiếng Việt câu ví dụ | Giải thích ngữ pháp/Từ loại
-
-            Ví dụ mẫu:
-            Activity | An activity represents a single screen with a user interface in Android. | Component activity đại diện cho một màn hình đơn với UI trong Android. | Noun - Core Android application component for UI screens.
-            DOM | The Document Object Model represents the web page structure as a logical tree. | Mô hình đối tượng tài liệu biểu diễn cấu trúc trang web dạng cây logic. | Noun - Programming interface for HTML documents.
-
-            Vui lòng tạo 10 từ vựng hay và quan trọng nhất. Chỉ trả về dữ liệu kết quả theo đúng định dạng dòng ở trên, không cần thêm lời chào hay giải thích gì khác.
-        """.trimIndent()
 
         val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clip = ClipData.newPlainText("AI Prompt", promptText)
