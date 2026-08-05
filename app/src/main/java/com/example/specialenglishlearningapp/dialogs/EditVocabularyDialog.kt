@@ -78,6 +78,8 @@ class EditVocabularyDialog(
         val currentCategory = vocabularyWithExamples.vocabulary.category
         when (currentCategory) {
             "WRITING" -> radioGroupCategory.check(R.id.radioWriting)
+            "TECHNICAL_MOBILE", "MOBILE" -> radioGroupCategory.check(R.id.radioMobile)
+            "TECHNICAL_WEB", "WEB", "TECHNICAL_BACKEND", "BACKEND", "TECHNICAL" -> radioGroupCategory.check(R.id.radioWeb)
             else -> radioGroupCategory.check(R.id.radioGeneral)
         }
 
@@ -222,7 +224,9 @@ class EditVocabularyDialog(
         val selectedCategoryId = radioGroupCategory.checkedRadioButtonId
         val category = when (selectedCategoryId) {
             R.id.radioWriting -> "WRITING"
-            else -> "VSTEP"
+            R.id.radioMobile -> "TECHNICAL_MOBILE"
+            R.id.radioWeb -> "TECHNICAL_WEB"
+            else -> "GENERAL"
         }
 
         val exampleList = exampleInputs.mapNotNull { exampleInput ->

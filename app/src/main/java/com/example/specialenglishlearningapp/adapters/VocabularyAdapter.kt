@@ -47,19 +47,13 @@ class VocabularyAdapter(
             // Set category badge
             val category = vocabularyWithExamples.vocabulary.category
             categoryText.text = when (category) {
-                "TOEIC" -> "TOEIC"
-                "VSTEP" -> "VSTEP"
-                "SPEAKING" -> "SPEAKING"
                 "WRITING" -> "WRITING"
                 "TECHNICAL_MOBILE", "MOBILE" -> "MOBILE"
                 "TECHNICAL_WEB", "WEB", "TECHNICAL_BACKEND", "BACKEND", "TECHNICAL" -> "WEB"
-                else -> "General"
+                else -> "GENERAL"
             }
             categoryText.setBackgroundResource(
                 when (category) {
-                    "TOEIC" -> R.drawable.bg_category_toeic
-                    "VSTEP" -> R.drawable.bg_category_vstep
-                    "SPEAKING" -> R.drawable.bg_category_speaking
                     "WRITING" -> R.drawable.bg_category_general
                     "TECHNICAL_MOBILE", "MOBILE" -> R.drawable.bg_category_toeic
                     "TECHNICAL_WEB", "WEB", "TECHNICAL_BACKEND", "BACKEND", "TECHNICAL" -> R.drawable.bg_category_vstep

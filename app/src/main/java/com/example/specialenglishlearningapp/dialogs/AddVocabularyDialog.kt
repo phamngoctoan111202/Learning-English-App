@@ -277,7 +277,7 @@ class AddVocabularyDialog(
             R.id.radioWriting -> "WRITING"
             R.id.radioMobile -> "TECHNICAL_MOBILE"
             R.id.radioWeb -> "TECHNICAL_WEB"
-            else -> "VSTEP"
+            else -> "GENERAL"
         }
 
         val exampleList = exampleInputs.mapNotNull { exampleInput ->

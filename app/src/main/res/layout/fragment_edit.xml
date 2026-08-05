@@ -37,115 +37,115 @@
             android:layout_marginEnd="8dp"
             android:layout_marginBottom="8dp">
 
-            <RadioGroup
-                android:id="@+id/radioGroupCategoryFilter"
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
+                android:orientation="vertical"
                 android:gravity="center">
 
-                <LinearLayout
+                <RadioGroup
+                    android:id="@+id/radioGroupCategoryFilter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:paddingHorizontal="4dp">
+                    android:orientation="horizontal"
+                    android:gravity="center">
+
                     <RadioButton
                         android:id="@+id/radioFilterAll"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
                         android:text="All"
                         android:checked="true" />
-                    <TextView
-                        android:id="@+id/textStatsAll"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0/0"
-                        android:textSize="10sp"
-                        android:textColor="@android:color/darker_gray" />
-                </LinearLayout>
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:paddingHorizontal="4dp">
                     <RadioButton
                         android:id="@+id/radioFilterGeneral"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
                         android:text="General" />
-                    <TextView
-                        android:id="@+id/textStatsGeneral"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0/0"
-                        android:textSize="10sp"
-                        android:textColor="@android:color/darker_gray" />
-                </LinearLayout>
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:paddingHorizontal="4dp">
                     <RadioButton
                         android:id="@+id/radioFilterWriting"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
                         android:text="WRITING" />
-                    <TextView
-                        android:id="@+id/textStatsWriting"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0/0"
-                        android:textSize="10sp"
-                        android:textColor="@android:color/darker_gray" />
-                </LinearLayout>
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:paddingHorizontal="4dp">
                     <RadioButton
                         android:id="@+id/radioFilterMobile"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
                         android:text="MOBILE" />
-                    <TextView
-                        android:id="@+id/textStatsMobile"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0/0"
-                        android:textSize="10sp"
-                        android:textColor="@android:color/darker_gray" />
-                </LinearLayout>
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:paddingHorizontal="4dp">
                     <RadioButton
                         android:id="@+id/radioFilterWeb"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="WEB" />
+
+                </RadioGroup>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center">
+
                     <TextView
-                        android:id="@+id/textStatsWeb"
-                        android:layout_width="wrap_content"
+                        android:id="@+id/textStatsAll"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
                         android:text="0/0"
                         android:textSize="10sp"
                         android:textColor="@android:color/darker_gray" />
+
+                    <TextView
+                        android:id="@+id/textStatsGeneral"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="0/0"
+                        android:textSize="10sp"
+                        android:textColor="@android:color/darker_gray" />
+
+                    <TextView
+                        android:id="@+id/textStatsWriting"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="0/0"
+                        android:textSize="10sp"
+                        android:textColor="@android:color/darker_gray" />
+
+                    <TextView
+                        android:id="@+id/textStatsMobile"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="0/0"
+                        android:textSize="10sp"
+                        android:textColor="@android:color/darker_gray" />
+
+                    <TextView
+                        android:id="@+id/textStatsWeb"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="0/0"
+                        android:textSize="10sp"
+                        android:textColor="@android:color/darker_gray" />
+
                 </LinearLayout>
 
-            </RadioGroup>
+            </LinearLayout>
 
         </HorizontalScrollView>
 

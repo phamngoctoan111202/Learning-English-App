@@ -147,7 +147,7 @@ class BulkImportDialog(
             R.id.radioMobile -> "TECHNICAL_MOBILE"
             R.id.radioWeb -> "TECHNICAL_WEB"
             R.id.radioWriting -> "WRITING"
-            else -> "VSTEP"
+            else -> "GENERAL"
         }
 
         val lines = rawContent.lines().map { it.trim() }.filter { it.isNotEmpty() }

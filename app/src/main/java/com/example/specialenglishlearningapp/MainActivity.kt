@@ -39,13 +39,29 @@ class MainActivity : AppCompatActivity() {
 
     private fun syncDataFromServer() {
         lifecycleScope.launch {
-            Logger.d("📥 Starting app startup sync from server...")
             val database = AppDatabase.getDatabase(this@MainActivity)
+            val localCount = database.vocabularyDao().countAll()
+            if (localCount > 0) {
+                Logger.d("📦 Offline-First mode: Found $localCount local vocabulary items. Using local database.")
+                // Run background sync silently without blocking startup UI or showing error toasts
+                launch {
+                    try {
+                        val syncManager = SyncManager(this@MainActivity, database)
+                        syncManager.syncServerToClient()
+                        Logger.d("✅ Silent background sync completed successfully")
+                    } catch (e: Exception) {
+                        Logger.d("Silent background sync skipped/failed: ${e.message}")
+                    }
+                }
+                return@launch
+            }
+
+            Logger.d("📥 First run (empty DB): Starting initial app startup sync from server...")
             val syncManager = SyncManager(this@MainActivity, database)
 
             val result = syncManager.syncServerToClient()
             if (result.isSuccess) {
-                Logger.d("✅ App startup sync completed successfully")
+                Logger.d("✅ Initial app startup sync completed successfully")
             } else {
                 val exception = result.exceptionOrNull()
                 if (syncManager.isQuotaExceeded(exception)) {

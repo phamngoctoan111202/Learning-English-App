@@ -62,10 +62,12 @@ class EditViewModel(application: Application) : AndroidViewModel(application) {
     private suspend fun loadCategoryStats() {
         val statsMap = mutableMapOf<String, CategoryStats>()
 
-        // VSTEP (General tab) = VSTEP + GENERAL
-        val vstepTotal = database.vocabularyDao().countByCategory("VSTEP") + database.vocabularyDao().countByCategory("GENERAL")
-        val vstepLearned = database.vocabularyDao().countLearnedByCategory("VSTEP") + database.vocabularyDao().countLearnedByCategory("GENERAL")
-        statsMap["VSTEP"] = CategoryStats(vstepTotal, vstepLearned)
+        // General tab = GENERAL + VSTEP
+        val generalTotal = database.vocabularyDao().countByCategory("GENERAL") + database.vocabularyDao().countByCategory("VSTEP")
+        val generalLearned = database.vocabularyDao().countLearnedByCategory("GENERAL") + database.vocabularyDao().countLearnedByCategory("VSTEP")
+        val generalStats = CategoryStats(generalTotal, generalLearned)
+        statsMap["GENERAL"] = generalStats
+        statsMap["VSTEP"] = generalStats
 
         val writingTotal = database.vocabularyDao().countByCategory("WRITING")
         val writingLearned = database.vocabularyDao().countLearnedByCategory("WRITING")
@@ -89,14 +91,15 @@ class EditViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun matchesCategory(vocabCategory: String, filter: String): Boolean =
         when (filter) {
-            "VSTEP" -> vocabCategory == "VSTEP" || vocabCategory == "GENERAL"
+            "ALL" -> true
+            "GENERAL", "VSTEP" -> vocabCategory == "GENERAL" || vocabCategory == "VSTEP"
             "TECHNICAL_MOBILE", "MOBILE" -> vocabCategory == "TECHNICAL_MOBILE" || vocabCategory == "MOBILE"
             "TECHNICAL_WEB", "WEB" -> vocabCategory == "TECHNICAL_WEB" || vocabCategory == "WEB" || vocabCategory == "TECHNICAL_BACKEND" || vocabCategory == "BACKEND" || vocabCategory == "TECHNICAL"
             else -> vocabCategory == filter
         }
 
     fun filterByCategory(category: String?) {
-        currentCategoryFilter = category
+        currentCategoryFilter = if (category == "ALL" || category.isNullOrEmpty()) null else category
         currentPage = 1
         applyFilters()
     }

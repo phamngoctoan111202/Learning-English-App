@@ -99,32 +99,11 @@ class LearnFragment : Fragment() {
     }
 
     private fun setupWordQueueRecyclerView() {
-        wordQueueAdapter = WordQueueAdapter()
-        binding.recyclerViewWordQueue.apply {
-            layoutManager = LinearLayoutManager(requireContext())
-            adapter = wordQueueAdapter
-        }
-        Logger.d("Word queue RecyclerView setup complete")
+        // Priority words queue UI card removed per user request
     }
 
     private fun updateWordQueueUI() {
-        if (_binding == null) return
-
-        // Build queue words list with current word highlighted
-        val queueWordsList = learningQueue.mapIndexed { index, vocabWithExamples ->
-            val vocab = vocabWithExamples.vocabulary
-
-            WordQueueItem(
-                word = vocab.word,
-                memoryScore = vocab.memoryScore,
-                correctAttempts = vocab.correctAttempts,
-                totalAttempts = vocab.totalAttempts,
-                isCurrentWord = index == currentIndex
-            )
-        }
-
-        wordQueueAdapter.submitList(queueWordsList)
-        Logger.d("Word queue UI updated with ${queueWordsList.size} words")
+        // Priority words queue UI card removed per user request
     }
 
     private fun setupClickListeners() {
@@ -166,7 +145,7 @@ class LearnFragment : Fragment() {
                 R.id.radioWriting -> "WRITING"
                 R.id.radioMobile -> "TECHNICAL_MOBILE"
                 R.id.radioWeb -> "TECHNICAL_WEB"
-                else -> "VSTEP"
+                else -> "GENERAL"
             }
             onCategoryChanged(category)
         }
@@ -422,7 +401,7 @@ class LearnFragment : Fragment() {
         }
     }
 
-    private var selectedCategory: String = "VSTEP"
+    private var selectedCategory: String = "GENERAL"
 
     private fun buildLearningQueueAndStart(category: String = selectedCategory) {
         selectedCategory = category
@@ -438,10 +417,9 @@ class LearnFragment : Fragment() {
                 Logger.d("📊 Total vocabularies: ${list.size}")
 
                 // Filter by category AND examples
-                // VSTEP (General tab) = VSTEP + GENERAL
                 val filtered = list.filter {
                     it.examples.isNotEmpty() && when (category) {
-                        "VSTEP" -> it.vocabulary.category == "VSTEP" || it.vocabulary.category == "GENERAL"
+                        "GENERAL", "VSTEP" -> it.vocabulary.category == "GENERAL" || it.vocabulary.category == "VSTEP"
                         "TECHNICAL_MOBILE", "MOBILE" -> it.vocabulary.category == "TECHNICAL_MOBILE" || it.vocabulary.category == "MOBILE"
                         "TECHNICAL_WEB", "WEB" -> it.vocabulary.category == "TECHNICAL_WEB" || it.vocabulary.category == "WEB" || it.vocabulary.category == "TECHNICAL_BACKEND" || it.vocabulary.category == "BACKEND" || it.vocabulary.category == "TECHNICAL"
                         else -> it.vocabulary.category == category
@@ -453,14 +431,14 @@ class LearnFragment : Fragment() {
                     Logger.d("No vocabularies with examples found")
                     learningQueue.clear()
                     currentIndex = -1
-                    saveFocusedWordsToPrefs(emptyList())
+                    saveFocusedWordsToPrefs(emptyList(), category)
                     loadNextFromQueue()
                     return@launch
                 }
 
-                // Load saved focused words from SharedPreferences
-                val savedWordIds = loadFocusedWordsFromPrefs()
-                Logger.d("Loaded ${savedWordIds.size} saved word IDs from preferences: $savedWordIds")
+                // Load saved focused words from SharedPreferences for this category
+                val savedWordIds = loadFocusedWordsFromPrefs(category)
+                Logger.d("Loaded ${savedWordIds.size} saved word IDs from preferences for category '$category': $savedWordIds")
 
                 val selected = if (savedWordIds.isNotEmpty()) {
                     // Use saved words if available
@@ -535,7 +513,7 @@ class LearnFragment : Fragment() {
                 }
 
                 // Save to SharedPreferences
-                saveFocusedWordsToPrefs(learningQueue.map { it.vocabulary.id })
+                saveFocusedWordsToPrefs(learningQueue.map { it.vocabulary.id }, category)
 
                 Logger.d("Final queue size: ${learningQueue.size}, words: ${learningQueue.joinToString { it.vocabulary.word }}")
                 currentIndex = -1
@@ -556,7 +534,7 @@ class LearnFragment : Fragment() {
         }
     }
 
-    private fun saveFocusedWordsToPrefs(wordIds: List<Long>) {
+    private fun saveFocusedWordsToPrefs(wordIds: List<Long>, category: String = selectedCategory) {
         val prefs = requireContext().getSharedPreferences("learning_focus", Context.MODE_PRIVATE)
 
         // Ensure no duplicates before saving
@@ -567,13 +545,15 @@ class LearnFragment : Fragment() {
         }
 
         val idsString = uniqueIds.joinToString(",")
-        prefs.edit().putString("focused_word_ids", idsString).apply()
-        Logger.d("💾 Saved focused words to prefs (${uniqueIds.size} words): $idsString")
+        val key = "focused_word_ids_$category"
+        prefs.edit().putString(key, idsString).apply()
+        Logger.d("💾 Saved focused words to prefs for category '$category' (${uniqueIds.size} words): $idsString")
     }
 
-    private fun loadFocusedWordsFromPrefs(): List<Long> {
+    private fun loadFocusedWordsFromPrefs(category: String = selectedCategory): List<Long> {
         val prefs = requireContext().getSharedPreferences("learning_focus", Context.MODE_PRIVATE)
-        val idsString = prefs.getString("focused_word_ids", "") ?: ""
+        val key = "focused_word_ids_$category"
+        val idsString = prefs.getString(key, "") ?: ""
         return if (idsString.isNotEmpty()) {
             val ids = idsString.split(",").mapNotNull { it.toLongOrNull() }
             // Remove duplicates from saved preferences
@@ -582,7 +562,7 @@ class LearnFragment : Fragment() {
                 Logger.e("❌ DUPLICATE IDs found in SharedPreferences! Original: $ids")
                 Logger.d("✅ Cleaned to unique IDs: $uniqueIds")
                 // Save cleaned IDs back to preferences
-                saveFocusedWordsToPrefs(uniqueIds)
+                saveFocusedWordsToPrefs(uniqueIds, category)
             }
             uniqueIds
         } else {
@@ -899,8 +879,7 @@ class LearnFragment : Fragment() {
             completedVietnamese.add(matchedExample.vietnamese)
             Logger.d("✅ Correct! Completed Vietnamese: '${matchedExample.vietnamese}' (${completedVietnamese.size}/$totalSentences)")
 
-            val targetSentence = currentSentences.firstOrNull() ?: ""
-            highlightMcqAnswerResult(userAnswer, targetSentence)
+            highlightMcqAnswerResult(userAnswer, currentSentences)
 
             // Check if ALL unique Vietnamese sentences are completed
             isVocabularyCompleted = (completedVietnamese.size >= totalSentences)
@@ -1009,6 +988,17 @@ class LearnFragment : Fragment() {
                 Toast.makeText(context, "✅ Đúng rồi! Còn ${totalSentences - completedVietnamese.size} câu nữa", Toast.LENGTH_SHORT).show()
                 binding.buttonCheck.isEnabled = true
                 binding.buttonNext.isEnabled = false
+
+                if (studyMode == "mcq") {
+                    val nextEx = vocabulary.examples.firstOrNull { example ->
+                        !completedVietnamese.contains(example.vietnamese)
+                    }
+                    binding.root.postDelayed({
+                        if (isAdded && studyMode == "mcq") {
+                            generateMcqOptions(nextEx)
+                        }
+                    }, 1000)
+                }
             }
         } else if (matchedExample != null && !isNewVietnamese) {
             // User answered a Vietnamese sentence they already completed before
@@ -1173,8 +1163,7 @@ class LearnFragment : Fragment() {
                 }
             }
 
-            val targetSentence = currentSentences.firstOrNull() ?: ""
-            highlightMcqAnswerResult(userAnswer, targetSentence)
+            highlightMcqAnswerResult(userAnswer, currentSentences)
             binding.buttonNext.isEnabled = true
 
             // FIXED: Use the current displayed example for error display
@@ -1370,7 +1359,7 @@ class LearnFragment : Fragment() {
         }
     }
 
-    private fun highlightMcqAnswerResult(userAnswer: String, targetSentence: String) {
+    private fun highlightMcqAnswerResult(userAnswer: String, targetSentences: List<String>) {
         if (studyMode != "mcq") return
 
         val buttons = listOf(
@@ -1381,13 +1370,13 @@ class LearnFragment : Fragment() {
         )
 
         val normUser = normalize(userAnswer)
-        val normTarget = normalize(targetSentence)
+        val normTargets = targetSentences.map { normalize(it) }
 
         buttons.forEachIndexed { idx, btn ->
             btn.isEnabled = false // Lock buttons after answer is evaluated
             if (idx < currentMcqOptions.size) {
                 val optText = normalize(currentMcqOptions[idx])
-                if (optText == normTarget) {
+                if (normTargets.contains(optText)) {
                     // Correct option: Green
                     btn.setBackgroundColor(android.graphics.Color.parseColor("#C8E6C9"))
                     btn.setTextColor(android.graphics.Color.parseColor("#2E7D32"))

@@ -73,10 +73,6 @@ class ReviewFragment : Fragment() {
 
     private fun setRadioButtonForCategory(category: String) {
         val radioId = when (category) {
-            "GENERAL" -> R.id.radioGeneral
-            "TOEIC" -> R.id.radioToeic
-            "VSTEP" -> R.id.radioVstep
-            "SPEAKING" -> R.id.radioSpeaking
             "WRITING" -> R.id.radioWriting
             "TECHNICAL_MOBILE", "MOBILE" -> R.id.radioMobile
             "TECHNICAL_WEB", "WEB", "TECHNICAL_BACKEND", "BACKEND", "TECHNICAL" -> R.id.radioWeb
@@ -106,10 +102,6 @@ class ReviewFragment : Fragment() {
     private fun setupListeners() {
         radioGroupCategory.setOnCheckedChangeListener { _, checkedId ->
             selectedCategory = when (checkedId) {
-                R.id.radioGeneral -> "GENERAL"
-                R.id.radioToeic -> "TOEIC"
-                R.id.radioVstep -> "VSTEP"
-                R.id.radioSpeaking -> "SPEAKING"
                 R.id.radioWriting -> "WRITING"
                 R.id.radioMobile -> "TECHNICAL_MOBILE"
                 R.id.radioWeb -> "TECHNICAL_WEB"
